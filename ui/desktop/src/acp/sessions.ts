@@ -179,7 +179,7 @@ export async function acpListRecentSessions(maxSessions: number): Promise<Sessio
 
 export async function acpGetSessionListItem(sessionId: string): Promise<SessionListItem> {
   const client = await getAcpClient();
-  const response = await client.goose.sessionInfo_unstable({ sessionId });
+  const response = await client.warmachine.sessionInfo_unstable({ sessionId });
   return sessionInfoToListItem(response.session);
 }
 
@@ -206,7 +206,7 @@ export function isAcpSessionLoadInFlight(sessionId: string): boolean {
 
 async function loadAcpSession(sessionId: string): Promise<AcpLoadSessionResult> {
   const client = await getAcpClient();
-  const initialSessionInfoResponse = await client.goose.sessionInfo_unstable({ sessionId });
+  const initialSessionInfoResponse = await client.warmachine.sessionInfo_unstable({ sessionId });
   const initialSessionInfo = initialSessionInfoResponse.session;
   const response = await client.connection.agent.request(methods.agent.session.load, {
     sessionId,
@@ -214,7 +214,7 @@ async function loadAcpSession(sessionId: string): Promise<AcpLoadSessionResult> 
     mcpServers: [],
   });
   // Loading can populate missing provider/model metadata.
-  const sessionInfoResponse = await client.goose.sessionInfo_unstable({ sessionId });
+  const sessionInfoResponse = await client.warmachine.sessionInfo_unstable({ sessionId });
 
   return {
     sessionInfo: sessionInfoResponse.session,
@@ -261,7 +261,7 @@ export async function acpNewSession(
   const request: NewSessionRequest = { cwd, mcpServers: [], _meta: meta };
   const response = await client.connection.agent.request(methods.agent.session.new, request);
   const sessionId = String(response.sessionId);
-  const sessionInfoResponse = await client.goose.sessionInfo_unstable({ sessionId });
+  const sessionInfoResponse = await client.warmachine.sessionInfo_unstable({ sessionId });
 
   return {
     sessionId,
@@ -282,12 +282,12 @@ export async function acpCloseSession(sessionId: string): Promise<void> {
 
 export async function acpRenameSession(sessionId: string, title: string): Promise<void> {
   const client = await getAcpClient();
-  await client.goose.sessionRename_unstable({ sessionId, title });
+  await client.warmachine.sessionRename_unstable({ sessionId, title });
 }
 
 export async function acpUpdateWorkingDir(sessionId: string, workingDir: string): Promise<void> {
   const client = await getAcpClient();
-  await client.goose.sessionWorkingDirUpdate_unstable({ sessionId, workingDir });
+  await client.warmachine.sessionWorkingDirUpdate_unstable({ sessionId, workingDir });
 }
 
 export async function acpTruncateSessionConversation(
@@ -295,7 +295,7 @@ export async function acpTruncateSessionConversation(
   truncateFrom: number
 ): Promise<void> {
   const client = await getAcpClient();
-  await client.goose.sessionConversationTruncate_unstable({ sessionId, truncateFrom });
+  await client.warmachine.sessionConversationTruncate_unstable({ sessionId, truncateFrom });
 }
 
 export async function acpForkSession(
@@ -303,7 +303,7 @@ export async function acpForkSession(
   conversationBefore?: number
 ): Promise<string> {
   const client = await getAcpClient();
-  const sessionInfo = await client.goose.sessionInfo_unstable({ sessionId });
+  const sessionInfo = await client.warmachine.sessionInfo_unstable({ sessionId });
   const { cwd } = sessionInfo.session;
   const request: ForkSessionRequest = { sessionId, cwd };
   if (conversationBefore !== undefined) {
@@ -318,16 +318,16 @@ export async function acpExportSession(
   format: SessionExportFormat = 'json'
 ): Promise<string> {
   const client = await getAcpClient();
-  const response = await client.goose.sessionExport_unstable({ sessionId, format });
+  const response = await client.warmachine.sessionExport_unstable({ sessionId, format });
   return response.data;
 }
 
 export async function acpImportSession(input: string, source: SessionImportSource): Promise<void> {
   const client = await getAcpClient();
-  await client.goose.sessionImport_unstable({ input, source });
+  await client.warmachine.sessionImport_unstable({ input, source });
 }
 
 export async function acpShareSessionNostr(sessionId: string, relays: string[]) {
   const client = await getAcpClient();
-  return await client.goose.sessionShareNostr_unstable({ sessionId, relays });
+  return await client.warmachine.sessionShareNostr_unstable({ sessionId, relays });
 }

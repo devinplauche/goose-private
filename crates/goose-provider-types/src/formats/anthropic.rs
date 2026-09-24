@@ -1769,7 +1769,7 @@ mod tests {
 
     #[test]
     fn test_create_request_adaptive_thinking_for_46_models() -> Result<()> {
-        let _guard = env_lock::lock_env([("GOOSE_THINKING_EFFORT", None::<&str>)]);
+        let _guard = env_lock::lock_env([("WARMACHINE_THINKING_EFFORT", None::<&str>)]);
 
         let mut params = std::collections::HashMap::new();
         params.insert("thinking_effort".to_string(), json!("high"));
@@ -1791,7 +1791,7 @@ mod tests {
     fn test_create_request_adaptive_thinking_for_opus_5() -> Result<()> {
         // Claude 5 models reject the legacy thinking.type=enabled shape and
         // require thinking.type=adaptive + output_config.effort.
-        let _guard = env_lock::lock_env([("GOOSE_THINKING_EFFORT", None::<&str>)]);
+        let _guard = env_lock::lock_env([("WARMACHINE_THINKING_EFFORT", None::<&str>)]);
 
         let mut params = std::collections::HashMap::new();
         params.insert("thinking_effort".to_string(), json!("high"));
@@ -1812,7 +1812,7 @@ mod tests {
     #[test]
     fn test_create_request_enabled_thinking_with_budget() -> Result<()> {
         let _guard = env_lock::lock_env([
-            ("GOOSE_THINKING_EFFORT", None::<&str>),
+            ("WARMACHINE_THINKING_EFFORT", None::<&str>),
             ("ANTHROPIC_PRESERVE_THINKING_CONTEXT", None::<&str>),
         ]);
 
@@ -1834,7 +1834,7 @@ mod tests {
     #[test]
     fn test_create_request_clamps_thinking_budget_to_fit_max_tokens() -> Result<()> {
         let _guard = env_lock::lock_env([
-            ("GOOSE_THINKING_EFFORT", None::<&str>),
+            ("WARMACHINE_THINKING_EFFORT", None::<&str>),
             ("ANTHROPIC_PRESERVE_THINKING_CONTEXT", None::<&str>),
         ]);
 
@@ -1861,7 +1861,7 @@ mod tests {
     #[test]
     fn test_create_request_disabled_thinking_no_thinking_field() -> Result<()> {
         let _guard = env_lock::lock_env([
-            ("GOOSE_THINKING_EFFORT", None::<&str>),
+            ("WARMACHINE_THINKING_EFFORT", None::<&str>),
             ("ANTHROPIC_PRESERVE_THINKING_CONTEXT", None::<&str>),
         ]);
 
@@ -2335,7 +2335,7 @@ mod tests {
 
     #[test]
     fn test_thinking_type_from_effort() {
-        let _guard = env_lock::lock_env([("GOOSE_THINKING_EFFORT", None::<&str>)]);
+        let _guard = env_lock::lock_env([("WARMACHINE_THINKING_EFFORT", None::<&str>)]);
         // Adaptive model with effort → adaptive
         assert_eq!(
             thinking_type(&cfg_with_effort("claude-opus-4-6", "high")),
@@ -2368,7 +2368,7 @@ mod tests {
 
     #[test]
     fn test_thinking_type_always_on_adaptive() {
-        let _guard = env_lock::lock_env([("GOOSE_THINKING_EFFORT", None::<&str>)]);
+        let _guard = env_lock::lock_env([("WARMACHINE_THINKING_EFFORT", None::<&str>)]);
 
         assert_eq!(
             thinking_type(&cfg("claude-fable-5")),
@@ -2386,7 +2386,7 @@ mod tests {
 
     #[test]
     fn test_thinking_type_opus_5_5_cannot_disable_thinking() {
-        let _guard = env_lock::lock_env([("GOOSE_THINKING_EFFORT", None::<&str>)]);
+        let _guard = env_lock::lock_env([("WARMACHINE_THINKING_EFFORT", None::<&str>)]);
 
         assert_eq!(
             thinking_type(&cfg("claude-opus-5-5")),
@@ -2400,7 +2400,7 @@ mod tests {
 
     #[test]
     fn test_create_request_fable_5_omits_temperature() -> Result<()> {
-        let _guard = env_lock::lock_env([("GOOSE_THINKING_EFFORT", None::<&str>)]);
+        let _guard = env_lock::lock_env([("WARMACHINE_THINKING_EFFORT", None::<&str>)]);
         let mut config = cfg("claude-fable-5");
         config.max_tokens = Some(4096);
         config.temperature = Some(0.7);

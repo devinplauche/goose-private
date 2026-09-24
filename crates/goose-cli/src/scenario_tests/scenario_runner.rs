@@ -1,17 +1,17 @@
 use dotenvy::dotenv;
-use goose::conversation::Conversation;
+use warmachine::conversation::Conversation;
 
 use crate::scenario_tests::message_generator::MessageGenerator;
 use crate::scenario_tests::mock_client::weather_client;
 use crate::scenario_tests::provider_configs::{get_provider_configs, ProviderConfig};
 use crate::session::CliSession;
 use anyhow::Result;
-use goose::agents::{Agent, AgentConfig, GoosePlatform};
-use goose::config::permission::PermissionManager;
-use goose::config::GooseMode;
-use goose::providers::{create, testprovider::TestProvider};
-use goose::session::session_manager::SessionType;
-use goose::session::SessionManager;
+use warmachine::agents::{Agent, AgentConfig, GoosePlatform};
+use warmachine::config::permission::PermissionManager;
+use warmachine::config::GooseMode;
+use warmachine::providers::{create, testprovider::TestProvider};
+use warmachine::session::session_manager::SessionType;
+use warmachine::session::SessionManager;
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -53,7 +53,7 @@ pub async fn run_scenario<F>(
 where
     F: Fn(&ScenarioResult) -> Result<()> + Send + Sync + 'static,
 {
-    if let Ok(only_provider) = std::env::var("GOOSE_TEST_PROVIDER") {
+    if let Ok(only_provider) = std::env::var("WARMACHINE_TEST_PROVIDER") {
         let active_providers = get_provider_configs();
         let config = active_providers
             .iter()
@@ -140,9 +140,9 @@ async fn run_provider_scenario_with_validation<F>(
 where
     F: Fn(&ScenarioResult) -> Result<()>,
 {
-    use goose::config::ExtensionConfig;
+    use warmachine::config::ExtensionConfig;
 
-    goose::agents::moim::SKIP.with(|f| f.set(true));
+    warmachine::agents::moim::SKIP.with(|f| f.set(true));
 
     if let Ok(path) = dotenv() {
         println!("Loaded environment from {:?}", path);
@@ -240,10 +240,10 @@ where
         .await?;
 
     let scenario_model_config =
-        goose::model_config::model_config_from_user_config(&factory_name, config.model_name)?;
+        warmachine::model_config::model_config_from_user_config(&factory_name, config.model_name)?;
     agent
         .update_provider(
-            provider_arc as Arc<dyn goose::providers::base::Provider>,
+            provider_arc as Arc<dyn warmachine::providers::base::Provider>,
             scenario_model_config,
             &session.id,
         )

@@ -334,7 +334,7 @@ fn dictation_default_model(provider: DictationProvider) -> Option<String> {
         DictationProvider::Groq => Some(GROQ_TRANSCRIPTION_MODEL.to_string()),
         DictationProvider::ElevenLabs => Some(ELEVENLABS_TRANSCRIPTION_MODEL.to_string()),
         DictationProvider::ModelNative => crate::config::Config::global()
-            .get_param::<String>("GOOSE_MODEL")
+            .get_param::<String>("WARMACHINE_MODEL")
             .ok(),
         #[cfg(feature = "local-inference")]
         DictationProvider::Local => Some(whisper::recommend_model().to_string()),
@@ -344,7 +344,7 @@ fn dictation_default_model(provider: DictationProvider) -> Option<String> {
 fn dictation_selected_model(config: &Config, provider: DictationProvider) -> Option<String> {
     if provider == DictationProvider::ModelNative {
         return crate::config::Config::global()
-            .get_param::<String>("GOOSE_MODEL")
+            .get_param::<String>("WARMACHINE_MODEL")
             .ok();
     }
 

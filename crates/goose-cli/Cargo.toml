@@ -12,7 +12,7 @@ description.workspace = true
 workspace = true
 
 [[bin]]
-name = "goose"
+name = "warmachine"
 path = "src/main.rs"
 
 [[bin]]
@@ -25,7 +25,7 @@ path = "src/bin/mcp_conformance_driver.rs"
 
 [dependencies]
 clap_mangen = { version = "0.3", default-features = false }
-goose = { path = "../goose", default-features = false }
+warmachine = { path = "../warmachine", default-features = false }
 agent-client-protocol = { workspace = true, features = ["unstable"], optional = true }
 goose-mcp = { path = "../goose-mcp", default-features = false, optional = true }
 goose-providers = { path = "../goose-providers", default-features = false }
@@ -111,24 +111,24 @@ default = [
     "acp-http",
 ]
 roaming = ["dep:goose-roaming", "dep:qrcode", "dep:fs2", "dep:agent-client-protocol"]
-code-mode = ["goose/code-mode"]
-tree-sitter = ["goose/tree-sitter"]
-live-voice = ["goose/live-voice"]
-local-inference = ["goose/local-inference"]
-aws-providers = ["goose/aws-providers"]
-cuda = ["goose/cuda", "local-inference"]
-vulkan = ["goose/vulkan", "local-inference"]
-mlx = ["goose/mlx", "local-inference"]
-telemetry = ["goose/telemetry"]
-nostr = ["goose/nostr"]
-otel = ["goose/otel"]
-system-keyring = ["goose/system-keyring"]
+code-mode = ["warmachine/code-mode"]
+tree-sitter = ["warmachine/tree-sitter"]
+live-voice = ["warmachine/live-voice"]
+local-inference = ["warmachine/local-inference"]
+aws-providers = ["warmachine/aws-providers"]
+cuda = ["warmachine/cuda", "local-inference"]
+vulkan = ["warmachine/vulkan", "local-inference"]
+mlx = ["warmachine/mlx", "local-inference"]
+telemetry = ["warmachine/telemetry"]
+nostr = ["warmachine/nostr"]
+otel = ["warmachine/otel"]
+system-keyring = ["warmachine/system-keyring"]
 update = ["dep:sigstore-verify", "dep:snap"]
 bundled-mcp = ["dep:goose-mcp", "goose-mcp/bundled-mcp"]
-scheduler = ["goose/scheduler"]
-platform-apps = ["goose/platform-apps"]
-chat-recall = ["goose/chat-recall"]
-acp-http = ["goose/acp-http"]
+scheduler = ["warmachine/scheduler"]
+platform-apps = ["warmachine/platform-apps"]
+chat-recall = ["warmachine/chat-recall"]
+acp-http = ["warmachine/acp-http"]
 portable-default = [
     "rustls-tls",
     "tree-sitter",
@@ -149,7 +149,7 @@ rustls-tls = [
     "reqwest/rustls",
     "axum-server/tls-rustls",
     "sigstore-verify?/rustls",
-    "goose/rustls-tls",
+    "warmachine/rustls-tls",
     "goose-mcp?/rustls-tls",
     "goose-providers/rustls-tls",
 ]
@@ -158,7 +158,7 @@ native-tls = [
     "reqwest/native-tls",
     "axum-server/tls-openssl",
     "sigstore-verify?/native-tls",
-    "goose/native-tls",
+    "warmachine/native-tls",
     "goose-mcp?/native-tls",
     "goose-providers/native-tls",
 ]

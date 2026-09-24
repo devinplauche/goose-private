@@ -28,7 +28,7 @@ fn secrets_lock_path(path: &Path) -> PathBuf {
 }
 
 #[cfg(feature = "system-keyring")]
-const KEYRING_SERVICE: &str = "goose";
+const KEYRING_SERVICE: &str = "warmachine";
 #[cfg(feature = "system-keyring")]
 const KEYRING_USERNAME: &str = "secrets";
 pub const CONFIG_YAML_NAME: &str = "config.yaml";
@@ -70,7 +70,7 @@ impl From<keyring::Error> for ConfigError {
     }
 }
 
-/// Configuration management for goose.
+/// Configuration management for warmachine.
 ///
 /// This module provides a flexible configuration system that supports:
 /// - Dynamic configuration keys
@@ -82,18 +82,18 @@ impl From<keyring::Error> for ConfigError {
 ///
 /// Configuration values are loaded with the following precedence:
 /// 1. Environment variables (exact key match)
-/// 2. Configuration file (~/.config/goose/config.yaml by default)
+/// 2. Configuration file (~/.config/warmachine/config.yaml by default)
 ///
 /// Secrets are loaded with the following precedence:
 /// 1. Environment variables (exact key match)
-/// 2. System keyring (which can be disabled with GOOSE_DISABLE_KEYRING)
+/// 2. System keyring (which can be disabled with WARMACHINE_DISABLE_KEYRING)
 /// 3. If the keyring is disabled, secrets are stored in a secrets file
-///    (~/.config/goose/secrets.yaml by default)
+///    (~/.config/warmachine/secrets.yaml by default)
 ///
 /// # Examples
 ///
 /// ```no_run
-/// use goose::config::Config;
+/// use warmachine::config::Config;
 /// use serde::Deserialize;
 ///
 /// // Get a string value
@@ -150,7 +150,7 @@ pub(crate) enum SecretUpdate<V, R> {
 static GLOBAL_CONFIG: OnceCell<Config> = OnceCell::new();
 
 #[cfg(test)]
-pub(crate) const TEST_SYSTEM_CONFIG_PATH_ENV: &str = "GOOSE_TEST_SYSTEM_CONFIG_PATH";
+pub(crate) const TEST_SYSTEM_CONFIG_PATH_ENV: &str = "WARMACHINE_TEST_SYSTEM_CONFIG_PATH";
 
 fn system_config_path() -> PathBuf {
     #[cfg(test)]
@@ -160,18 +160,18 @@ fn system_config_path() -> PathBuf {
 
     #[cfg(unix)]
     {
-        PathBuf::from("/etc/goose/config.yaml")
+        PathBuf::from("/etc/warmachine/config.yaml")
     }
     #[cfg(windows)]
     {
         env::var("PROGRAMDATA")
-            .map(|d| PathBuf::from(d).join("goose").join("config.yaml"))
-            .unwrap_or_else(|_| PathBuf::from(r"C:\ProgramData\goose\config.yaml"))
+            .map(|d| PathBuf::from(d).join("warmachine").join("config.yaml"))
+            .unwrap_or_else(|_| PathBuf::from(r"C:\ProgramData\warmachine\config.yaml"))
     }
 }
 
 fn additional_config_paths_from_env() -> Vec<PathBuf> {
-    env::var_os("GOOSE_ADDITIONAL_CONFIG_FILES")
+    env::var_os("WARMACHINE_ADDITIONAL_CONFIG_FILES")
         .map(|value| env::split_paths(&value).collect())
         .unwrap_or_default()
 }
@@ -213,9 +213,9 @@ impl Default for Config {
             secrets_cache: Arc::new(Mutex::new(None)),
         };
 
-        let keyring_disabled = env::var("GOOSE_DISABLE_KEYRING").is_ok()
+        let keyring_disabled = env::var("WARMACHINE_DISABLE_KEYRING").is_ok()
             || no_secrets_config
-                .get_param::<serde_yaml::Value>("GOOSE_DISABLE_KEYRING")
+                .get_param::<serde_yaml::Value>("WARMACHINE_DISABLE_KEYRING")
                 .is_ok_and(|v| keyring_disabled_value(&v));
         let secrets = secret_storage(&config_dir, keyring_disabled, default_keyring_service());
         Self {
@@ -367,7 +367,7 @@ fn merge_nested_entries(base: &mut Mapping, overlay: &Mapping) {
     }
 }
 
-/// Read the GOOSE_DISABLE_KEYRING flag from the config file.
+/// Read the WARMACHINE_DISABLE_KEYRING flag from the config file.
 ///
 /// Called before Config is fully initialised, so we do a minimal raw read
 /// rather than going through `get_param`.  All errors are treated as `false`
@@ -376,7 +376,7 @@ fn keyring_disabled_in_config(config_path: &Path) -> bool {
     std::fs::read_to_string(config_path)
         .ok()
         .and_then(|s| parse_yaml_content(&s).ok())
-        .and_then(|m| m.get("GOOSE_DISABLE_KEYRING").map(keyring_disabled_value))
+        .and_then(|m| m.get("WARMACHINE_DISABLE_KEYRING").map(keyring_disabled_value))
         .unwrap_or(false)
 }
 
@@ -417,7 +417,7 @@ fn secret_storage(config_dir: &Path, _keyring_disabled: bool, _service: &str) ->
 impl Config {
     /// Get the global configuration instance.
     ///
-    /// This will initialize the configuration with the default path (~/.config/goose/config.yaml)
+    /// This will initialize the configuration with the default path (~/.config/warmachine/config.yaml)
     /// if it hasn't been initialized yet.
     pub fn global() -> &'static Config {
         GLOBAL_CONFIG.get_or_init(Config::default)
@@ -430,7 +430,7 @@ impl Config {
     pub fn new<P: AsRef<Path>>(config_path: P, service: &str) -> Result<Self, ConfigError> {
         let config_path = config_path.as_ref().to_path_buf();
         let keyring_disabled =
-            env::var("GOOSE_DISABLE_KEYRING").is_ok() || keyring_disabled_in_config(&config_path);
+            env::var("WARMACHINE_DISABLE_KEYRING").is_ok() || keyring_disabled_in_config(&config_path);
         let config_dir = config_path
             .parent()
             .map(Path::to_path_buf)
@@ -585,10 +585,10 @@ impl Config {
         }));
 
         if let Ok(provider) = self.get_goose_provider() {
-            map.insert("GOOSE_PROVIDER".to_string(), Value::String(provider));
+            map.insert("WARMACHINE_PROVIDER".to_string(), Value::String(provider));
         }
         if let Ok(model) = self.get_goose_model() {
-            map.insert("GOOSE_MODEL".to_string(), Value::String(model));
+            map.insert("WARMACHINE_MODEL".to_string(), Value::String(model));
         }
 
         Ok(map)
@@ -1213,7 +1213,7 @@ impl Config {
         fallback_values: Option<&HashMap<String, Value>>,
     ) -> Result<T, ConfigError> {
         if self.is_keyring_availability_error(&keyring_err.to_string()) {
-            std::env::set_var("GOOSE_DISABLE_KEYRING", "1");
+            std::env::set_var("WARMACHINE_DISABLE_KEYRING", "1");
             tracing::warn!("Keyring unavailable. Using file storage for secrets.");
 
             if let Some(values) = fallback_values {
@@ -1259,11 +1259,11 @@ config_value!(CODEX_ENABLE_SKILLS, String, "true");
 config_value!(CODEX_SKIP_GIT_CHECK, String, "false");
 config_value!(CHATGPT_CODEX_REASONING_EFFORT, String, "medium");
 
-config_value!(GOOSE_SEARCH_PATHS, Vec<String>);
-config_value!(GOOSE_MODE, GooseMode);
+config_value!(WARMACHINE_SEARCH_PATHS, Vec<String>);
+config_value!(WARMACHINE_MODE, GooseMode);
 impl Config {
     pub(crate) fn get_goose_mode_strict(&self) -> Result<GooseMode, ConfigError> {
-        match env::var("GOOSE_MODE") {
+        match env::var("WARMACHINE_MODE") {
             Ok(value) => {
                 let value = Self::parse_env_value(&value)?;
                 Ok(serde_json::from_value(value)?)
@@ -1271,23 +1271,23 @@ impl Config {
             Err(env::VarError::NotPresent) => {
                 let values = self.load_strict()?;
                 let value = values
-                    .get("GOOSE_MODE")
-                    .ok_or_else(|| ConfigError::NotFound("GOOSE_MODE".to_string()))?;
+                    .get("WARMACHINE_MODE")
+                    .ok_or_else(|| ConfigError::NotFound("WARMACHINE_MODE".to_string()))?;
                 Ok(serde_yaml::from_value(value.clone())?)
             }
             Err(env::VarError::NotUnicode(_)) => Err(ConfigError::DeserializeError(
-                "GOOSE_MODE contains non-Unicode data".to_string(),
+                "WARMACHINE_MODE contains non-Unicode data".to_string(),
             )),
         }
     }
 }
-// GOOSE_PROVIDER and GOOSE_MODEL are handled by crate::config::providers
+// WARMACHINE_PROVIDER and WARMACHINE_MODEL are handled by crate::config::providers
 // which checks the structured `providers:` block first and falls back to
 // the legacy flat keys. The accessors below delegate to that module.
 impl Config {
     pub fn get_goose_provider(&self) -> Result<String, ConfigError> {
         crate::config::providers::get_active_provider(self)
-            .ok_or_else(|| ConfigError::NotFound("GOOSE_PROVIDER".to_string()))
+            .ok_or_else(|| ConfigError::NotFound("WARMACHINE_PROVIDER".to_string()))
     }
     pub fn set_goose_provider(&self, v: impl Into<String>) -> Result<(), ConfigError> {
         let name = v.into();
@@ -1298,7 +1298,7 @@ impl Config {
     }
     pub fn get_goose_model(&self) -> Result<String, ConfigError> {
         crate::config::providers::get_active_model(self)
-            .ok_or_else(|| ConfigError::NotFound("GOOSE_MODEL".to_string()))
+            .ok_or_else(|| ConfigError::NotFound("WARMACHINE_MODEL".to_string()))
     }
     pub fn set_goose_model(&self, v: impl Into<String>) -> Result<(), ConfigError> {
         let model = v.into();
@@ -1308,16 +1308,16 @@ impl Config {
         Ok(())
     }
 }
-config_value!(GOOSE_PROMPT_EDITOR, Option<String>);
-config_value!(GOOSE_PROMPT_EDITOR_ALWAYS, Option<bool>);
-config_value!(GOOSE_MAX_ACTIVE_AGENTS, usize);
-config_value!(GOOSE_DISABLE_SESSION_NAMING, bool);
+config_value!(WARMACHINE_PROMPT_EDITOR, Option<String>);
+config_value!(WARMACHINE_PROMPT_EDITOR_ALWAYS, Option<bool>);
+config_value!(WARMACHINE_MAX_ACTIVE_AGENTS, usize);
+config_value!(WARMACHINE_DISABLE_SESSION_NAMING, bool);
 
 impl Config {
     pub fn get_goose_context_limit(&self) -> Result<Option<usize>, ConfigError> {
-        match self.get_param::<usize>("GOOSE_CONTEXT_LIMIT") {
+        match self.get_param::<usize>("WARMACHINE_CONTEXT_LIMIT") {
             Ok(0) => Err(ConfigError::DeserializeError(
-                "GOOSE_CONTEXT_LIMIT must be greater than 0".to_string(),
+                "WARMACHINE_CONTEXT_LIMIT must be greater than 0".to_string(),
             )),
             Ok(limit) => Ok(Some(limit)),
             Err(ConfigError::NotFound(_)) => Ok(None),
@@ -1326,9 +1326,9 @@ impl Config {
     }
 
     pub fn get_goose_max_tokens(&self) -> Result<Option<i32>, ConfigError> {
-        match self.get_param::<i32>("GOOSE_MAX_TOKENS") {
+        match self.get_param::<i32>("WARMACHINE_MAX_TOKENS") {
             Ok(tokens) if tokens <= 0 => Err(ConfigError::DeserializeError(
-                "GOOSE_MAX_TOKENS must be greater than 0".to_string(),
+                "WARMACHINE_MAX_TOKENS must be greater than 0".to_string(),
             )),
             Ok(tokens) => Ok(Some(tokens)),
             Err(ConfigError::NotFound(_)) => Ok(None),
@@ -1337,7 +1337,7 @@ impl Config {
     }
 
     pub fn get_goose_docs_root(&self) -> Result<Option<String>, ConfigError> {
-        match self.get_param::<String>("GOOSE_DOCS_ROOT") {
+        match self.get_param::<String>("WARMACHINE_DOCS_ROOT") {
             Ok(root) => Ok(Some(root.trim().to_string()).filter(|root| !root.is_empty())),
             Err(ConfigError::NotFound(_)) => Ok(None),
             Err(e) => Err(e),
@@ -1345,14 +1345,14 @@ impl Config {
     }
 
     pub fn get_goose_thinking_effort(&self) -> Option<ThinkingEffort> {
-        self.get_param::<String>("GOOSE_THINKING_EFFORT")
+        self.get_param::<String>("WARMACHINE_THINKING_EFFORT")
             .ok()
             .and_then(|e| e.parse().ok())
             .or_else(|| self.legacy_thinking_effort())
     }
 
     pub fn set_goose_thinking_effort(&self, v: ThinkingEffort) -> Result<(), ConfigError> {
-        self.set_param("GOOSE_THINKING_EFFORT", v)
+        self.set_param("WARMACHINE_THINKING_EFFORT", v)
     }
 
     pub fn get_openai_store(&self) -> Option<bool> {
@@ -1396,7 +1396,7 @@ impl Config {
     }
 }
 
-config_value!(GOOSE_DEFAULT_EXTENSION_TIMEOUT, u64);
+config_value!(WARMACHINE_DEFAULT_EXTENSION_TIMEOUT, u64);
 
 fn find_workspace_or_exe_root() -> Option<PathBuf> {
     let exe = std::env::current_exe().ok()?;
@@ -2521,12 +2521,12 @@ mod tests {
         // Base (system) config
         std::fs::write(
             base_file.path(),
-            "GOOSE_PROVIDER: openai\nGOOSE_MODEL: gpt-4\n",
+            "WARMACHINE_PROVIDER: openai\nGOOSE_MODEL: gpt-4\n",
         )
         .unwrap();
 
         // User config overrides model
-        std::fs::write(user_file.path(), "GOOSE_MODEL: gpt-4o\n").unwrap();
+        std::fs::write(user_file.path(), "WARMACHINE_MODEL: gpt-4o\n").unwrap();
 
         let config = Config::new_with_config_paths(
             vec![
@@ -2536,12 +2536,12 @@ mod tests {
             secrets_file.path(),
         )?;
 
-        // GOOSE_MODEL should be overridden by later config
-        let model: String = config.get_param("GOOSE_MODEL")?;
+        // WARMACHINE_MODEL should be overridden by later config
+        let model: String = config.get_param("WARMACHINE_MODEL")?;
         assert_eq!(model, "gpt-4o");
 
-        // GOOSE_PROVIDER should still come from base
-        let provider: String = config.get_param("GOOSE_PROVIDER")?;
+        // WARMACHINE_PROVIDER should still come from base
+        let provider: String = config.get_param("WARMACHINE_PROVIDER")?;
         assert_eq!(provider, "openai");
 
         Ok(())
@@ -2781,7 +2781,7 @@ extensions:
 
     #[test]
     fn get_goose_context_limit_reads_env() {
-        let _guard = env_lock::lock_env([("GOOSE_CONTEXT_LIMIT", Some("4096"))]);
+        let _guard = env_lock::lock_env([("WARMACHINE_CONTEXT_LIMIT", Some("4096"))]);
         let config = new_test_config();
 
         assert_eq!(config.get_goose_context_limit().unwrap(), Some(4096));
@@ -2789,16 +2789,16 @@ extensions:
 
     #[test]
     fn get_goose_context_limit_reads_quoted_yaml_value() {
-        let _guard = env_lock::lock_env([("GOOSE_CONTEXT_LIMIT", None::<&str>)]);
+        let _guard = env_lock::lock_env([("WARMACHINE_CONTEXT_LIMIT", None::<&str>)]);
         let config = new_test_config();
-        config.set_param("GOOSE_CONTEXT_LIMIT", "200000").unwrap();
+        config.set_param("WARMACHINE_CONTEXT_LIMIT", "200000").unwrap();
 
         assert_eq!(config.get_goose_context_limit().unwrap(), Some(200_000));
     }
 
     #[test]
     fn get_goose_context_limit_returns_none_when_not_set() {
-        let _guard = env_lock::lock_env([("GOOSE_CONTEXT_LIMIT", None::<&str>)]);
+        let _guard = env_lock::lock_env([("WARMACHINE_CONTEXT_LIMIT", None::<&str>)]);
         let config = new_test_config();
 
         assert_eq!(config.get_goose_context_limit().unwrap(), None);
@@ -2806,7 +2806,7 @@ extensions:
 
     #[test]
     fn get_goose_context_limit_rejects_zero() {
-        let _guard = env_lock::lock_env([("GOOSE_CONTEXT_LIMIT", Some("0"))]);
+        let _guard = env_lock::lock_env([("WARMACHINE_CONTEXT_LIMIT", Some("0"))]);
         let config = new_test_config();
 
         assert!(matches!(
@@ -2817,7 +2817,7 @@ extensions:
 
     #[test]
     fn get_goose_max_tokens_reads_env() {
-        let _guard = env_lock::lock_env([("GOOSE_MAX_TOKENS", Some("4096"))]);
+        let _guard = env_lock::lock_env([("WARMACHINE_MAX_TOKENS", Some("4096"))]);
         let config = new_test_config();
 
         assert_eq!(config.get_goose_max_tokens().unwrap(), Some(4096));
@@ -2825,7 +2825,7 @@ extensions:
 
     #[test]
     fn get_goose_max_tokens_returns_none_when_not_set() {
-        let _guard = env_lock::lock_env([("GOOSE_MAX_TOKENS", None::<&str>)]);
+        let _guard = env_lock::lock_env([("WARMACHINE_MAX_TOKENS", None::<&str>)]);
         let config = new_test_config();
 
         assert_eq!(config.get_goose_max_tokens().unwrap(), None);
@@ -2834,7 +2834,7 @@ extensions:
     #[test]
     fn get_goose_max_tokens_rejects_invalid_values() {
         for value in ["not_a_number", "0", "-100"] {
-            let _guard = env_lock::lock_env([("GOOSE_MAX_TOKENS", Some(value))]);
+            let _guard = env_lock::lock_env([("WARMACHINE_MAX_TOKENS", Some(value))]);
             let config = new_test_config();
 
             assert!(matches!(
@@ -2846,10 +2846,10 @@ extensions:
 
     #[test]
     fn get_goose_docs_root_reads_config_file() {
-        let _guard = env_lock::lock_env([("GOOSE_DOCS_ROOT", None::<&str>)]);
+        let _guard = env_lock::lock_env([("WARMACHINE_DOCS_ROOT", None::<&str>)]);
         let config = new_test_config();
         config
-            .set_param("GOOSE_DOCS_ROOT", "/tmp/goose-docs")
+            .set_param("WARMACHINE_DOCS_ROOT", "/tmp/goose-docs")
             .unwrap();
 
         assert_eq!(
@@ -2860,7 +2860,7 @@ extensions:
 
     #[test]
     fn get_goose_docs_root_reads_env_value() {
-        let _guard = env_lock::lock_env([("GOOSE_DOCS_ROOT", Some("/tmp/env-docs"))]);
+        let _guard = env_lock::lock_env([("WARMACHINE_DOCS_ROOT", Some("/tmp/env-docs"))]);
         let config = new_test_config();
 
         assert_eq!(
@@ -2871,7 +2871,7 @@ extensions:
 
     #[test]
     fn get_goose_docs_root_returns_none_when_unset() {
-        let _guard = env_lock::lock_env([("GOOSE_DOCS_ROOT", None::<&str>)]);
+        let _guard = env_lock::lock_env([("WARMACHINE_DOCS_ROOT", None::<&str>)]);
         let config = new_test_config();
 
         assert_eq!(config.get_goose_docs_root().unwrap(), None);
@@ -2879,9 +2879,9 @@ extensions:
 
     #[test]
     fn get_goose_docs_root_ignores_blank_value() {
-        let _guard = env_lock::lock_env([("GOOSE_DOCS_ROOT", None::<&str>)]);
+        let _guard = env_lock::lock_env([("WARMACHINE_DOCS_ROOT", None::<&str>)]);
         let config = new_test_config();
-        config.set_param("GOOSE_DOCS_ROOT", "   ").unwrap();
+        config.set_param("WARMACHINE_DOCS_ROOT", "   ").unwrap();
 
         assert_eq!(config.get_goose_docs_root().unwrap(), None);
     }
@@ -2889,7 +2889,7 @@ extensions:
     #[test]
     fn get_goose_thinking_effort_reads_env() {
         let _guard = env_lock::lock_env([
-            ("GOOSE_THINKING_EFFORT", Some("high")),
+            ("WARMACHINE_THINKING_EFFORT", Some("high")),
             ("CLAUDE_THINKING_TYPE", None::<&str>),
             ("CLAUDE_THINKING_ENABLED", None::<&str>),
             ("GEMINI3_THINKING_LEVEL", None::<&str>),
@@ -2906,7 +2906,7 @@ extensions:
     fn get_goose_thinking_effort_uses_legacy_claude_fallback() {
         for value in ["enabled", "adaptive"] {
             let _guard = env_lock::lock_env([
-                ("GOOSE_THINKING_EFFORT", None::<&str>),
+                ("WARMACHINE_THINKING_EFFORT", None::<&str>),
                 ("CLAUDE_THINKING_TYPE", Some(value)),
                 ("CLAUDE_THINKING_ENABLED", None::<&str>),
                 ("GEMINI3_THINKING_LEVEL", None::<&str>),
@@ -2923,7 +2923,7 @@ extensions:
     #[test]
     fn get_goose_thinking_effort_uses_legacy_gemini3_fallback() {
         let _guard = env_lock::lock_env([
-            ("GOOSE_THINKING_EFFORT", None::<&str>),
+            ("WARMACHINE_THINKING_EFFORT", None::<&str>),
             ("CLAUDE_THINKING_TYPE", None::<&str>),
             ("CLAUDE_THINKING_ENABLED", None::<&str>),
             ("GEMINI3_THINKING_LEVEL", Some("high")),

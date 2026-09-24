@@ -133,7 +133,7 @@ impl CursorAgentProvider {
         Ok(Vec::new())
     }
 
-    /// Convert goose messages to a simple prompt format for cursor-agent CLI
+    /// Convert warmachine messages to a simple prompt format for cursor-agent CLI
     fn messages_to_cursor_agent_format(&self, system: &str, messages: &[Message]) -> String {
         let mut full_prompt = String::new();
 
@@ -260,7 +260,7 @@ impl CursorAgentProvider {
     ) -> Result<Vec<String>, ProviderError> {
         let prompt = self.messages_to_cursor_agent_format(system, messages);
 
-        if std::env::var("GOOSE_CURSOR_AGENT_DEBUG").is_ok() {
+        if std::env::var("WARMACHINE_CURSOR_AGENT_DEBUG").is_ok() {
             println!("=== CURSOR AGENT PROVIDER DEBUG ===");
             println!("Command: {:?}", self.command);
             println!("Original system prompt length: {} chars", system.len());

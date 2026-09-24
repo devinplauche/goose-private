@@ -1,15 +1,15 @@
 # @aaif/goose-acp-client
 
-TypeScript client library for communicating with Goose over an existing Agent
+TypeScript client library for communicating with WarMachine over an existing Agent
 Client Protocol (ACP) transport.
 
 This package provides:
 
-- TypeScript types and Zod validators for Goose ACP extension methods
-- `GooseExtClient` for calling Goose extension methods
+- TypeScript types and Zod validators for WarMachine ACP extension methods
+- `GooseExtClient` for calling WarMachine extension methods
 - Client capability definitions and MCP Apps helpers
 
-It does not install, resolve, or start the Goose executable. Applications own
+It does not install, resolve, or start the WarMachine executable. Applications own
 the transport and process lifecycle.
 
 ## Installation
@@ -20,7 +20,7 @@ npm install @aaif/goose-acp-client @agentclientprotocol/sdk
 
 ## Usage
 
-Compose the Goose extension client with the standard ACP SDK:
+Compose the WarMachine extension client with the standard ACP SDK:
 
 ```typescript
 import {
@@ -34,7 +34,7 @@ import { GooseExtClient } from "@aaif/goose-acp-client";
 async function connectToGoose(stream: Stream) {
   const app = createAcpClient({ name: "my-product" });
   const connection = app.connect(stream);
-  const goose = new GooseExtClient(connection.agent);
+  const warmachine = new GooseExtClient(connection.agent);
 
   await connection.agent.request(methods.agent.initialize, {
     protocolVersion: PROTOCOL_VERSION,
@@ -45,7 +45,7 @@ async function connectToGoose(stream: Stream) {
     clientCapabilities: {},
   });
 
-  return { connection, goose };
+  return { connection, warmachine };
 }
 ```
 
@@ -61,4 +61,4 @@ From `ui/goose-acp-client`:
 pnpm run build
 ```
 
-The generated TypeScript types come from the Rust schemas in `crates/goose`.
+The generated TypeScript types come from the Rust schemas in `crates/warmachine`.

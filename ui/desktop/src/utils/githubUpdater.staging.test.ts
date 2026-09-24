@@ -30,7 +30,7 @@ describe('GitHubUpdater download staging', () => {
       const version = '9.9.9';
       const fixedNow = Date.now() + process.pid;
       const predictableDir = path.join(tempRoot, `goose-update-${version}-${fixedNow}`);
-      const predictableArchive = path.join(predictableDir, `Goose-${version}.zip`);
+      const predictableArchive = path.join(predictableDir, `WarMachine-${version}.zip`);
       cleanupPaths.add(workspace);
       cleanupPaths.add(predictableDir);
 
@@ -50,7 +50,7 @@ describe('GitHubUpdater download staging', () => {
       );
 
       const result = await new GitHubUpdater().downloadUpdate(
-        'https://example.invalid/Goose.zip',
+        'https://example.invalid/WarMachine.zip',
         version
       );
       expect(result.success).toBe(true);

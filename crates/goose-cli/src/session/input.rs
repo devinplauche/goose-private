@@ -4,7 +4,7 @@ use super::paste::{
 };
 use super::{CompletionCache, HintStatus};
 use anyhow::Result;
-use goose::config::{Config, GooseMode};
+use warmachine::config::{Config, GooseMode};
 use rustyline::Editor;
 use shlex;
 use std::collections::HashMap;
@@ -86,13 +86,13 @@ impl rustyline::ConditionalEventHandler for CtrlCHandler {
 }
 
 /// The Ctrl-modified character that inserts a newline instead of submitting the
-/// prompt. Configurable via `GOOSE_CLI_NEWLINE_KEY`, defaulting to `j` (Ctrl+J).
+/// prompt. Configurable via `WARMACHINE_CLI_NEWLINE_KEY`, defaulting to `j` (Ctrl+J).
 /// Characters already bound to other actions are rejected: `m` (Ctrl+M is Enter)
 /// and `c` (Ctrl+C interrupts), both of which would otherwise shadow the paste
 /// and interrupt handlers.
 pub fn get_newline_key() -> char {
     Config::global()
-        .get_param::<String>("GOOSE_CLI_NEWLINE_KEY")
+        .get_param::<String>("WARMACHINE_CLI_NEWLINE_KEY")
         .ok()
         .and_then(|s| s.chars().next())
         .map(|c| c.to_ascii_lowercase())
@@ -428,13 +428,13 @@ fn help_text() -> String {
 /builtin <names> - Add builtin extensions by name (comma-separated)
 /prompts [--extension <name>] - List all available prompts, optionally filtered by extension
 /prompt <n> [--info] [key=value...] - Get prompt info or execute a prompt
-/mode <name> - Set the goose mode to use ({modes})
+/mode <name> - Set the warmachine mode to use ({modes})
 /model [name] - Show the current model, or switch models for this session while keeping the same provider
 /model --provider <name> [model] - Switch to a different provider (optionally specifying a model)
 /compact - Compact the current conversation to reduce context length while preserving key information.
 {additional_builtin_help}/status - Show session status: model, provider, mode, and token usage.
 /edit [text] - Open your prompt editor to compose a message. Optionally pre-fill with text.
-               Uses $GOOSE_PROMPT_EDITOR, $VISUAL, or $EDITOR (in that order).
+               Uses $WARMACHINE_PROMPT_EDITOR, $VISUAL, or $EDITOR (in that order).
 /skills - List available skills or enable skills by name (usage: /skills [<name>...])
 /? or /help - Display this help message
 /clear - Clears the current chat history
@@ -442,10 +442,10 @@ fn help_text() -> String {
 
 Navigation:
 Enter - Send message
-Ctrl+{newline_key} - Add a newline (configurable via GOOSE_CLI_NEWLINE_KEY)
+Ctrl+{newline_key} - Add a newline (configurable via WARMACHINE_CLI_NEWLINE_KEY)
 Ctrl+C - Clear current line if text is entered, otherwise exit the session
 Up/Down arrows - Navigate through command history
-GOOSE_CLI_BELL=true - Ring the terminal bell when goose finishes a turn or needs approval"
+WARMACHINE_CLI_BELL=true - Ring the terminal bell when warmachine finishes a turn or needs approval"
     )
 }
 
@@ -453,7 +453,7 @@ fn additional_builtin_help() -> String {
     const DOCUMENTED_BUILTINS: &[&str] =
         &["prompts", "prompt", "compact", "clear", "skills", "status"];
 
-    goose::agents::execute_commands::list_commands()
+    warmachine::agents::execute_commands::list_commands()
         .iter()
         .filter(|command| !DOCUMENTED_BUILTINS.contains(&command.name))
         .map(|command| format!("/{} - {}", command.name, command.description))
@@ -483,10 +483,10 @@ fn print_editor_help() {
   /edit opens your configured editor for composing prompts.
   Use '/edit some text' to pre-fill the editor with initial text.
   Previous conversation is included as markdown headings for context.
-  Configure editor: goose configure set goose_prompt_editor \"vim\"
+  Configure editor: warmachine configure set goose_prompt_editor \"vim\"
   Falls back to $VISUAL or $EDITOR if goose_prompt_editor is not set.
   When goose_prompt_editor is set, the editor is used for every prompt by default.
-  To use inline prompts with on-demand /edit: goose configure set goose_prompt_editor_always false"
+  To use inline prompts with on-demand /edit: warmachine configure set goose_prompt_editor_always false"
     );
 }
 
@@ -627,7 +627,7 @@ mod tests {
     fn help_lists_builtin_agent_commands() {
         let help = help_text();
 
-        for command in goose::agents::execute_commands::list_commands() {
+        for command in warmachine::agents::execute_commands::list_commands() {
             assert!(
                 help.contains(&format!("/{}", command.name)),
                 "help output should list /{}",

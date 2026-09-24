@@ -3,12 +3,12 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use goose::agents::ScheduleTool;
-use goose::config::GooseMode;
-use goose::conversation::message::{Message, MessageContent};
-use goose::scheduler::{ScheduledJob, SchedulerError, ValidatedScheduleRecipe};
-use goose::scheduler_trait::SchedulerTrait;
-use goose::session::{Session, SessionManager, SessionType};
+use warmachine::agents::ScheduleTool;
+use warmachine::config::GooseMode;
+use warmachine::conversation::message::{Message, MessageContent};
+use warmachine::scheduler::{ScheduledJob, SchedulerError, ValidatedScheduleRecipe};
+use warmachine::scheduler_trait::SchedulerTrait;
+use warmachine::session::{Session, SessionManager, SessionType};
 use rmcp::model::{Annotations, ContentBlock, Role, TextContent};
 use tempfile::TempDir;
 

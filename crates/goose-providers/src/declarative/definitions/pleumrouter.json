@@ -8,7 +8,7 @@
   "catalog_provider_id": "pleumrouter",
   "headers": {
     "http-referer": "https://goose-docs.ai",
-    "x-title": "goose"
+    "x-title": "warmachine"
   },
   "models": [
     { "name": "deepseek-v4-pro", "context_limit": 1000000 },

@@ -141,7 +141,7 @@ impl<'a> SystemPromptBuilder<'a, PromptManager> {
             prompt_template::render_template("system.md", &context)
         }
         .unwrap_or_else(|_| {
-            "You are a general-purpose AI agent called goose, created by Block".to_string()
+            "You are a general-purpose AI agent called warmachine, created by Block".to_string()
         });
 
         let mut system_prompt_extras = self.manager.system_prompt_extras.clone();
@@ -519,7 +519,7 @@ mod tests {
         let temp_root = tmp_dir.path().display().to_string();
         let _guard = env_lock::lock_env([
             ("HOME", Some(temp_root.as_str())),
-            ("GOOSE_PATH_ROOT", Some(temp_root.as_str())),
+            ("WARMACHINE_PATH_ROOT", Some(temp_root.as_str())),
         ]);
         let session_manager = Arc::new(SessionManager::new(tmp_dir.path().to_path_buf()));
         let session = session_manager

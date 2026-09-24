@@ -1,9 +1,9 @@
 # @aaif/goose-acp
 
-Install and resolve the Goose executable through npm.
+Install and resolve the WarMachine executable through npm.
 
-This package distributes the Goose CLI using platform-specific optional npm
-dependencies. It does not contain or depend on the Goose ACP client.
+This package distributes the WarMachine CLI using platform-specific optional npm
+dependencies. It does not contain or depend on the WarMachine ACP client.
 
 ## Installation
 
@@ -13,15 +13,15 @@ npm install @aaif/goose-acp
 
 The matching `@aaif/goose-binary-*` package is installed automatically. Do not
 install a platform package directly; `@aaif/goose-acp` provides the supported
-`goose` command.
+`warmachine` command.
 
 ## Usage
 
-Run the Goose CLI installed by the package:
+Run the WarMachine CLI installed by the package:
 
 ```bash
-npx goose acp
-npx goose serve
+npx warmachine acp
+npx warmachine serve
 ```
 
 The launcher forwards arguments and standard input, output, and error streams to
@@ -36,18 +36,18 @@ import { resolveGooseBinary } from "@aaif/goose-acp";
 const binaryPath = resolveGooseBinary();
 ```
 
-`resolveGooseBinary()` first uses `GOOSE_BINARY` when it is set. Otherwise, it
+`resolveGooseBinary()` first uses `WARMACHINE_BINARY` when it is set. Otherwise, it
 selects the package matching `process.platform` and `process.arch`. In both
 cases it verifies that the executable exists and returns an absolute path.
 
-Use the override to run a locally built or custom Goose executable:
+Use the override to run a locally built or custom WarMachine executable:
 
 ```bash
-GOOSE_BINARY=/path/to/goose npx goose acp
+WARMACHINE_BINARY=/path/to/warmachine npx warmachine acp
 ```
 
-`GOOSE_BINARY` must point directly to a native Goose executable, not a
-`node_modules/.bin/goose` command shim.
+`WARMACHINE_BINARY` must point directly to a native WarMachine executable, not a
+`node_modules/.bin/warmachine` command shim.
 
 Supported platforms:
 

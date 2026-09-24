@@ -1,11 +1,11 @@
 # goose-sdk
 
-The bindings layer for goose, published as the goose Development Kit (GDK). It
+The bindings layer for warmachine, published as the warmachine Development Kit (GDK). It
 houses the shared types used for both ACP and GDK access, and exposes a
-cross-language version of the goose API.
+cross-language version of the warmachine API.
 
 With `--features uniffi` the crate compiles to native bindings for Python and
-Kotlin (namespace `goose` / `io.github.aaif_goose`). The UniFFI surface lets
+Kotlin (namespace `warmachine` / `io.github.aaif_goose`). The UniFFI surface lets
 callers construct providers, stream provider completions, perform non-streaming
 completion, and pass rich message/tool content across the FFI boundary.
 
@@ -72,7 +72,7 @@ it.
 
 ## Python package
 
-The PyPI package is published as `goose-sdk` and imports as `goose`.
+The PyPI package is published as `goose-sdk` and imports as `warmachine`.
 Build a local wheel from the repository root with:
 
 ```bash

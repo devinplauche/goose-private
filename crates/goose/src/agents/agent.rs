@@ -84,7 +84,7 @@ use tracing::{debug, error, info, instrument, warn};
 
 const DEFAULT_MAX_TURNS: u32 = 1000;
 const DEFAULT_STOP_HOOK_BLOCK_CAP: u32 = 8;
-const COMPACTION_PROGRESS_TEXT: &str = "goose is compacting the conversation...";
+const COMPACTION_PROGRESS_TEXT: &str = "warmachine is compacting the conversation...";
 const MAX_EMPTY_TURN_RETRIES: u32 = 3;
 const EMPTY_TURN_MESSAGE: &str =
     "The model returned an empty response. Please resend your message to continue.";
@@ -169,7 +169,7 @@ pub(crate) fn stop_hook_block_cap_warning(plugin: &str, cap: u32) -> Message {
     Message::assistant().with_system_notification(
         SystemNotificationType::InlineMessage,
         format!(
-            "Stop hook `{plugin}` blocked the turn from ending more than {cap} consecutive times — overriding and ending turn to avoid an infinite loop. Set GOOSE_STOP_HOOK_BLOCK_CAP to raise this limit."
+            "Stop hook `{plugin}` blocked the turn from ending more than {cap} consecutive times — overriding and ending turn to avoid an infinite loop. Set WARMACHINE_STOP_HOOK_BLOCK_CAP to raise this limit."
         ),
     )
 }
@@ -276,7 +276,7 @@ fn resolve_use_login_shell_path(explicit: Option<bool>, platform: &GoosePlatform
     explicit.unwrap_or(matches!(platform, GoosePlatform::GooseDesktop))
 }
 
-/// The main goose Agent
+/// The main warmachine Agent
 pub struct Agent {
     pub(super) provider: SharedProvider,
     pub config: AgentConfig,
@@ -488,7 +488,7 @@ impl Agent {
         }
 
         Config::global()
-            .get_param::<u32>("GOOSE_STOP_HOOK_BLOCK_CAP")
+            .get_param::<u32>("WARMACHINE_STOP_HOOK_BLOCK_CAP")
             .unwrap_or(DEFAULT_STOP_HOOK_BLOCK_CAP)
     }
 
@@ -776,7 +776,7 @@ impl Agent {
         tool_inspection_manager.add_inspector(Box::new(SecurityInspector::new()));
         tool_inspection_manager.add_inspector(Box::new(EgressInspector::new()));
 
-        // Add adversary inspector (LLM-based review, enabled by ~/.config/goose/adversary.md)
+        // Add adversary inspector (LLM-based review, enabled by ~/.config/warmachine/adversary.md)
         tool_inspection_manager.add_inspector(Box::new(AdversaryInspector::new(
             provider.clone(),
             session_manager.clone(),
@@ -865,7 +865,7 @@ impl Agent {
 
         let goose_mode = *self.current_goose_mode.lock().await;
 
-        let tool_call_cut_off = match Config::global().get_param::<usize>("GOOSE_TOOL_CALL_CUTOFF")
+        let tool_call_cut_off = match Config::global().get_param::<usize>("WARMACHINE_TOOL_CALL_CUTOFF")
         {
             Ok(v) => v,
             Err(_) => {
@@ -879,7 +879,7 @@ impl Agent {
                     Err(_) => goose_providers::model::DEFAULT_CONTEXT_LIMIT,
                 };
                 let compaction_threshold = Config::global()
-                    .get_param::<f64>("GOOSE_AUTO_COMPACT_THRESHOLD")
+                    .get_param::<f64>("WARMACHINE_AUTO_COMPACT_THRESHOLD")
                     .unwrap_or(crate::context_mgmt::DEFAULT_COMPACTION_THRESHOLD);
                 crate::context_mgmt::compute_tool_call_cutoff(context_limit, compaction_threshold)
             }
@@ -1651,30 +1651,30 @@ impl Agent {
     ) -> StateMachine<'_, Session, GooseEffect> {
         let max_turns = max_turns.unwrap_or_else(|| {
             Config::global()
-                .get_param::<u32>("GOOSE_MAX_TURNS")
+                .get_param::<u32>("WARMACHINE_MAX_TURNS")
                 .unwrap_or(DEFAULT_MAX_TURNS)
         });
         let retry_timeout = Config::global()
-            .get_param::<u64>("GOOSE_RECIPE_RETRY_TIMEOUT_SECONDS")
+            .get_param::<u64>("WARMACHINE_RECIPE_RETRY_TIMEOUT_SECONDS")
             .unwrap_or(DEFAULT_RETRY_TIMEOUT_SECONDS);
         let on_failure_timeout = Config::global()
-            .get_param::<u64>("GOOSE_RECIPE_ON_FAILURE_TIMEOUT_SECONDS")
+            .get_param::<u64>("WARMACHINE_RECIPE_ON_FAILURE_TIMEOUT_SECONDS")
             .unwrap_or(DEFAULT_ON_FAILURE_TIMEOUT_SECONDS);
         #[cfg(test)]
         let stop_hook_block_cap = self.stop_hook_block_cap_override.unwrap_or_else(|| {
             Config::global()
-                .get_param::<u32>("GOOSE_STOP_HOOK_BLOCK_CAP")
+                .get_param::<u32>("WARMACHINE_STOP_HOOK_BLOCK_CAP")
                 .unwrap_or(DEFAULT_STOP_HOOK_BLOCK_CAP)
         });
         #[cfg(not(test))]
         let stop_hook_block_cap = Config::global()
-            .get_param::<u32>("GOOSE_STOP_HOOK_BLOCK_CAP")
+            .get_param::<u32>("WARMACHINE_STOP_HOOK_BLOCK_CAP")
             .unwrap_or(DEFAULT_STOP_HOOK_BLOCK_CAP);
         let compaction_threshold = Config::global()
-            .get_param::<f64>("GOOSE_AUTO_COMPACT_THRESHOLD")
+            .get_param::<f64>("WARMACHINE_AUTO_COMPACT_THRESHOLD")
             .unwrap_or(DEFAULT_COMPACTION_THRESHOLD);
         let tool_call_cutoff = Config::global()
-            .get_param::<usize>("GOOSE_TOOL_CALL_CUTOFF")
+            .get_param::<usize>("WARMACHINE_TOOL_CALL_CUTOFF")
             .unwrap_or_else(|_| {
                 crate::context_mgmt::compute_tool_call_cutoff(context_limit, compaction_threshold)
             });
@@ -2345,7 +2345,7 @@ impl Agent {
             } else {
                 let config = Config::global();
                 let threshold = config
-                    .get_param::<f64>("GOOSE_AUTO_COMPACT_THRESHOLD")
+                    .get_param::<f64>("WARMACHINE_AUTO_COMPACT_THRESHOLD")
                     .unwrap_or(DEFAULT_COMPACTION_THRESHOLD);
                 let threshold_percentage = (threshold * 100.0) as u32;
 
@@ -2508,7 +2508,7 @@ impl Agent {
             session.id = %session_config.id,
             session.user = %crate::session_context::session_user(),
             session.host = %crate::session_context::session_host(),
-            session.agent_type = "goose",
+            session.agent_type = "warmachine",
             gen_ai.operation.name = "invoke_agent",
             gen_ai.agent.name = tracing::field::Empty,
             gen_ai.conversation.id = %session_config.id,
@@ -2542,7 +2542,7 @@ impl Agent {
             let mut turns_taken = 0u32;
             let max_turns = session_config.max_turns.unwrap_or_else(|| {
                 Config::global()
-                    .get_param::<u32>("GOOSE_MAX_TURNS")
+                    .get_param::<u32>("WARMACHINE_MAX_TURNS")
                     .unwrap_or(DEFAULT_MAX_TURNS)
             });
             let mut compaction_attempts = 0;
@@ -4473,8 +4473,8 @@ mod tests {
         let provider_root = TempDir::new().unwrap();
         let provider_root_path = provider_root.path().display().to_string();
         let _guard = env_lock::lock_env([
-            ("GOOSE_PATH_ROOT", Some(provider_root_path.as_str())),
-            ("GOOSE_TOOLSHIM", None),
+            ("WARMACHINE_PATH_ROOT", Some(provider_root_path.as_str())),
+            ("WARMACHINE_TOOLSHIM", None),
         ]);
 
         let config = crate::config::declarative_providers::create_custom_provider(
@@ -4559,7 +4559,7 @@ mod tests {
 
     #[tokio::test]
     async fn update_provider_replaces_harness_only_effort_for_legacy_provider() {
-        let _guard = env_lock::lock_env([("GOOSE_THINKING_EFFORT", Some("high"))]);
+        let _guard = env_lock::lock_env([("WARMACHINE_THINKING_EFFORT", Some("high"))]);
         let (agent, session, _data_dir) = tracing_test_agent_and_session().await;
         let provider = Arc::new(EffortProvider::new(EffortOutcome::Unhandled));
         let model_config =
@@ -4582,7 +4582,7 @@ mod tests {
 
     #[tokio::test]
     async fn update_provider_preserves_harness_only_effort_for_managed_provider() {
-        let _guard = env_lock::lock_env([("GOOSE_THINKING_EFFORT", Some("high"))]);
+        let _guard = env_lock::lock_env([("WARMACHINE_THINKING_EFFORT", Some("high"))]);
         let (agent, session, _data_dir) = tracing_test_agent_and_session().await;
         let provider = Arc::new(EffortProvider::new(EffortOutcome::Applied));
         let model_config =
@@ -5109,7 +5109,7 @@ echo start >> "$PLUGIN_ROOT/hook.log"
     ) -> Result<serde_json::Map<String, Value>> {
         use goose_test_support::otel::clear_otel_env;
 
-        let mut overrides = vec![("GOOSE_STATE_MACHINE", "0")];
+        let mut overrides = vec![("WARMACHINE_STATE_MACHINE", "0")];
         if let Some(value) = capture_setting {
             overrides.push((gen_ai_telemetry::CAPTURE_MESSAGE_CONTENT_ENV, value));
         }
@@ -5446,7 +5446,7 @@ echo start >> "$PLUGIN_ROOT/hook.log"
                     content,
                     MessageContent::SystemNotification(notification)
                         if notification.msg.contains("more than 2 consecutive times")
-                            && notification.msg.contains("GOOSE_STOP_HOOK_BLOCK_CAP")
+                            && notification.msg.contains("WARMACHINE_STOP_HOOK_BLOCK_CAP")
                 )
             })
         }));

@@ -90,14 +90,14 @@ mod tests {
     async fn setup_catalog_includes_goose_and_curated_fields() {
         let entries = get_setup_catalog_entries().await;
 
-        let goose = entries
+        let warmachine = entries
             .iter()
-            .find(|entry| entry.provider_id == "goose")
-            .expect("setup catalog should include synthetic goose");
-        assert_eq!(goose.category, ProviderSetupCategory::Agent);
-        assert!(!goose.acp);
-        assert_eq!(goose.setup_method, ProviderSetupMethod::None);
-        assert!(goose.fields.is_empty());
+            .find(|entry| entry.provider_id == "warmachine")
+            .expect("setup catalog should include synthetic warmachine");
+        assert_eq!(warmachine.category, ProviderSetupCategory::Agent);
+        assert!(!warmachine.acp);
+        assert_eq!(warmachine.setup_method, ProviderSetupMethod::None);
+        assert!(warmachine.fields.is_empty());
 
         let cursor = entries
             .iter()
@@ -182,7 +182,7 @@ mod tests {
             .map(|entry| entry.provider_id)
             .collect::<std::collections::HashSet<_>>();
 
-        for provider_id in ["goose", "claude-acp", "openai"] {
+        for provider_id in ["warmachine", "claude-acp", "openai"] {
             assert!(provider_ids.contains(provider_id), "missing {provider_id}");
         }
 

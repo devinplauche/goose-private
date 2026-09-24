@@ -1,7 +1,7 @@
 # goose-provider-types
 
 The provider contract and the conversation types that flow through it. This is the
-crate to depend on if you want to implement a provider, or to work with goose
+crate to depend on if you want to implement a provider, or to work with warmachine
 messages without pulling in the whole agent.
 
 Provider implementations live in [`goose-providers`](../goose-providers), which

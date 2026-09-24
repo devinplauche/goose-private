@@ -27,7 +27,7 @@ fn build_chain_summary_update(
 ) -> ToolCallUpdate {
     let goose_meta = Map::from_iter([tool_chain_summary(chain_summary)]);
     let mut meta = Meta::default();
-    meta.insert("goose".to_string(), Value::Object(goose_meta));
+    meta.insert("warmachine".to_string(), Value::Object(goose_meta));
     ToolCallUpdate::new(ToolCallId::new(tool_call_id), ToolCallUpdateFields::new()).meta(Some(meta))
 }
 
@@ -113,7 +113,7 @@ mod tests {
                 json!({
                     "toolCallId": "req_1",
                     "_meta": {
-                        "goose": {
+                        "warmachine": {
                             "toolChainSummary": {
                                 "summary": "applied dark mode",
                                 "count": 4,

@@ -5,7 +5,7 @@ use serde_yaml::Mapping;
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 
-const GOOSE_CONFIG_PREFIX: &str = "goose_config:";
+const WARMACHINE_CONFIG_PREFIX: &str = "goose_config:";
 const CLAUDE_DESKTOP_PREFIX: &str = "claude_desktop:";
 
 #[derive(Debug, Deserialize)]
@@ -160,7 +160,7 @@ fn import_failure_warning(
     error: &anyhow::Error,
 ) -> String {
     let source_name = match source_kind {
-        OnboardingImportSourceKind::GooseConfig => "Goose configuration",
+        OnboardingImportSourceKind::GooseConfig => "WarMachine configuration",
         OnboardingImportSourceKind::ClaudeDesktop => "Claude Desktop tools",
     };
     format!(
@@ -172,7 +172,7 @@ fn import_failure_warning(
 fn goose_config_candidate_paths(config_dir: &Path) -> Vec<PathBuf> {
     let mut paths = vec![config_dir.join(CONFIG_YAML_NAME)];
     if let Some(home) = dirs::home_dir() {
-        paths.push(home.join(".config").join("goose").join(CONFIG_YAML_NAME));
+        paths.push(home.join(".config").join("warmachine").join(CONFIG_YAML_NAME));
     }
     dedupe_paths(paths)
 }
@@ -216,8 +216,8 @@ fn scan_goose_config_candidate(path: &Path) -> Option<OnboardingImportCandidate>
     let mut counts = OnboardingImportCounts::default();
     let mut warnings = Vec::new();
 
-    if mapping_contains_string(&mapping, "GOOSE_PROVIDER")
-        || mapping_contains_string(&mapping, "GOOSE_MODEL")
+    if mapping_contains_string(&mapping, "WARMACHINE_PROVIDER")
+        || mapping_contains_string(&mapping, "WARMACHINE_MODEL")
     {
         counts.providers = 1;
     }
@@ -228,13 +228,13 @@ fn scan_goose_config_candidate(path: &Path) -> Option<OnboardingImportCandidate>
         .unwrap_or_default();
 
     if counts.sessions > 0 {
-        warnings.push("Sessions are already shared through Goose's data store.".to_string());
+        warnings.push("Sessions are already shared through WarMachine's data store.".to_string());
     }
 
     Some(OnboardingImportCandidate {
-        id: candidate_id(GOOSE_CONFIG_PREFIX, path),
+        id: candidate_id(WARMACHINE_CONFIG_PREFIX, path),
         source_kind: OnboardingImportSourceKind::GooseConfig,
-        display_name: "Existing Goose configuration".to_string(),
+        display_name: "Existing WarMachine configuration".to_string(),
         path: path.to_string_lossy().to_string(),
         counts,
         warnings,
@@ -269,7 +269,7 @@ fn candidate_id(prefix: &str, path: &Path) -> String {
 }
 
 fn parse_candidate_id(id: &str) -> Option<(OnboardingImportSourceKind, PathBuf)> {
-    if let Some(path) = id.strip_prefix(GOOSE_CONFIG_PREFIX) {
+    if let Some(path) = id.strip_prefix(WARMACHINE_CONFIG_PREFIX) {
         return Some((OnboardingImportSourceKind::GooseConfig, PathBuf::from(path)));
     }
     if let Some(path) = id.strip_prefix(CLAUDE_DESKTOP_PREFIX) {
@@ -322,8 +322,8 @@ fn apply_goose_config_candidate(
     let source = read_yaml_mapping(source_path)?;
     let mut result = ApplyResult::default();
 
-    let provider = yaml_string(&source, "GOOSE_PROVIDER");
-    let model = yaml_string(&source, "GOOSE_MODEL");
+    let provider = yaml_string(&source, "WARMACHINE_PROVIDER");
+    let model = yaml_string(&source, "WARMACHINE_MODEL");
     if let Some(ref p) = provider {
         let m = model.clone().unwrap_or_else(|| {
             crate::config::get_provider_entry(target_config, p)
@@ -358,7 +358,7 @@ fn apply_goose_config_candidate(
 
     result
         .warnings
-        .push("Session history already lives in the Goose data store when available.".to_string());
+        .push("Session history already lives in the WarMachine data store when available.".to_string());
     Ok(result)
 }
 
@@ -611,7 +611,7 @@ mod tests {
         .unwrap();
         let req = OnboardingImportApplyRequest {
             candidate_ids: vec![
-                candidate_id(GOOSE_CONFIG_PREFIX, &missing_goose_config),
+                candidate_id(WARMACHINE_CONFIG_PREFIX, &missing_goose_config),
                 candidate_id(CLAUDE_DESKTOP_PREFIX, &claude_config),
             ],
             enable_imported_extensions: false,
@@ -623,7 +623,7 @@ mod tests {
         assert!(response
             .warnings
             .iter()
-            .any(|warning| warning.starts_with("Skipped Goose configuration import at ")));
+            .any(|warning| warning.starts_with("Skipped WarMachine configuration import at ")));
         let extensions = target_config.get_param::<Mapping>("extensions").unwrap();
         assert!(extensions.contains_key(serde_yaml::Value::String(name_to_key("github"))));
     }
@@ -636,8 +636,8 @@ mod tests {
         fs::write(
             &source_config,
             r#"
-GOOSE_PROVIDER: openai
-GOOSE_MODEL: gpt-5.1
+WARMACHINE_PROVIDER: openai
+WARMACHINE_MODEL: gpt-5.1
 extensions:
   github:
     enabled: true
@@ -674,7 +674,7 @@ extensions:
         let source = TempDir::new().unwrap();
         let target = TempDir::new().unwrap();
         let source_config = source.path().join(CONFIG_YAML_NAME);
-        fs::write(&source_config, "GOOSE_MODEL: gpt-5.1\n").unwrap();
+        fs::write(&source_config, "WARMACHINE_MODEL: gpt-5.1\n").unwrap();
 
         let target_config = Config::new_with_file_secrets(
             target.path().join(CONFIG_YAML_NAME),

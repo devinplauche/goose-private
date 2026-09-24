@@ -1,8 +1,8 @@
-//! The goose Development Kit (GDK).
+//! The warmachine Development Kit (GDK).
 //!
 //! With default features this crate re-exports the shared GDK wire types from
 //! `goose-sdk-types` so you can build an Agent Client Protocol (ACP) client
-//! that talks to `goose acp` over stdio.
+//! that talks to `warmachine acp` over stdio.
 //!
 //! With `--features uniffi` the crate additionally compiles as a
 //! `cdylib`/`staticlib` and exposes an in-process API to Python and Kotlin via
@@ -13,7 +13,7 @@
 pub use goose_sdk_types::{custom_notifications, custom_requests};
 
 #[cfg(feature = "uniffi")]
-uniffi::setup_scaffolding!("goose");
+uniffi::setup_scaffolding!("warmachine");
 
 #[cfg(feature = "uniffi")]
 pub mod bindings;

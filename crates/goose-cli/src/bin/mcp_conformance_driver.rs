@@ -100,23 +100,23 @@ fn main() {
     let scenario = std::env::var("MCP_CONFORMANCE_SCENARIO").ok();
     let script = script_for_scenario(scenario.as_deref());
 
-    let goose = std::env::var("GOOSE_BIN").unwrap_or_else(|_| "target/debug/goose".to_string());
+    let warmachine = std::env::var("WARMACHINE_BIN").unwrap_or_else(|_| "target/debug/warmachine".to_string());
     let path_root = tempfile::Builder::new()
         .prefix("goose-mcp-conformance-")
         .tempdir()
         .unwrap_or_else(|err| {
-            eprintln!("failed to create temporary GOOSE_PATH_ROOT: {err}");
+            eprintln!("failed to create temporary WARMACHINE_PATH_ROOT: {err}");
             std::process::exit(1);
         });
-    let mut child = Command::new(&goose)
+    let mut child = Command::new(&warmachine)
         .args(["mcp-probe", target, "--script", "-"])
-        .env("GOOSE_OAUTH_AUTOMATIC_CALLBACK", "1")
-        .env("GOOSE_DISABLE_KEYRING", "1")
-        .env("GOOSE_PATH_ROOT", path_root.path())
+        .env("WARMACHINE_OAUTH_AUTOMATIC_CALLBACK", "1")
+        .env("WARMACHINE_DISABLE_KEYRING", "1")
+        .env("WARMACHINE_PATH_ROOT", path_root.path())
         .stdin(Stdio::piped())
         .spawn()
         .unwrap_or_else(|err| {
-            eprintln!("failed to spawn {goose}: {err}");
+            eprintln!("failed to spawn {warmachine}: {err}");
             std::process::exit(1);
         });
 
@@ -125,8 +125,8 @@ fn main() {
         .take()
         .expect("stdin was piped")
         .write_all(script.to_string().as_bytes())
-        .expect("write probe script to goose stdin");
+        .expect("write probe script to warmachine stdin");
 
-    let status = child.wait().expect("wait for goose");
+    let status = child.wait().expect("wait for warmachine");
     std::process::exit(status.code().unwrap_or(1));
 }

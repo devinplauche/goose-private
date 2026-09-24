@@ -859,7 +859,7 @@ impl TelegramGateway {
     /// Save voice bytes to a temporary file and return the path.
     ///
     /// Files are stored as protected, exclusively created temporary files so
-    /// Goose can access them via its shell tools. The extension is derived from
+    /// WarMachine can access them via its shell tools. The extension is derived from
     /// the MIME type when available, falling back to `.ogg` for voice notes.
     ///
     /// On Unix files are created with mode `0600` so other local users cannot
@@ -899,7 +899,7 @@ impl TelegramGateway {
         }
     }
 
-    /// Build the text prompt that tells Goose about a voice message file.
+    /// Build the text prompt that tells WarMachine about a voice message file.
     fn voice_prompt(
         path: &std::path::Path,
         duration: Option<i32>,
@@ -1012,7 +1012,7 @@ impl Gateway for TelegramGateway {
                                 // Determine the text to send to the handler.
                                 // Voice/audio messages are downloaded, saved to
                                 // disk, and converted into a prompt that asks
-                                // Goose to transcribe the file using CLI tools.
+                                // WarMachine to transcribe the file using CLI tools.
                                 let text = if let Some(voice) = Self::voice_info(&tg_msg) {
                                     // Reject files that exceed the Telegram bot
                                     // download limit.

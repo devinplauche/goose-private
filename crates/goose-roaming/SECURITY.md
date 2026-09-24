@@ -28,7 +28,7 @@ and nothing in a `ConnectionCard` grants access by possession.
 Although the transport is p2p, **control is never symmetric**. A node only
 exposes an ACP surface by calling `RoamingNode::share()`, which is what
 registers the `goose-acp/1` protocol handler — and the only callers are
-`goose roam share` and `goose serve --roam`. Pure clients (the browser
+`warmachine roam share` and `warmachine serve --roam`. Pure clients (the browser
 webapp, `roam client`/`bridge`/`delegate`) bind an endpoint but never share:
 they register no accept handler, so a host dialing back at them finds no
 protocol to connect to. There is nothing to authorize or block — the surface
@@ -45,7 +45,7 @@ the natural configuration, not a special mode.
 
 ## The blunt truth about authorization granularity
 
-An accepted peer gets goose's **full ACP surface** with a fresh agent per
+An accepted peer gets warmachine's **full ACP surface** with a fresh agent per
 connection (`goose-cli/src/commands/roam_full_bridge.rs`), backed by the
 host's session store, tools, and shell. **Accepting a key is equivalent to
 granting shell access as the host user.** There is no per-peer capability

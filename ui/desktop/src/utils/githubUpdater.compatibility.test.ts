@@ -16,29 +16,29 @@ const originalSystemVersion = Object.getOwnPropertyDescriptor(process, 'getSyste
 const metadataUrl = 'https://example.invalid/mac-update-requirements.json';
 const assets = [
   { name: 'mac-update-requirements.json', browser_download_url: metadataUrl, size: 100 },
-  { name: 'Goose.zip', browser_download_url: 'https://example.invalid/Goose.zip', size: 100 },
+  { name: 'WarMachine.zip', browser_download_url: 'https://example.invalid/WarMachine.zip', size: 100 },
   {
-    name: 'Goose_intel_mac.zip',
-    browser_download_url: 'https://example.invalid/Goose_intel_mac.zip',
+    name: 'WarMachine_intel_mac.zip',
+    browser_download_url: 'https://example.invalid/WarMachine_intel_mac.zip',
     size: 100,
   },
   {
-    name: 'Goose-win32-x64.zip',
-    browser_download_url: 'https://example.invalid/Goose-win32-x64.zip',
+    name: 'WarMachine-win32-x64.zip',
+    browser_download_url: 'https://example.invalid/WarMachine-win32-x64.zip',
     size: 100,
   },
   {
-    name: 'Goose-linux-x64.zip',
-    browser_download_url: 'https://example.invalid/Goose-linux-x64.zip',
+    name: 'WarMachine-linux-x64.zip',
+    browser_download_url: 'https://example.invalid/WarMachine-linux-x64.zip',
     size: 100,
   },
 ];
-const release = { tag_name: 'v1.51.0', name: 'Goose', assets };
+const release = { tag_name: 'v1.51.0', name: 'WarMachine', assets };
 
 function generatedRequirements(minimumMacOSVersion: string) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'goose-fallback-release-test-'));
   try {
-    for (const name of ['Goose.zip', 'Goose_intel_mac.zip']) {
+    for (const name of ['WarMachine.zip', 'WarMachine_intel_mac.zip']) {
       fs.writeFileSync(path.join(directory, name), 'archive fixture');
       fs.writeFileSync(
         path.join(directory, `${name}.macos.json`),
@@ -108,9 +108,9 @@ describe('GitHub updater macOS compatibility', () => {
   });
 
   it.each([
-    ['arm64', '13.0', 'Goose.zip'],
-    ['x64', '13.0', 'Goose_intel_mac.zip'],
-    ['arm64', '26.0', 'Goose.zip'],
+    ['arm64', '13.0', 'WarMachine.zip'],
+    ['x64', '13.0', 'WarMachine_intel_mac.zip'],
+    ['arm64', '26.0', 'WarMachine.zip'],
   ])('offers the %s download on macOS %s', async (arch, version, asset) => {
     Object.defineProperty(process, 'arch', { value: arch });
     vi.mocked(process.getSystemVersion).mockReturnValue(version);
@@ -166,7 +166,7 @@ describe('GitHub updater macOS compatibility', () => {
     );
     expect(await new GitHubUpdater().checkForUpdates()).toMatchObject({
       updateAvailable: true,
-      downloadUrl: `https://example.invalid/Goose-${platform}-x64.zip`,
+      downloadUrl: `https://example.invalid/WarMachine-${platform}-x64.zip`,
     });
   });
 });

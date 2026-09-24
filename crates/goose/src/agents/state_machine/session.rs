@@ -200,7 +200,7 @@ pub(crate) async fn run(
         let Some(mut result) = machine.step(&session, emit).await? else {
             break;
         };
-        tracing::debug!(target: "goose::state_machine", step = result.applied_step, "applied step");
+        tracing::debug!(target: "warmachine::state_machine", step = result.applied_step, "applied step");
         for effect in &result.effects {
             if let Some(usage) = runtime.usage(effect) {
                 turn_usage += usage;

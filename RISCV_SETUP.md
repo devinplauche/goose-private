@@ -1,10 +1,10 @@
-# Building goose for RISC-V (riscv64gc-unknown-linux-gnu)
+# Building warmachine for RISC-V (riscv64gc-unknown-linux-gnu)
 
 This document describes how to build goose-cli for RISC-V 64-bit systems with full V8/code-mode support.
 
 > [!WARNING]
 > This is an experimental, community-contributed build process. RISC-V is not
-> officially supported by the goose project.
+> officially supported by the warmachine project.
 
 ## Prerequisites
 
@@ -37,7 +37,7 @@ different name.
 ## Overview
 
 V8 152.2.0 is the first version with pre-built RISC-V binaries. However:
-- Current goose uses v8 145.0.0 via deno_core 0.381.1 (no RISC-V support)
+- Current warmachine uses v8 145.0.0 via deno_core 0.381.1 (no RISC-V support)
 - Upgrading requires patching deno_core and serde_v8 for V8 152 API changes
 - These patches are intrusive and affect all platforms if applied via Cargo.toml patches
 
@@ -195,7 +195,7 @@ v8 = { path = "vendor/rusty_v8" }  # was vendor/v8; rusty_v8 is the v8 crate
 # ... existing patches
 ```
 
-### 7. Update crates/goose/Cargo.toml
+### 7. Update crates/warmachine/Cargo.toml
 
 Relax ICU pins:
 
@@ -249,10 +249,10 @@ Expected changes:
 ### 10. Build
 
 ```bash
-cargo build --release --target riscv64gc-unknown-linux-gnu -p goose-cli --bin goose
+cargo build --release --target riscv64gc-unknown-linux-gnu -p goose-cli --bin warmachine
 ```
 
-Output: `target/riscv64gc-unknown-linux-gnu/release/goose`
+Output: `target/riscv64gc-unknown-linux-gnu/release/warmachine`
 
 ## Complete Patch Script
 
@@ -276,10 +276,10 @@ For production PR, consider:
 
 ```bash
 # Check architecture
-file target/riscv64gc-unknown-linux-gnu/release/goose
+file target/riscv64gc-unknown-linux-gnu/release/warmachine
 # Output: ELF 64-bit LSB pie executable, UCB RISC-V
 
 # Test execution (on RISC-V hardware)
-./target/riscv64gc-unknown-linux-gnu/release/goose --version
-./target/riscv64gc-unknown-linux-gnu/release/goose doctor
+./target/riscv64gc-unknown-linux-gnu/release/warmachine --version
+./target/riscv64gc-unknown-linux-gnu/release/warmachine doctor
 ```

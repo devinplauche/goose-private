@@ -28,12 +28,12 @@ export function hasLocalInferenceCapability(
     return false;
   }
 
-  const goose = meta.goose;
-  if (!isRecord(goose)) {
+  const warmachine = meta.warmachine;
+  if (!isRecord(warmachine)) {
     return false;
   }
 
-  return 'localInference' in goose;
+  return 'localInference' in warmachine;
 }
 
 export function hasRecipeParameterScopesCapability(
@@ -49,12 +49,12 @@ export function hasRecipeParameterScopesCapability(
     return false;
   }
 
-  const goose = meta.goose;
-  if (!isRecord(goose)) {
+  const warmachine = meta.warmachine;
+  if (!isRecord(warmachine)) {
     return false;
   }
 
-  return 'recipeParameterScopes' in goose;
+  return 'recipeParameterScopes' in warmachine;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

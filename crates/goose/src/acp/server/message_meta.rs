@@ -40,11 +40,11 @@ fn goose_message_meta(
 fn extend_message_meta(meta: &mut Meta, message: &Message, steer: bool) {
     let message_goose = goose_message_meta(message, steer);
     let goose_value = meta
-        .entry("goose".to_string())
+        .entry("warmachine".to_string())
         .or_insert_with(|| serde_json::Value::Object(serde_json::Map::new()));
 
-    if let serde_json::Value::Object(goose) = goose_value {
-        goose.extend(message_goose);
+    if let serde_json::Value::Object(warmachine) = goose_value {
+        warmachine.extend(message_goose);
     } else {
         *goose_value = serde_json::Value::Object(message_goose);
     }
@@ -109,7 +109,7 @@ mod tests {
     fn message_meta_serializes_message_fields() {
         let message = Message::new(Role::Assistant, 1_700_000_000, vec![]).with_id("msg_live");
         assert_eq!(
-            message_meta(&message).get("goose"),
+            message_meta(&message).get("warmachine"),
             Some(&serde_json::json!({
                 "created": 1_700_000_000,
                 "messageId": "msg_live",
@@ -118,7 +118,7 @@ mod tests {
 
         let steer_message = message.clone().with_steer();
         assert_eq!(
-            message_meta(&steer_message).get("goose"),
+            message_meta(&steer_message).get("warmachine"),
             Some(&serde_json::json!({
                 "created": 1_700_000_000,
                 "messageId": "msg_live",
@@ -126,7 +126,7 @@ mod tests {
             })),
         );
         assert_eq!(
-            message_meta_without_steer(&steer_message).get("goose"),
+            message_meta_without_steer(&steer_message).get("warmachine"),
             Some(&serde_json::json!({
                 "created": 1_700_000_000,
                 "messageId": "msg_live",
@@ -135,7 +135,7 @@ mod tests {
 
         let message_without_id = Message::new(Role::Assistant, 1_700_000_000, vec![]);
         assert_eq!(
-            message_meta(&message_without_id).get("goose"),
+            message_meta(&message_without_id).get("warmachine"),
             Some(&serde_json::json!({
                 "created": 1_700_000_000,
             })),
@@ -144,7 +144,7 @@ mod tests {
         let mut limited_message = message.clone();
         limited_message.metadata.output_token_limit_reached = true;
         assert_eq!(
-            message_meta(&limited_message).get("goose"),
+            message_meta(&limited_message).get("warmachine"),
             Some(&serde_json::json!({
                 "created": 1_700_000_000,
                 "messageId": "msg_live",
@@ -154,7 +154,7 @@ mod tests {
 
         populate_output_token_limit_content(&mut limited_message);
         assert_eq!(
-            message_meta(&limited_message).get("goose"),
+            message_meta(&limited_message).get("warmachine"),
             Some(&serde_json::json!({
                 "created": 1_700_000_000,
                 "messageId": "msg_live",
@@ -178,7 +178,7 @@ mod tests {
 
         assert_eq!(chunk.message_id, Some(MessageId::new("msg_live")));
         assert_eq!(
-            chunk.meta.as_ref().and_then(|meta| meta.get("goose")),
+            chunk.meta.as_ref().and_then(|meta| meta.get("warmachine")),
             Some(&serde_json::json!({
                 "created": 1_700_000_000,
                 "messageId": "msg_live",
@@ -237,7 +237,7 @@ mod tests {
         let mut message = Message::new(Role::Assistant, 1_700_000_000, vec![]).with_id("msg_1");
         message.metadata.output_token_limit_reached = true;
         let existing = serde_json::from_value(serde_json::json!({
-            "goose": {
+            "warmachine": {
                 "created": 1,
                 "messageId": "old",
                 "toolCall": {
@@ -259,7 +259,7 @@ mod tests {
         let merged = merge_message_meta(existing, &message);
 
         assert_eq!(
-            merged.get("goose"),
+            merged.get("warmachine"),
             Some(&serde_json::json!({
                 "created": 1_700_000_000,
                 "messageId": "msg_1",
@@ -287,7 +287,7 @@ mod tests {
     fn merge_message_meta_replaces_non_object_goose_metadata() {
         let message = Message::new(Role::Assistant, 1_700_000_000, vec![]).with_id("msg_1");
         let existing = serde_json::from_value(serde_json::json!({
-            "goose": "invalid",
+            "warmachine": "invalid",
             "otherNamespace": {
                 "preserve": true,
             },
@@ -297,7 +297,7 @@ mod tests {
         let merged = merge_message_meta(existing, &message);
 
         assert_eq!(
-            merged.get("goose"),
+            merged.get("warmachine"),
             Some(&serde_json::json!({
                 "created": 1_700_000_000,
                 "messageId": "msg_1",

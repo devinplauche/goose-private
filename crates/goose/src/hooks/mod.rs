@@ -19,7 +19,7 @@
 //! }
 //! ```
 //!
-//! Goose currently supports `type: "command"` actions. Unknown event names and
+//! WarMachine currently supports `type: "command"` actions. Unknown event names and
 //! action types are ignored per the spec. Hook scripts receive the JSON event
 //! context on stdin and SHOULD exit 0 on success.
 
@@ -226,7 +226,7 @@ pub struct HookContext {
     pub event: String,
     pub session_id: String,
     pub matcher_context: Option<String>,
-    /// Stable identifier for one tool call, the same value goose records as
+    /// Stable identifier for one tool call, the same value warmachine records as
     /// `gen_ai.tool.call.id`. Correlates the pre and post events of a single
     /// call, which tool name plus input cannot do when a call repeats.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -486,11 +486,11 @@ impl HookManager {
         timeout: Duration,
     ) -> Result<HookRun> {
         let span = tracing::info_span!(
-            target: "goose::hooks",
+            target: "warmachine::hooks",
             "execute_hook",
             "gen_ai.operation.name" = "execute_hook",
-            "goose.hook.event" = %event,
-            "goose.hook.plugin" = %rule.plugin_name,
+            "warmachine.hook.event" = %event,
+            "warmachine.hook.plugin" = %rule.plugin_name,
             "error.type" = tracing::field::Empty,
             session.id = %session_id,
         );
@@ -2202,12 +2202,12 @@ mod tests {
         let fake_shell = fake_shell.to_string_lossy().into_owned();
         let fake_login_path = format!("{}:/usr/bin:/bin", login_bin.display());
         let _guard = env_lock::lock_env([
-            ("GOOSE_SHELL", Some(fake_shell.as_str())),
+            ("WARMACHINE_SHELL", Some(fake_shell.as_str())),
             ("FAKE_LOGIN_PATH", Some(fake_login_path.as_str())),
             (
                 "PATH",
                 Some(
-                    "/Applications/Goose.app/Contents/Resources/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+                    "/Applications/WarMachine.app/Contents/Resources/bin:/usr/bin:/bin:/usr/sbin:/sbin",
                 ),
             ),
         ]);

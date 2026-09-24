@@ -38,8 +38,8 @@ function createLauncherHarness() {
   });
   mkdirSync(join(wrapperDir, "bin"));
   copyFileSync(
-    join(packageRoot, "bin", "goose.mjs"),
-    join(wrapperDir, "bin", "goose.mjs"),
+    join(packageRoot, "bin", "warmachine.mjs"),
+    join(wrapperDir, "bin", "warmachine.mjs"),
   );
 
   const platformKey = `${process.platform}-${process.arch}`;
@@ -48,7 +48,7 @@ function createLauncherHarness() {
 
   const platformPackageDir = join(scopeDir, packageName.slice("@aaif/".length));
   const platformBinDir = join(platformPackageDir, "bin");
-  const executableName = process.platform === "win32" ? "goose.exe" : "goose";
+  const executableName = process.platform === "win32" ? "warmachine.exe" : "warmachine";
   const executablePath = join(platformBinDir, executableName);
   mkdirSync(platformBinDir, { recursive: true });
   writeFileSync(
@@ -60,12 +60,12 @@ function createLauncherHarness() {
   } else {
     writeFileSync(
       executablePath,
-      '#!/bin/sh\nexec "$GOOSE_ACP_TEST_NODE" "$@"\n',
+      '#!/bin/sh\nexec "$WARMACHINE_ACP_TEST_NODE" "$@"\n',
     );
   }
   chmodSync(executablePath, 0o755);
 
-  return join(wrapperDir, "bin", "goose.mjs");
+  return join(wrapperDir, "bin", "warmachine.mjs");
 }
 
 function runLauncher(args, input) {
@@ -74,8 +74,8 @@ function runLauncher(args, input) {
     encoding: "utf8",
     env: {
       ...process.env,
-      GOOSE_BINARY: "",
-      GOOSE_ACP_TEST_NODE: process.execPath,
+      WARMACHINE_BINARY: "",
+      WARMACHINE_ACP_TEST_NODE: process.execPath,
     },
     input,
   });
@@ -159,8 +159,8 @@ test(
       {
         env: {
           ...process.env,
-          GOOSE_BINARY: "",
-          GOOSE_ACP_TEST_NODE: process.execPath,
+          WARMACHINE_BINARY: "",
+          WARMACHINE_ACP_TEST_NODE: process.execPath,
         },
         stdio: ["ignore", "pipe", "pipe"],
       },

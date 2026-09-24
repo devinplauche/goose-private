@@ -64,6 +64,6 @@ export function handleAcpGooseSessionNotification(
 export function handleAcpProviderDeviceCodeNotification(
   notification: ProviderDeviceCodeNotification_unstable
 ): Promise<void> {
-  window.dispatchEvent(new CustomEvent('goose:device-code', { detail: notification }));
+  window.dispatchEvent(new CustomEvent('warmachine:device-code', { detail: notification }));
   return Promise.resolve();
 }

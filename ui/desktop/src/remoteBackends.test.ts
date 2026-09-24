@@ -32,7 +32,7 @@ describe('connectRemoteBackend', () => {
     expect(result).toMatchObject({
       ok: true,
       failure: null,
-      acpUrl: 'wss://example.com/goose/acp?token=test-secret',
+      acpUrl: 'wss://example.com/warmachine/acp?token=test-secret',
     });
   });
 

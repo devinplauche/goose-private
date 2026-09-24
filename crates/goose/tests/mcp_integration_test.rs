@@ -10,9 +10,9 @@ use rmcp::model::{CallToolRequestParams, CallToolResult};
 use rmcp::object;
 use tokio_util::sync::CancellationToken;
 
-use goose::agents::extension::{Envs, ExtensionConfig};
-use goose::agents::extension_manager::{ExtensionManager, ExtensionManagerCapabilities};
-use goose::agents::GoosePlatform;
+use warmachine::agents::extension::{Envs, ExtensionConfig};
+use warmachine::agents::extension_manager::{ExtensionManager, ExtensionManagerCapabilities};
+use warmachine::agents::GoosePlatform;
 
 use test_case::test_case;
 
@@ -90,7 +90,7 @@ enum TestMode {
     vec![
         CallToolRequestParams::new("get_file_contents").with_arguments(object!({
             "owner": "block",
-            "repo": "goose",
+            "repo": "warmachine",
             "path": "README.md",
             "sha": "ab62b863c1666232a67048b6c4e10007a2a5b83c"
         })),
@@ -122,13 +122,13 @@ async fn test_replayed_session(
     fs::create_dir_all(TEST_WORKING_DIR).ok();
 
     let _env = env_lock::lock_env([
-        ("GOOSE_MCP_CLIENT_VERSION", Some("0.0.0")),
-        ("GOOSE_WORKING_DIR", Some(TEST_WORKING_DIR)),
+        ("WARMACHINE_MCP_CLIENT_VERSION", Some("0.0.0")),
+        ("WARMACHINE_WORKING_DIR", Some(TEST_WORKING_DIR)),
     ]);
 
     // Setup test file for developer extension tests
-    let test_file_path = "/tmp/goose_test/goose.txt";
-    fs::write(test_file_path, "# goose\n").ok();
+    let test_file_path = "/tmp/goose_test/warmachine.txt";
+    fs::write(test_file_path, "# warmachine\n").ok();
     let replay_file_name = command
         .iter()
         .map(|s| s.replace("/", "_"))
@@ -140,7 +140,7 @@ async fn test_replayed_session(
     replay_file_path.push("mcp_replays");
     replay_file_path.push(&replay_file_name);
 
-    let mode = if env::var("GOOSE_RECORD_MCP").is_ok() {
+    let mode = if env::var("WARMACHINE_RECORD_MCP").is_ok() {
         TestMode::Record
     } else {
         assert!(replay_file_path.exists(), "replay file doesn't exist");
@@ -201,7 +201,7 @@ async fn test_replayed_session(
     };
 
     let temp_dir = tempfile::tempdir().unwrap();
-    let session_manager = Arc::new(goose::session::SessionManager::new(
+    let session_manager = Arc::new(warmachine::session::SessionManager::new(
         temp_dir.path().to_path_buf(),
     ));
     let extension_manager = Arc::new(ExtensionManager::new(
@@ -230,7 +230,7 @@ async fn test_replayed_session(
                 new_call = new_call.with_arguments(args);
             }
             let tool_call = new_call;
-            let ctx = goose::agents::ToolCallContext::new(
+            let ctx = warmachine::agents::ToolCallContext::new(
                 "test-session-id".to_string(),
                 None,
                 Some("test-id".to_string()),

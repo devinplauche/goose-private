@@ -43,7 +43,7 @@ impl SkillsClient {
         })
     }
 
-    /// Controls whether Goose's bundled skills are exposed by this client.
+    /// Controls whether WarMachine's bundled skills are exposed by this client.
     /// Bundled skills are enabled by default.
     pub fn with_builtin_skills(mut self, enabled: bool) -> Self {
         self.exclude_builtin_skills = !enabled;
@@ -468,7 +468,7 @@ mod tests {
     }
 
     fn write_skill(workspace: &Path, name: &str, marker: &str) {
-        let skill_dir = workspace.join(".goose/skills").join(name);
+        let skill_dir = workspace.join(".warmachine/skills").join(name);
         fs::create_dir_all(&skill_dir).unwrap();
         fs::write(
             skill_dir.join("SKILL.md"),
@@ -601,7 +601,7 @@ mod tests {
     #[tokio::test]
     async fn test_load_filesystem_skill_without_builtin_skills() {
         let temp_dir = TempDir::new().unwrap();
-        let skill_dir = temp_dir.path().join(".goose/skills/my-skill");
+        let skill_dir = temp_dir.path().join(".warmachine/skills/my-skill");
         fs::create_dir_all(&skill_dir).unwrap();
         fs::write(
             skill_dir.join("SKILL.md"),

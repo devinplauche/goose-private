@@ -9,7 +9,7 @@ pub(super) const SHELL_LIVE_OUTPUT_FLUSH_INTERVAL: Duration = Duration::from_mil
 const SHELL_LIVE_OUTPUT_BATCH_BYTES: usize = 16 * 1024;
 const SHELL_LIVE_OUTPUT_LIMIT_BYTES: usize = 256 * 1024;
 
-pub const DEVELOPER_SHELL_OUTPUT_NOTIFICATION_METHOD: &str = "goose/developer_shell_output";
+pub const DEVELOPER_SHELL_OUTPUT_NOTIFICATION_METHOD: &str = "warmachine/developer_shell_output";
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "lowercase")]
@@ -214,7 +214,7 @@ mod tests {
 
     #[test]
     fn parser_ignores_unrelated_or_malformed_custom_notifications() {
-        let unrelated = CustomNotification::new("goose/other", Some(serde_json::json!({})));
+        let unrelated = CustomNotification::new("warmachine/other", Some(serde_json::json!({})));
         let malformed = CustomNotification::new(
             DEVELOPER_SHELL_OUTPUT_NOTIFICATION_METHOD,
             Some(serde_json::json!({ "sequence": "not-a-number" })),

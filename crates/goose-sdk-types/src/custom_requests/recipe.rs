@@ -292,7 +292,7 @@ pub struct RecipeParamsResponse {
     pub values: HashMap<String, String>,
 }
 
-/// Encode a recipe as a goose deep link.
+/// Encode a recipe as a warmachine deep link.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(
     method = "_goose/unstable/recipes/encode",
@@ -307,7 +307,7 @@ pub struct EncodeRecipeResponse {
     pub deeplink: String,
 }
 
-/// Decode a goose deep link into a recipe.
+/// Decode a warmachine deep link into a recipe.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(
     method = "_goose/unstable/recipes/decode",

@@ -30,5 +30,5 @@ async fn main() -> Result<()> {
         }
     }
 
-    goose::acp::server::run(builtins, false).await
+    warmachine::acp::server::run(builtins, false).await
 }

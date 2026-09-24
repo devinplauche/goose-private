@@ -2,9 +2,9 @@ use anyhow::Result;
 use console::style;
 
 pub fn handle_plugin_install(url: &str, auto_update: bool) -> Result<()> {
-    let install = goose::plugins::install_plugin_with_options(
+    let install = warmachine::plugins::install_plugin_with_options(
         url,
-        goose::plugins::PluginInstallOptions { auto_update },
+        warmachine::plugins::PluginInstallOptions { auto_update },
     )?;
 
     println!(
@@ -20,7 +20,7 @@ pub fn handle_plugin_install(url: &str, auto_update: bool) -> Result<()> {
 }
 
 pub fn handle_plugin_update(name: &str) -> Result<()> {
-    let install = goose::plugins::update_plugin(name)?;
+    let install = warmachine::plugins::update_plugin(name)?;
 
     println!(
         "{} Updated {} plugin '{}' ({})",
@@ -34,7 +34,7 @@ pub fn handle_plugin_update(name: &str) -> Result<()> {
     Ok(())
 }
 
-fn print_plugin_install(install: &goose::plugins::PluginInstall) {
+fn print_plugin_install(install: &warmachine::plugins::PluginInstall) {
     println!("  Source: {}", install.source);
     println!("  Location: {}", install.directory.display());
 

@@ -154,13 +154,13 @@ pub fn with_rederived_cache_ttl(model: ModelConfig) -> Result<ModelConfig> {
 }
 
 fn get_goose_cache_ttl(config: &Config) -> Result<Option<String>> {
-    match config.get_param::<String>("GOOSE_CACHE_TTL") {
+    match config.get_param::<String>("WARMACHINE_CACHE_TTL") {
         Ok(ttl) => {
             let ttl = ttl.trim().to_lowercase();
             match ttl.as_str() {
                 "5m" | "1h" => Ok(Some(ttl)),
                 other => Err(anyhow!(
-                    "GOOSE_CACHE_TTL must be '5m' or '1h', got '{other}'"
+                    "WARMACHINE_CACHE_TTL must be '5m' or '1h', got '{other}'"
                 )),
             }
         }
@@ -170,9 +170,9 @@ fn get_goose_cache_ttl(config: &Config) -> Result<Option<String>> {
 }
 
 fn get_goose_temperature(config: &Config) -> Result<Option<f32>> {
-    match config.get_param::<f32>("GOOSE_TEMPERATURE") {
+    match config.get_param::<f32>("WARMACHINE_TEMPERATURE") {
         Ok(temp) if temp < 0.0 => Err(anyhow!(
-            "Value for 'GOOSE_TEMPERATURE' is out of valid range: {temp}"
+            "Value for 'WARMACHINE_TEMPERATURE' is out of valid range: {temp}"
         )),
         Ok(temp) => Ok(Some(temp)),
         Err(ConfigError::NotFound(_)) => Ok(None),
@@ -181,8 +181,8 @@ fn get_goose_temperature(config: &Config) -> Result<Option<f32>> {
 }
 
 fn get_goose_toolshim(config: &Config) -> Result<Option<bool>> {
-    match config.get_param::<serde_yaml::Value>("GOOSE_TOOLSHIM") {
-        Ok(value) => parse_yaml_bool_config("GOOSE_TOOLSHIM", value).map(Some),
+    match config.get_param::<serde_yaml::Value>("WARMACHINE_TOOLSHIM") {
+        Ok(value) => parse_yaml_bool_config("WARMACHINE_TOOLSHIM", value).map(Some),
         Err(ConfigError::NotFound(_)) => Ok(None),
         Err(e) => Err(e.into()),
     }
@@ -197,9 +197,9 @@ pub fn global_toolshim() -> bool {
 }
 
 fn get_goose_toolshim_model(config: &Config) -> Result<Option<String>> {
-    match config.get_param::<String>("GOOSE_TOOLSHIM_OLLAMA_MODEL") {
+    match config.get_param::<String>("WARMACHINE_TOOLSHIM_OLLAMA_MODEL") {
         Ok(value) if value.trim().is_empty() => Err(anyhow!(
-            "Invalid value for 'GOOSE_TOOLSHIM_OLLAMA_MODEL': '{value}' - cannot be empty if set"
+            "Invalid value for 'WARMACHINE_TOOLSHIM_OLLAMA_MODEL': '{value}' - cannot be empty if set"
         )),
         Ok(value) => Ok(Some(value)),
         Err(ConfigError::NotFound(_)) => Ok(None),
@@ -252,7 +252,7 @@ mod cache_ttl_tests {
 
     #[test]
     fn env_var_populates_cache_ttl() {
-        let _guard = env_lock::lock_env([("GOOSE_CACHE_TTL", Some("1h"))]);
+        let _guard = env_lock::lock_env([("WARMACHINE_CACHE_TTL", Some("1h"))]);
         let model = materialize_model_config_inner(
             ModelConfig::new("claude-sonnet-4-5"),
             "anthropic",
@@ -264,7 +264,7 @@ mod cache_ttl_tests {
 
     #[test]
     fn absent_env_var_leaves_cache_ttl_unset() {
-        let _guard = env_lock::lock_env([("GOOSE_CACHE_TTL", None::<&str>)]);
+        let _guard = env_lock::lock_env([("WARMACHINE_CACHE_TTL", None::<&str>)]);
         let model = materialize_model_config_inner(
             ModelConfig::new("claude-sonnet-4-5"),
             "anthropic",
@@ -276,7 +276,7 @@ mod cache_ttl_tests {
 
     #[test]
     fn invalid_env_var_is_rejected() {
-        let _guard = env_lock::lock_env([("GOOSE_CACHE_TTL", Some("2h"))]);
+        let _guard = env_lock::lock_env([("WARMACHINE_CACHE_TTL", Some("2h"))]);
         let result = materialize_model_config_inner(
             ModelConfig::new("claude-sonnet-4-5"),
             "anthropic",
@@ -287,7 +287,7 @@ mod cache_ttl_tests {
 
     #[test]
     fn rederive_replaces_stored_ttl_with_configured_value() {
-        let _guard = env_lock::lock_env([("GOOSE_CACHE_TTL", Some("1h"))]);
+        let _guard = env_lock::lock_env([("WARMACHINE_CACHE_TTL", Some("1h"))]);
         let model =
             with_rederived_cache_ttl(ModelConfig::new("claude-sonnet-4-5").with_cache_ttl("5m"))
                 .unwrap();
@@ -296,7 +296,7 @@ mod cache_ttl_tests {
 
     #[test]
     fn rederive_drops_stored_ttl_when_config_absent() {
-        let _guard = env_lock::lock_env([("GOOSE_CACHE_TTL", None::<&str>)]);
+        let _guard = env_lock::lock_env([("WARMACHINE_CACHE_TTL", None::<&str>)]);
         let model =
             with_rederived_cache_ttl(ModelConfig::new("claude-sonnet-4-5").with_cache_ttl("1h"))
                 .unwrap();
@@ -305,7 +305,7 @@ mod cache_ttl_tests {
 
     #[test]
     fn explicit_model_ttl_wins_over_env_var() {
-        let _guard = env_lock::lock_env([("GOOSE_CACHE_TTL", Some("1h"))]);
+        let _guard = env_lock::lock_env([("WARMACHINE_CACHE_TTL", Some("1h"))]);
         let model = materialize_model_config_inner(
             ModelConfig::new("claude-sonnet-4-5").with_cache_ttl("5m"),
             "anthropic",

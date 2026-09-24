@@ -1,12 +1,12 @@
-# Custom Distributions of goose
+# Custom Distributions of warmachine
 
 > **Tip:** This is sometimes referred to as "white labelling" — creating a branded or tailored version of an open source project for your organization.
 
-This guide explains how to create custom distributions of goose tailored to your organization's needs—whether that's preconfigured models, custom tools, branded interfaces, or entirely new user experiences.
+This guide explains how to create custom distributions of warmachine tailored to your organization's needs—whether that's preconfigured models, custom tools, branded interfaces, or entirely new user experiences.
 
 ## Overview
 
-goose's architecture is designed for extensibility. Organizations can create "remixed" versions that:
+warmachine's architecture is designed for extensibility. Organizations can create "remixed" versions that:
 
 - **Preconfigure AI providers**: Ship with a specific model (local or cloud) and API credentials
 - **Bundle custom tools**: Include proprietary extensions for internal data sources
@@ -26,13 +26,13 @@ goose's architecture is designed for extensibility. Organizations can create "re
           │                │                      │
           ▼                ▼                      ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    goose serve (ACP)                            │
+│                    warmachine serve (ACP)                            │
 │         ACP HTTP/WebSocket server for custom clients            │
 └─────────────────────────────────────────────────────────────────┘
           │
           ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      Core (goose crate)                         │
+│                      Core (warmachine crate)                         │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
 │  │  Providers  │  │  Extensions │  │  Config & Recipes       │  │
 │  │  (AI models)│  │  (MCP tools)│  │  (behavior & defaults)  │  │
@@ -45,11 +45,11 @@ goose's architecture is designed for extensibility. Organizations can create "re
 | What You Want | Where to Look | Complexity |
 |---------------|---------------|------------|
 | Preconfigure a model/provider | `config.yaml`, `init-config.yaml`, environment variables | Low |
-| Add custom AI providers | `crates/goose/src/providers/declarative/` | Low |
+| Add custom AI providers | `crates/warmachine/src/providers/declarative/` | Low |
 | Bundle custom MCP extensions | `config.yaml` extensions section, `ui/desktop/src/built-in-extensions.json`, `ui/desktop/src/components/settings/extensions/bundled-extensions.json` | Medium |
-| Modify system prompts | `crates/goose/src/prompts/` | Low |
+| Modify system prompts | `crates/warmachine/src/prompts/` | Low |
 | Customize desktop branding | `ui/desktop/` (icons, names, colors) | Medium |
-| Build a new UI (web, mobile) | Integrate with `goose serve` over ACP | High |
+| Build a new UI (web, mobile) | Integrate with `warmachine serve` over ACP | High |
 | Create guided workflows | Recipes (YAML-based task definitions) | Low |
 | Build complex multi-step workflows | Recipes with sub-recipes and subagents | Medium |
 
@@ -59,7 +59,7 @@ goose's architecture is designed for extensibility. Organizations can create "re
 
 ```bash
 git clone https://github.com/YOUR_ORG/goose.git
-cd goose
+cd warmachine
 ```
 
 ### 2. Choose Your Customization Strategy
@@ -76,10 +76,10 @@ See [BUILDING_LINUX.md](BUILDING_LINUX.md) and [ui/desktop/README.md](ui/desktop
 
 ### Licensing
 
-goose is licensed under Apache License 2.0 (ASL v2). Custom distributions must:
+warmachine is licensed under Apache License 2.0 (ASL v2). Custom distributions must:
 - Include the original license and copyright notices
 - Clearly indicate any modifications made
-- Not use "Goose" trademarks in ways that imply official endorsement
+- Not use "WarMachine" trademarks in ways that imply official endorsement
 
 For detailed guidance on ASL v2 compliance, see the [Apache License FAQ](https://www.apache.org/foundation/license-faq.html).
 
@@ -89,9 +89,9 @@ While you're free to maintain private forks, contributing improvements upstream 
 
 ### Telemetry
 
-goose includes optional telemetry (via PostHog) to help improve the project. For custom distributions, you can:
-- **Disable telemetry**: Set `GOOSE_DISABLE_TELEMETRY=1`
-- **Use your own instance**: Modify `crates/goose/src/posthog.rs` to point to your PostHog instance
+warmachine includes optional telemetry (via PostHog) to help improve the project. For custom distributions, you can:
+- **Disable telemetry**: Set `WARMACHINE_DISABLE_TELEMETRY=1`
+- **Use your own instance**: Modify `crates/warmachine/src/posthog.rs` to point to your PostHog instance
 
 ### Staying Current
 
@@ -107,7 +107,7 @@ To benefit from upstream improvements:
 
 ## A. Preconfigured Local Model Distribution
 
-**Goal**: Ship goose preconfigured to use a local Ollama model, requiring no API keys.
+**Goal**: Ship warmachine preconfigured to use a local Ollama model, requiring no API keys.
 
 ### Steps
 
@@ -115,15 +115,15 @@ To benefit from upstream improvements:
 
 ```yaml
 # init-config.yaml - Applied on first run if no config exists
-GOOSE_PROVIDER: ollama
-GOOSE_MODEL: qwen3-coder:latest
+WARMACHINE_PROVIDER: ollama
+WARMACHINE_MODEL: qwen3-coder:latest
 ```
 
 2. **Set environment defaults** in your launcher script or packaging:
 
 ```bash
-export GOOSE_PROVIDER=ollama
-export GOOSE_MODEL=qwen3-coder:latest
+export WARMACHINE_PROVIDER=ollama
+export WARMACHINE_MODEL=qwen3-coder:latest
 export OLLAMA_HOST=http://localhost:11434  # Or your hosted instance
 ```
 
@@ -131,41 +131,41 @@ export OLLAMA_HOST=http://localhost:11434  # Or your hosted instance
 
 ### Technical Details
 
-- Provider configuration: `crates/goose/src/config/base.rs`
-- Ollama provider implementation: `crates/goose/src/providers/ollama.rs`
+- Provider configuration: `crates/warmachine/src/config/base.rs`
+- Ollama provider implementation: `crates/warmachine/src/providers/ollama.rs`
 - Config precedence: Environment variables → config.yaml → defaults
 
 ---
 
 ## B. Corporate Distribution with Managed API Keys
 
-**Goal**: Distribute goose internally with pre-provisioned API keys for a frontier model.
+**Goal**: Distribute warmachine internally with pre-provisioned API keys for a frontier model.
 
 ### Steps
 
-1. **Store API keys securely** using goose's secret management:
+1. **Store API keys securely** using warmachine's secret management:
 
 ```yaml
 # config.yaml (distributed with your package)
-GOOSE_PROVIDER: anthropic
-GOOSE_MODEL: claude-sonnet-4-20250514
+WARMACHINE_PROVIDER: anthropic
+WARMACHINE_MODEL: claude-sonnet-4-20250514
 ```
 
 2. **Inject secrets at install time** or via your MDM/configuration management:
 
 ```bash
-# Secrets are stored in system keyring or ~/.config/goose/secrets.yaml
-# if GOOSE_DISABLE_KEYRING=1
-goose configure set-secret ANTHROPIC_API_KEY "your-corporate-key"
+# Secrets are stored in system keyring or ~/.config/warmachine/secrets.yaml
+# if WARMACHINE_DISABLE_KEYRING=1
+warmachine configure set-secret ANTHROPIC_API_KEY "your-corporate-key"
 ```
 
 3. **Lock down provider changes** (optional) by modifying the settings UI or using a recipe that enforces the provider.
 
 ### Technical Details
 
-- Secret storage: `crates/goose/src/config/base.rs` (SecretStorage enum)
+- Secret storage: `crates/warmachine/src/config/base.rs` (SecretStorage enum)
 - Keyring integration: Uses system keyring by default, file-based fallback available
-- Config file location: `~/.config/goose/config.yaml`
+- Config file location: `~/.config/warmachine/config.yaml`
 
 ---
 
@@ -216,7 +216,7 @@ Example:
 ```yaml
 # data-analyst.yaml
 title: Data Analyst Assistant
-description: goose configured for data analysis
+description: warmachine configured for data analysis
 instructions: |
   You have access to the corporate data lake. Help users query and analyze data.
 extensions:
@@ -229,9 +229,9 @@ extensions:
 
 ### Technical Details
 
-- Extension types: `crates/goose/src/agents/extension.rs` (ExtensionConfig enum)
+- Extension types: `crates/warmachine/src/agents/extension.rs` (ExtensionConfig enum)
 - Built-in MCP servers: `crates/goose-mcp/`
-- Extension loading: `crates/goose/src/agents/extension_manager.rs`
+- Extension loading: `crates/warmachine/src/agents/extension_manager.rs`
 
 ---
 
@@ -260,7 +260,7 @@ module.exports = {
 };
 ```
 
-3. **Update the system prompt** to reflect your branding in `crates/goose/src/prompts/system.md`:
+3. **Update the system prompt** to reflect your branding in `crates/warmachine/src/prompts/system.md`:
 
 ```markdown
 You are an AI assistant called [YourName], created by [YourCompany].
@@ -277,14 +277,14 @@ You are an AI assistant called [YourName], created by [YourCompany].
 
    - Set build/release environment variables consistently:
      - `GITHUB_OWNER` and `GITHUB_REPO` for publisher + updater repository lookup
-     - `GOOSE_BUNDLE_NAME` for bundle/debug scripts and updater asset naming (defaults to `Goose`)
+     - `WARMACHINE_BUNDLE_NAME` for bundle/debug scripts and updater asset naming (defaults to `WarMachine`)
 
 Example:
 
 ```bash
 export GITHUB_OWNER="your-org"
 export GITHUB_REPO="your-goose-fork"
-export GOOSE_BUNDLE_NAME="InsightStream-goose"
+export WARMACHINE_BUNDLE_NAME="InsightStream-goose"
 ```
 
 6. **Use this branding consistency checklist** before release:
@@ -296,23 +296,23 @@ export GOOSE_BUNDLE_NAME="InsightStream-goose"
 
 - Electron config: `ui/desktop/forge.config.ts`
 - UI entry point: `ui/desktop/src/renderer.tsx`
-- System prompts: `crates/goose/src/prompts/`
+- System prompts: `crates/warmachine/src/prompts/`
 
 ---
 
 ## E. Building a New Interface (Web, Mobile, etc.)
 
-**Goal**: Create an entirely new frontend while leveraging goose's backend.
+**Goal**: Create an entirely new frontend while leveraging warmachine's backend.
 
-goose provides two ACP transport options for building custom clients:
+warmachine provides two ACP transport options for building custom clients:
 
-### Option 1: ACP HTTP/WebSocket (`goose serve`)
+### Option 1: ACP HTTP/WebSocket (`warmachine serve`)
 
-Use `goose serve` for process-separated integrations such as web apps, desktop shells, and other clients:
+Use `warmachine serve` for process-separated integrations such as web apps, desktop shells, and other clients:
 
 ```bash
 # Start the server
-GOOSE_SERVER__SECRET_KEY='a-long-random-secret' goose serve
+WARMACHINE_SERVER__SECRET_KEY='a-long-random-secret' warmachine serve
 
 # ACP endpoint available at http://localhost:3284/acp
 ```
@@ -325,11 +325,11 @@ ws://localhost:3284/acp?token=a-long-random-secret
 
 For browser clients served from a non-loopback origin, pass the exact UI origin with `--allowed-origin`. When you pass `--allowed-origin`, it replaces the default loopback origin allowlist, so include every origin the client needs.
 
-For the ACP protocol and client flow, see [Use goose as an ACP agent](documentation/docs/gdk/acp/index.md).
+For the ACP protocol and client flow, see [Use warmachine as an ACP agent](documentation/docs/gdk/acp/index.md).
 
 ### Option 2: Agent Client Protocol (ACP) over stdio
 
-For richer local integrations (IDEs and embedded agents), run goose as an ACP agent over stdio.
+For richer local integrations (IDEs and embedded agents), run warmachine as an ACP agent over stdio.
 
 ACP provides:
 - **Bidirectional communication**: Agents can request permissions, stream updates, and receive cancellations
@@ -337,11 +337,11 @@ ACP provides:
 - **Session management**: Create, load, and resume sessions with full conversation history
 - **MCP server integration**: Dynamically add MCP servers to sessions
 
-**Start goose as an ACP agent**:
+**Start warmachine as an ACP agent**:
 
 ```bash
-# Run goose as an ACP server on stdio
-goose acp --with-builtin developer,memory
+# Run warmachine as an ACP server on stdio
+warmachine acp --with-builtin developer,memory
 
 # Or programmatically
 cargo run -p goose-cli -- acp --with-builtin developer
@@ -366,7 +366,7 @@ import json
 class AcpClient:
     def __init__(self):
         self.process = subprocess.Popen(
-            ['goose', 'acp', '--with-builtin', 'developer'],
+            ['warmachine', 'acp', '--with-builtin', 'developer'],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             text=True
@@ -403,7 +403,7 @@ For the full ACP specification, see the [Agent Client Protocol documentation](ht
 ### Technical Details
 
 **ACP**:
-- ACP server implementation: `crates/goose/src/acp/server.rs`
+- ACP server implementation: `crates/warmachine/src/acp/server.rs`
 - CLI integration: `crates/goose-cli/src/cli.rs` (Command::Acp)
 - Protocol library: `agent-client-protocol` crate (Rust implementation of ACP)
 - Test client example: `test_acp_client.py`
@@ -412,7 +412,7 @@ For the full ACP specification, see the [Agent Client Protocol documentation](ht
 
 ## F. Audience-Specific Distributions (Legal, Design, etc.)
 
-**Goal**: Create a version of goose tailored for a specific professional audience.
+**Goal**: Create a version of warmachine tailored for a specific professional audience.
 
 ### Steps
 
@@ -458,8 +458,8 @@ settings:
 
 ### Technical Details
 
-- Recipe format: `crates/goose/src/recipe/mod.rs`
-- Recipe loading: `crates/goose/src/recipe/local_recipes.rs`
+- Recipe format: `crates/warmachine/src/recipe/mod.rs`
+- Recipe loading: `crates/warmachine/src/recipe/local_recipes.rs`
 - Activity suggestions: Shown in UI as quick-start prompts
 
 ---
@@ -470,7 +470,7 @@ settings:
 
 ### Option 1: Declarative Provider (No Code)
 
-Create a JSON file in `~/.config/goose/custom_providers/` or bundle in your distribution:
+Create a JSON file in `~/.config/warmachine/custom_providers/` or bundle in your distribution:
 
 ```json
 {
@@ -497,16 +497,16 @@ Supported engines: `openai`, `anthropic`, `ollama`
 
 For providers with unique APIs, implement the Provider trait:
 
-1. Create a new file in `crates/goose/src/providers/`
+1. Create a new file in `crates/warmachine/src/providers/`
 2. Implement the `Provider` trait from `base.rs`
-3. Register in `crates/goose/src/providers/factory.rs`
+3. Register in `crates/warmachine/src/providers/factory.rs`
 
 ### Technical Details
 
-- Declarative providers: `crates/goose/src/config/declarative_providers.rs`
-- Provider trait: `crates/goose/src/providers/base.rs`
-- Provider registration: `crates/goose/src/providers/factory.rs`
-- Example providers: `crates/goose/src/providers/declarative/*.json`
+- Declarative providers: `crates/warmachine/src/config/declarative_providers.rs`
+- Provider trait: `crates/warmachine/src/providers/base.rs`
+- Provider registration: `crates/warmachine/src/providers/factory.rs`
+- Example providers: `crates/warmachine/src/providers/declarative/*.json`
 
 ---
 
@@ -514,7 +514,7 @@ For providers with unique APIs, implement the Provider trait:
 
 **Goal**: Create standardized, repeatable workflows that users can run with minimal setup.
 
-Recipes are YAML files that define complete goose experiences—instructions, extensions, parameters, and prompts bundled together. They're ideal for custom distributions because they require no code changes and can be distributed as simple files.
+Recipes are YAML files that define complete warmachine experiences—instructions, extensions, parameters, and prompts bundled together. They're ideal for custom distributions because they require no code changes and can be distributed as simple files.
 
 ### Basic Recipe Structure
 
@@ -584,9 +584,9 @@ prompt: |
 
 ### Technical Details
 
-- Recipe schema: `crates/goose/src/recipe/mod.rs`
-- Parameter handling: `crates/goose/src/recipe/template_recipe.rs`
-- Recipe validation: `crates/goose/src/recipe/validate_recipe.rs`
+- Recipe schema: `crates/warmachine/src/recipe/mod.rs`
+- Parameter handling: `crates/warmachine/src/recipe/template_recipe.rs`
+- Recipe validation: `crates/warmachine/src/recipe/validate_recipe.rs`
 
 ---
 
@@ -594,7 +594,7 @@ prompt: |
 
 **Goal**: Build sophisticated multi-step workflows that orchestrate multiple specialized tasks.
 
-For complex workflows, goose supports two powerful composition mechanisms:
+For complex workflows, warmachine supports two powerful composition mechanisms:
 
 1. **Sub-recipes**: Predefined recipe templates that can be invoked by name
 2. **Subagents**: Independent AI agents spawned to handle specific tasks
@@ -806,7 +806,7 @@ prompt: |
 
 ### Technical Details
 
-- Subagent tool: `crates/goose/src/agents/subagent_tool.rs`
-- Subagent execution: `crates/goose/src/agents/subagent_handler.rs`
-- Recipe sub_recipes field: `crates/goose/src/recipe/mod.rs` (SubRecipe struct)
-- Template rendering: `crates/goose/src/recipe/template_recipe.rs`
+- Subagent tool: `crates/warmachine/src/agents/subagent_tool.rs`
+- Subagent execution: `crates/warmachine/src/agents/subagent_handler.rs`
+- Recipe sub_recipes field: `crates/warmachine/src/recipe/mod.rs` (SubRecipe struct)
+- Template rendering: `crates/warmachine/src/recipe/template_recipe.rs`

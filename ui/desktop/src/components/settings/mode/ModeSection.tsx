@@ -8,20 +8,20 @@ export const ModeSection = () => {
 
   const handleModeChange = async (newMode: string) => {
     try {
-      await upsert('GOOSE_MODE', newMode, false);
+      await upsert('WARMACHINE_MODE', newMode, false);
       setCurrentMode(newMode);
     } catch (error) {
-      console.error('Error updating goose mode:', error);
-      throw new Error(`Failed to store new goose mode: ${newMode}`, { cause: error });
+      console.error('Error updating warmachine mode:', error);
+      throw new Error(`Failed to store new warmachine mode: ${newMode}`, { cause: error });
     }
   };
 
   useEffect(() => {
-    const mode = config.GOOSE_MODE as string | undefined;
+    const mode = config.WARMACHINE_MODE as string | undefined;
     if (mode) {
       setCurrentMode(mode);
     }
-  }, [config.GOOSE_MODE]);
+  }, [config.WARMACHINE_MODE]);
 
   return (
     <div className="space-y-1">

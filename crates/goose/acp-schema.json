@@ -645,7 +645,7 @@
           ]
         }
       },
-      "description": "List available goose apps, optionally scoped to a session.",
+      "description": "List available warmachine apps, optionally scoped to a session.",
       "x-side": "agent",
       "x-method": "_goose/unstable/apps/list"
     },
@@ -671,7 +671,7 @@
       "required": [
         "name"
       ],
-      "description": "Export a goose app as HTML.",
+      "description": "Export a warmachine app as HTML.",
       "x-side": "agent",
       "x-method": "_goose/unstable/apps/export"
     },
@@ -698,7 +698,7 @@
       "required": [
         "html"
       ],
-      "description": "Import a goose app from HTML.",
+      "description": "Import a warmachine app from HTML.",
       "x-side": "agent",
       "x-method": "_goose/unstable/apps/import"
     },
@@ -729,7 +729,7 @@
       "required": [
         "name"
       ],
-      "description": "Delete a goose app by name.",
+      "description": "Delete a warmachine app by name.",
       "x-side": "agent",
       "x-method": "_goose/unstable/apps/delete"
     },
@@ -792,7 +792,7 @@
         "sessionId",
         "text"
       ],
-      "description": "Set, append, or clear system prompt text for a session.\n\n`mode: \"set\"` replaces goose's base system prompt. `mode: \"append\"` adds an\ninstruction under \"Additional Instructions\". Reusing a key replaces the\nprevious value for that mode/key; sending empty text clears it.",
+      "description": "Set, append, or clear system prompt text for a session.\n\n`mode: \"set\"` replaces warmachine's base system prompt. `mode: \"append\"` adds an\ninstruction under \"Additional Instructions\". Reusing a key replaces the\nprevious value for that mode/key; sending empty text clears it.",
       "x-side": "agent",
       "x-method": "_goose/unstable/session/system-prompt/set"
     },
@@ -801,12 +801,12 @@
         {
           "type": "string",
           "const": "set",
-          "description": "Replace Goose's base system prompt with the provided text."
+          "description": "Replace WarMachine's base system prompt with the provided text."
         },
         {
           "type": "string",
           "const": "append",
-          "description": "Append the provided text under Goose's \"Additional Instructions\" section."
+          "description": "Append the provided text under WarMachine's \"Additional Instructions\" section."
         }
       ],
       "description": "How a session system prompt update should be applied."
@@ -1289,7 +1289,7 @@
         },
         "messageId": {
           "type": "string",
-          "description": "Stable id of the queued steer message. The same id later appears as\n`messageId` on the streamed `UserMessageChunk` (with `_meta.goose.steer`),\nletting clients correlate a queued steer with its pickup."
+          "description": "Stable id of the queued steer message. The same id later appears as\n`messageId` on the streamed `UserMessageChunk` (with `_meta.warmachine.steer`),\nletting clients correlate a queued steer with its pickup."
         }
       },
       "required": [
@@ -1440,7 +1440,7 @@
     },
     "ListPromptsRequest_unstable": {
       "type": "object",
-      "description": "List all available goose prompt templates.",
+      "description": "List all available warmachine prompt templates.",
       "x-side": "agent",
       "x-method": "_goose/unstable/config/prompts/list"
     },
@@ -1500,7 +1500,7 @@
       "required": [
         "name"
       ],
-      "description": "Read a goose prompt template.",
+      "description": "Read a warmachine prompt template.",
       "x-side": "agent",
       "x-method": "_goose/unstable/config/prompts/get"
     },
@@ -1543,7 +1543,7 @@
         "name",
         "content"
       ],
-      "description": "Save a custom goose prompt template.",
+      "description": "Save a custom warmachine prompt template.",
       "x-side": "agent",
       "x-method": "_goose/unstable/config/prompts/save"
     },
@@ -1569,7 +1569,7 @@
       "required": [
         "name"
       ],
-      "description": "Reset a goose prompt template to its default content.",
+      "description": "Reset a warmachine prompt template to its default content.",
       "x-side": "agent",
       "x-method": "_goose/unstable/config/prompts/reset"
     },
@@ -1638,7 +1638,7 @@
       "required": [
         "extension"
       ],
-      "description": "Persist a new extension to the user's global goose config.",
+      "description": "Persist a new extension to the user's global warmachine config.",
       "x-side": "agent",
       "x-method": "_goose/unstable/config/extensions/add"
     },
@@ -1652,7 +1652,7 @@
       "required": [
         "configKey"
       ],
-      "description": "Remove a persisted extension from the user's global goose config.",
+      "description": "Remove a persisted extension from the user's global warmachine config.",
       "x-side": "agent",
       "x-method": "_goose/unstable/config/extensions/remove"
     },
@@ -1670,7 +1670,7 @@
         "configKey",
         "enabled"
       ],
-      "description": "Set the `enabled` flag for a persisted extension in the user's global goose config.",
+      "description": "Set the `enabled` flag for a persisted extension in the user's global warmachine config.",
       "x-side": "agent",
       "x-method": "_goose/unstable/config/extensions/set-enabled"
     },
@@ -1773,7 +1773,7 @@
         },
         "configured": {
           "type": "boolean",
-          "description": "Whether Goose has enough configuration to use this provider."
+          "description": "Whether WarMachine has enough configuration to use this provider."
         },
         "available": {
           "type": "boolean",
@@ -2419,7 +2419,7 @@
         "requiresAuth",
         "toolshim"
       ],
-      "description": "Create a custom provider backed by goose's declarative provider store.",
+      "description": "Create a custom provider backed by warmachine's declarative provider store.",
       "x-side": "agent",
       "x-method": "_goose/unstable/providers/custom/create"
     },
@@ -2695,7 +2695,7 @@
         "requiresAuth",
         "toolshim"
       ],
-      "description": "Update a custom provider backed by goose's declarative provider store.",
+      "description": "Update a custom provider backed by warmachine's declarative provider store.",
       "x-side": "agent",
       "x-method": "_goose/unstable/providers/custom/update"
     },
@@ -2730,7 +2730,7 @@
       "required": [
         "providerId"
       ],
-      "description": "Delete a custom provider from goose's declarative provider store.",
+      "description": "Delete a custom provider from warmachine's declarative provider store.",
       "x-side": "agent",
       "x-method": "_goose/unstable/providers/custom/delete"
     },
@@ -2977,7 +2977,7 @@
     },
     "ProviderSecretsListRequest_unstable": {
       "type": "object",
-      "description": "List provider credentials stored locally by goose.",
+      "description": "List provider credentials stored locally by warmachine.",
       "x-side": "agent",
       "x-method": "_goose/unstable/providers/secrets/list"
     },
@@ -3267,7 +3267,7 @@
       "required": [
         "key"
       ],
-      "description": "Read one goose configuration value.",
+      "description": "Read one warmachine configuration value.",
       "x-side": "agent",
       "x-method": "_goose/unstable/config/read"
     },
@@ -3297,7 +3297,7 @@
         "key",
         "value"
       ],
-      "description": "Create or replace one goose configuration value.",
+      "description": "Create or replace one warmachine configuration value.",
       "x-side": "agent",
       "x-method": "_goose/unstable/config/upsert"
     },
@@ -3315,13 +3315,13 @@
       "required": [
         "key"
       ],
-      "description": "Remove one goose configuration value.",
+      "description": "Remove one warmachine configuration value.",
       "x-side": "agent",
       "x-method": "_goose/unstable/config/remove"
     },
     "ConfigReadAllRequest_unstable": {
       "type": "object",
-      "description": "Read all non-secret goose configuration values.",
+      "description": "Read all non-secret warmachine configuration values.",
       "x-side": "agent",
       "x-method": "_goose/unstable/config/read-all"
     },
@@ -3341,7 +3341,7 @@
     },
     "DefaultsReadRequest_unstable": {
       "type": "object",
-      "description": "Read goose default provider and model configuration.",
+      "description": "Read warmachine default provider and model configuration.",
       "x-side": "agent",
       "x-method": "_goose/unstable/defaults/read"
     },
@@ -3379,13 +3379,13 @@
       "required": [
         "providerId"
       ],
-      "description": "Save goose default provider and model configuration.",
+      "description": "Save warmachine default provider and model configuration.",
       "x-side": "agent",
       "x-method": "_goose/unstable/defaults/save"
     },
     "DefaultsClearRequest_unstable": {
       "type": "object",
-      "description": "Clear goose default provider and model configuration.",
+      "description": "Clear warmachine default provider and model configuration.",
       "x-side": "agent",
       "x-method": "_goose/unstable/defaults/clear"
     },
@@ -3401,7 +3401,7 @@
           "default": []
         }
       },
-      "description": "Scan for existing goose and compatible app data that onboarding can import.",
+      "description": "Scan for existing warmachine and compatible app data that onboarding can import.",
       "x-side": "agent",
       "x-method": "_goose/unstable/onboarding/import/scan"
     },
@@ -3588,7 +3588,7 @@
       "required": [
         "data"
       ],
-      "description": "Export session response — raw JSON of the goose session with `conversation`,\nor a markdown transcript when `format` is `markdown`.",
+      "description": "Export session response — raw JSON of the warmachine session with `conversation`,\nor a markdown transcript when `format` is `markdown`.",
       "x-side": "agent",
       "x-method": "_goose/unstable/session/export"
     },
@@ -3708,7 +3708,7 @@
       "required": [
         "recipe"
       ],
-      "description": "Encode a recipe as a goose deep link.",
+      "description": "Encode a recipe as a warmachine deep link.",
       "x-side": "agent",
       "x-method": "_goose/unstable/recipes/encode"
     },
@@ -4312,7 +4312,7 @@
       "required": [
         "deeplink"
       ],
-      "description": "Decode a goose deep link into a recipe.",
+      "description": "Decode a warmachine deep link into a recipe.",
       "x-side": "agent",
       "x-method": "_goose/unstable/recipes/decode"
     },
@@ -5209,7 +5209,7 @@
         "path",
         "global"
       ],
-      "description": "A source discovered by Goose. Filesystem sources use an on-disk path;\nbuilt-in sources use a stable synthetic path. Sources may be either\n`global` (shared across all projects) or project-specific."
+      "description": "A source discovered by WarMachine. Filesystem sources use an on-disk path;\nbuilt-in sources use a stable synthetic path. Sources may be either\n`global` (shared across all projects) or project-specific."
     },
     "ListSourcesRequest_unstable": {
       "type": "object",
@@ -7052,7 +7052,7 @@
         "verificationUri",
         "expiresIn"
       ],
-      "description": "Dedicated provider notification for OAuth device-code flow.\nSent during provider authentication when the ACP client supports\n`goose.customNotifications` — avoids a fake empty session ID.",
+      "description": "Dedicated provider notification for OAuth device-code flow.\nSent during provider authentication when the ACP client supports\n`warmachine.customNotifications` — avoids a fake empty session ID.",
       "x-side": "agent",
       "x-method": "_goose/unstable/providers/authentication/device-code"
     },

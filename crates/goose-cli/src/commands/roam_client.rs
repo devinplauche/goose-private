@@ -250,7 +250,7 @@ fn prompt_permission(request: &RequestPermissionRequest) -> RequestPermissionOut
     eprint!("choose a number (anything else cancels): ");
     let _ = std::io::stderr().flush();
 
-    // Fail closed: option 1 is allow-always for goose hosts, so EOF, an empty
+    // Fail closed: option 1 is allow-always for warmachine hosts, so EOF, an empty
     // line, or a typo must cancel rather than silently granting permission.
     let Some(choice) = read_line().and_then(|l| l.trim().parse::<usize>().ok()) else {
         eprintln!("   cancelled");

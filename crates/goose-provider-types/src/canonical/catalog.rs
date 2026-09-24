@@ -307,7 +307,7 @@ impl ProviderSetupMetadata {
 
 fn field_label(key: &str) -> String {
     let label = key
-        .strip_prefix("GOOSE_")
+        .strip_prefix("WARMACHINE_")
         .unwrap_or(key)
         .replace('_', " ")
         .to_lowercase();
@@ -433,9 +433,9 @@ pub fn get_providers_by_format(
 pub fn get_setup_catalog_entries(
     registry_metadata: impl IntoIterator<Item = ProviderMetadata>,
 ) -> Vec<ProviderSetupCatalogEntry> {
-    let goose = ProviderSetupCatalogEntry {
-        provider_id: "goose".to_string(),
-        display_name: "Goose".to_string(),
+    let warmachine = ProviderSetupCatalogEntry {
+        provider_id: "warmachine".to_string(),
+        display_name: "WarMachine".to_string(),
         category: ProviderSetupCategory::Agent,
         acp: false,
         description: "Block's open-source coding agent".to_string(),
@@ -443,7 +443,7 @@ pub fn get_setup_catalog_entries(
         docs_url: None,
         group: ProviderSetupGroup::Default,
         fields: Vec::new(),
-        aliases: vec!["goose".to_string()],
+        aliases: vec!["warmachine".to_string()],
         native_connect_query: None,
         binary_name: None,
         setup_capabilities: ProviderSetupCapabilities {
@@ -464,7 +464,7 @@ pub fn get_setup_catalog_entries(
             .then_with(|| a.display_name.cmp(&b.display_name))
             .then_with(|| a.provider_id.cmp(&b.provider_id))
     });
-    entries.insert(0, goose);
+    entries.insert(0, warmachine);
     entries
 }
 
@@ -582,7 +582,7 @@ mod tests {
                 .iter()
                 .map(|entry| entry.provider_id.as_str())
                 .collect::<Vec<_>>(),
-            ["goose", "alpha", "beta", "gamma"]
+            ["warmachine", "alpha", "beta", "gamma"]
         );
     }
 

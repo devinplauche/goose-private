@@ -1,4 +1,4 @@
-//! Goose integration for the reusable inference operation.
+//! WarMachine integration for the reusable inference operation.
 
 use std::sync::Arc;
 

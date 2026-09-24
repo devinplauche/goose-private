@@ -21,7 +21,7 @@ use crate::tool_inspection::{
 };
 use tokio::sync::Mutex;
 
-pub const TOOL_EXECUTABLE_KEY: &str = "goose.executable";
+pub const TOOL_EXECUTABLE_KEY: &str = "warmachine.executable";
 
 pub struct ToolApprovalOperation<'a> {
     goose_mode: &'a Mutex<GooseMode>,
@@ -136,7 +136,7 @@ impl Operation<Session, GooseEffect> for ToolApprovalOperation<'_> {
                     get_security_finding_id_from_results(&request.id, &inspection_results)
                 {
                     tracing::info!(
-                        monotonic_counter.goose.prompt_injection_user_decisions = 1,
+                        monotonic_counter.warmachine.prompt_injection_user_decisions = 1,
                         security.event_type = "approval_request",
                         security.finding_id = %finding_id,
                         tool.request_id = %request.id,

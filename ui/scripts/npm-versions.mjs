@@ -56,7 +56,7 @@ function setVersions(version) {
     writeJson(path, manifest);
   }
 
-  console.log(`Updated Goose npm packages to ${version}`);
+  console.log(`Updated WarMachine npm packages to ${version}`);
 }
 
 function checkVersions() {
@@ -92,11 +92,11 @@ function checkVersions() {
 
   if (errors.length > 0) {
     throw new Error(
-      `Goose version alignment failed:\n- ${errors.join("\n- ")}`,
+      `WarMachine version alignment failed:\n- ${errors.join("\n- ")}`,
     );
   }
 
-  console.log(`Goose versions are aligned at ${expectedVersion}`);
+  console.log(`WarMachine versions are aligned at ${expectedVersion}`);
   return expectedVersion;
 }
 
@@ -108,7 +108,7 @@ function checkReleaseVersion(version) {
     );
   }
 
-  console.log(`Goose versions match release ${version}`);
+  console.log(`WarMachine versions match release ${version}`);
 }
 
 function checkPackedWrapper(path) {
@@ -127,11 +127,11 @@ function checkPackedWrapper(path) {
 
   if (errors.length > 0) {
     throw new Error(
-      `Packed Goose wrapper version check failed:\n- ${errors.join("\n- ")}`,
+      `Packed WarMachine wrapper version check failed:\n- ${errors.join("\n- ")}`,
     );
   }
 
-  console.log(`Packed Goose wrapper uses binary version ${expectedVersion}`);
+  console.log(`Packed WarMachine wrapper uses binary version ${expectedVersion}`);
 }
 
 const [command, argument] = process.argv.slice(2);

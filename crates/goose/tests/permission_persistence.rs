@@ -1,4 +1,4 @@
-use goose::config::permission::{PermissionConfig, PermissionLevel, PermissionManager};
+use warmachine::config::permission::{PermissionConfig, PermissionLevel, PermissionManager};
 use std::collections::HashMap;
 
 #[test]

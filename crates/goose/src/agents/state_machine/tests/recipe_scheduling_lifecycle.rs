@@ -499,8 +499,8 @@ async fn scheduled_run_attaches_recipe_to_session_before_inference() -> Result<(
         .hold_reply("done");
     let host = api.uri();
     let _guard = env_lock::lock_env([
-        ("GOOSE_PROVIDER", Some("openai")),
-        ("GOOSE_MODEL", Some("gpt-4o")),
+        ("WARMACHINE_PROVIDER", Some("openai")),
+        ("WARMACHINE_MODEL", Some("gpt-4o")),
         ("OPENAI_API_KEY", Some("fake-openai-no-keyring")),
         ("OPENAI_HOST", Some(host.as_str())),
         ("OPENAI_CUSTOM_HEADERS", Some("")),

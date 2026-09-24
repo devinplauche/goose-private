@@ -1,13 +1,13 @@
-use goose::providers::litellm::LiteLLMProvider;
+use warmachine::providers::litellm::LiteLLMProvider;
 
 #[tokio::test]
 async fn litellm_host_follows_the_configuration_contract() {
     let temp_dir = tempfile::tempdir().expect("tempdir");
     let root = temp_dir.path().to_string_lossy().to_string();
     let _guard = env_lock::lock_env([
-        ("GOOSE_PATH_ROOT", Some(root.as_str())),
-        ("GOOSE_DISABLE_KEYRING", Some("1")),
-        ("GOOSE_ADDITIONAL_CONFIG_FILES", None::<&str>),
+        ("WARMACHINE_PATH_ROOT", Some(root.as_str())),
+        ("WARMACHINE_DISABLE_KEYRING", Some("1")),
+        ("WARMACHINE_ADDITIONAL_CONFIG_FILES", None::<&str>),
         ("LITELLM_API_KEY", Some("test-key")),
         ("LITELLM_HOST", None::<&str>),
         ("LITELLM_CUSTOM_HEADERS", None::<&str>),

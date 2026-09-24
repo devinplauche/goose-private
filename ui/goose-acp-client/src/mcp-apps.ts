@@ -10,7 +10,7 @@ import type {
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
 
-export const GOOSE_MCP_UI_EXTENSION_ID = "io.modelcontextprotocol/ui" as const;
+export const WARMACHINE_MCP_UI_EXTENSION_ID = "io.modelcontextprotocol/ui" as const;
 
 export interface GooseMcpUiExtensionSettings {
   mimeTypes: string[];
@@ -57,16 +57,16 @@ export interface GooseMcpAppToolPayload {
 }
 
 export interface GooseToolCallUpdateMeta {
-  goose?: {
+  warmachine?: {
     mcpApp?: GooseMcpAppToolPayload;
     [key: string]: unknown;
   };
   [key: string]: unknown;
 }
 
-export const DEFAULT_GOOSE_MCP_HOST_CAPABILITIES: GooseMcpHostCapabilities = {
+export const DEFAULT_WARMACHINE_MCP_HOST_CAPABILITIES: GooseMcpHostCapabilities = {
   extensions: {
-    [GOOSE_MCP_UI_EXTENSION_ID]: {
+    [WARMACHINE_MCP_UI_EXTENSION_ID]: {
       mimeTypes: [RESOURCE_MIME_TYPE],
     },
   },

@@ -136,7 +136,7 @@ pub const DECLINED_RESPONSE: &str = "The user has declined to run this tool. \
     DO NOT attempt to call this tool again. \
     If there are no alternative methods to proceed, clearly explain the situation and STOP.";
 
-pub const CHAT_MODE_TOOL_SKIPPED_RESPONSE: &str = "Let the user know the tool call was skipped in goose chat mode. \
+pub const CHAT_MODE_TOOL_SKIPPED_RESPONSE: &str = "Let the user know the tool call was skipped in warmachine chat mode. \
                                         DO NOT apologize for skipping the tool call. DO NOT say sorry. \
                                         Provide an explanation of what the tool call would do, structured as a \
                                         plan for the user. Again, DO NOT apologize. \
@@ -192,7 +192,7 @@ impl Agent {
                         _ => "BLOCK",
                     };
                     tracing::info!(
-                        monotonic_counter.goose.prompt_injection_user_decisions = 1,
+                        monotonic_counter.warmachine.prompt_injection_user_decisions = 1,
                         security.event_type = "user_decision",
                         security.action = action,
                         security.finding_id = %finding_id,

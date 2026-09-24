@@ -1,8 +1,8 @@
 use anyhow::{anyhow, Result};
 use chrono;
-use goose::config::Config;
-use goose::conversation::message::{Message, MessageContent, MessageMetadata};
-use goose::session::{SessionManager, SessionType};
+use warmachine::config::Config;
+use warmachine::conversation::message::{Message, MessageContent, MessageMetadata};
+use warmachine::session::{SessionManager, SessionType};
 use rmcp::model::Role;
 
 use crate::session::{build_session, SessionBuilderConfig};
@@ -39,12 +39,12 @@ impl Shell {
 
 static BASH_CONFIG: ShellConfig = ShellConfig {
     script_template: r#"export AGENT_SESSION_ID="{session_id}"
-alias @goose='{goose_bin} term run'
+alias @warmachine='{goose_bin} term run'
 alias @g='{goose_bin} term run'
 
 goose_preexec() {
-    [[ "$1" =~ ^goose\ term ]] && return
-    [[ "$1" =~ ^(@goose|@g)($|[[:space:]]) ]] && return
+    [[ "$1" =~ ^warmachine\ term ]] && return
+    [[ "$1" =~ ^(@warmachine|@g)($|[[:space:]]) ]] && return
     ('{goose_bin}' term log "$1" &) 2>/dev/null
 }
 
@@ -56,7 +56,7 @@ fi{command_not_found_handler}"#,
         r#"
 
 command_not_found_handle() {
-    echo "🪿 Command '$1' not found. Asking goose..."
+    echo "🪿 Command '$1' not found. Asking warmachine..."
     '{goose_bin}' term run "$@"
     return 0
 }"#,
@@ -65,12 +65,12 @@ command_not_found_handle() {
 
 static ZSH_CONFIG: ShellConfig = ShellConfig {
     script_template: r#"export AGENT_SESSION_ID="{session_id}"
-alias @goose='{goose_bin} term run'
+alias @warmachine='{goose_bin} term run'
 alias @g='{goose_bin} term run'
 
 goose_preexec() {
-    [[ "$1" =~ ^goose\ term ]] && return
-    [[ "$1" =~ ^(@goose|@g)($|[[:space:]]) ]] && return
+    [[ "$1" =~ ^warmachine\ term ]] && return
+    [[ "$1" =~ ^(@warmachine|@g)($|[[:space:]]) ]] && return
     ('{goose_bin}' term log "$1" &) 2>/dev/null
 }
 
@@ -80,7 +80,7 @@ add-zsh-hook preexec goose_preexec{command_not_found_handler}"#,
         r#"
 
 command_not_found_handler() {
-    echo "🪿 Command '$1' not found. Asking goose..."
+    echo "🪿 Command '$1' not found. Asking warmachine..."
     '{goose_bin}' term run "$@"
     return 0
 }"#,
@@ -89,12 +89,12 @@ command_not_found_handler() {
 
 static FISH_CONFIG: ShellConfig = ShellConfig {
     script_template: r#"set -gx AGENT_SESSION_ID "{session_id}"
-function @goose; {goose_bin} term run $argv; end
+function @warmachine; {goose_bin} term run $argv; end
 function @g; {goose_bin} term run $argv; end
 
 function goose_preexec --on-event fish_preexec
-    string match -q -r '^goose term' -- $argv[1]; and return
-    string match -q -r '^(@goose|@g)($|\s)' -- $argv[1]; and return
+    string match -q -r '^warmachine term' -- $argv[1]; and return
+    string match -q -r '^(@warmachine|@g)($|\s)' -- $argv[1]; and return
     {goose_bin} term log "$argv[1]" 2>/dev/null &
 end"#,
     command_not_found: None,
@@ -102,11 +102,11 @@ end"#,
 
 static NU_CONFIG: ShellConfig = ShellConfig {
     script_template: r#"$env.AGENT_SESSION_ID = "{session_id}"
-def --wrapped @goose [...args] { run-external "{goose_bin}" "term" "run" ...$args }
+def --wrapped @warmachine [...args] { run-external "{goose_bin}" "term" "run" ...$args }
 def --wrapped @g [...args] { run-external "{goose_bin}" "term" "run" ...$args }
 
-if (($env | get -o GOOSE_NU_PREEXEC_INSTALLED | default false) != true) {
-    $env.GOOSE_NU_PREEXEC_INSTALLED = true
+if (($env | get -o WARMACHINE_NU_PREEXEC_INSTALLED | default false) != true) {
+    $env.WARMACHINE_NU_PREEXEC_INSTALLED = true
     $env.config.hooks.pre_execution = (
         $env.config.hooks.pre_execution
         | append {||
@@ -114,10 +114,10 @@ if (($env | get -o GOOSE_NU_PREEXEC_INSTALLED | default false) != true) {
             if ($line | is-empty) {
                 return
             }
-            if ($line =~ '^goose term(\s|$)') {
+            if ($line =~ '^warmachine term(\s|$)') {
                 return
             }
-            if ($line =~ '^(@goose|@g)(\s|$)') {
+            if ($line =~ '^(@warmachine|@g)(\s|$)') {
                 return
             }
             job spawn { run-external "{goose_bin}" "term" "log" $line | complete | ignore } | ignore
@@ -129,7 +129,7 @@ if (($env | get -o GOOSE_NU_PREEXEC_INSTALLED | default false) != true) {
         r#"
 $env.config.hooks.command_not_found = {|command_name|
     let prompt = (try { commandline | str trim } catch { $command_name })
-    print $"🪿 Command '($command_name)' not found. Asking goose..."
+    print $"🪿 Command '($command_name)' not found. Asking warmachine..."
     run-external "{goose_bin}" "term" "run" $prompt | complete | ignore
     null
 }"#,
@@ -138,13 +138,13 @@ $env.config.hooks.command_not_found = {|command_name|
 
 static POWERSHELL_CONFIG: ShellConfig = ShellConfig {
     script_template: r#"$env:AGENT_SESSION_ID = "{session_id}"
-function @goose {{ & '{goose_bin}' term run @args }}
+function @warmachine {{ & '{goose_bin}' term run @args }}
 function @g {{ & '{goose_bin}' term run @args }}
 
 Set-PSReadLineKeyHandler -Chord Enter -ScriptBlock {{
     $line = $null
     [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$null)
-    if ($line -notmatch '^goose term' -and $line -notmatch '^(@goose|@g)($|\s)') {{
+    if ($line -notmatch '^warmachine term' -and $line -notmatch '^(@warmachine|@g)($|\s)') {{
         Start-Job -ScriptBlock {{ & '{goose_bin}' term log $using:line }} | Out-Null
     }}
     [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
@@ -198,7 +198,7 @@ pub async fn handle_term_init(
             let session = session_manager
                 .create_session(
                     working_dir,
-                    "Goose Term Session".to_string(),
+                    "WarMachine Term Session".to_string(),
                     SessionType::Terminal,
                     Config::global().get_goose_mode().unwrap_or_default(),
                 )
@@ -218,7 +218,7 @@ pub async fn handle_term_init(
 
     let goose_bin = std::env::current_exe()
         .map(|p| p.to_string_lossy().into_owned())
-        .unwrap_or_else(|_| "goose".to_string());
+        .unwrap_or_else(|_| "warmachine".to_string());
 
     println!(
         "{}",
@@ -230,7 +230,7 @@ pub async fn handle_term_init(
 pub async fn handle_term_log(command: String) -> Result<()> {
     let session_id = std::env::var("AGENT_SESSION_ID").map_err(|_| {
         anyhow!(
-            "AGENT_SESSION_ID not set. Initialize terminal integration with `goose term init <shell>` and reload your shell first."
+            "AGENT_SESSION_ID not set. Initialize terminal integration with `warmachine term init <shell>` and reload your shell first."
         )
     })?;
 
@@ -267,7 +267,7 @@ pub async fn handle_term_run(prompt: Vec<String>) -> Result<()> {
     let session_id = std::env::var("AGENT_SESSION_ID").map_err(|_| {
         anyhow!(
             "AGENT_SESSION_ID not set.\n\n\
-             Initialize terminal integration with `goose term init <shell>` in your shell profile, \
+             Initialize terminal integration with `warmachine term init <shell>` in your shell profile, \
              then restart or reload that shell."
         )
     })?;
@@ -327,7 +327,7 @@ pub async fn handle_term_run(prompt: Vec<String>) -> Result<()> {
     Ok(())
 }
 
-/// Handle `goose term info` - print compact session info for prompt integration
+/// Handle `warmachine term info` - print compact session info for prompt integration
 pub async fn handle_term_info() -> Result<()> {
     let session_id = match std::env::var("AGENT_SESSION_ID") {
         Ok(id) => id,
@@ -341,7 +341,7 @@ pub async fn handle_term_info() -> Result<()> {
         .and_then(|s| s.usage.total_tokens)
         .unwrap_or(0) as usize;
 
-    let config = goose::config::Config::global();
+    let config = warmachine::config::Config::global();
     let model_name = session
         .as_ref()
         .and_then(|session| session.model_config.as_ref())
@@ -362,7 +362,7 @@ pub async fn handle_term_info() -> Result<()> {
         .and_then(|session| {
             let provider_name = session.provider_name.as_deref()?;
             let model = session.model_config.as_ref()?;
-            goose::context_limit::get_local_context_limit(provider_name, &model.model_name).ok()
+            warmachine::context_limit::get_local_context_limit(provider_name, &model.model_name).ok()
         })
         .unwrap_or(goose_providers::model::DEFAULT_CONTEXT_LIMIT);
 
@@ -387,36 +387,36 @@ mod tests {
 
     #[test]
     fn render_term_init_script_includes_nushell_hooks() {
-        let script = render_term_init_script(Shell::Nu, "session-123", "/tmp/goose", false);
+        let script = render_term_init_script(Shell::Nu, "session-123", "/tmp/warmachine", false);
 
         assert!(script.contains("$env.AGENT_SESSION_ID = \"session-123\""));
-        assert!(script.contains("def --wrapped @goose [...args]"));
+        assert!(script.contains("def --wrapped @warmachine [...args]"));
         assert!(script.contains("def --wrapped @g [...args]"));
-        assert!(script.contains("GOOSE_NU_PREEXEC_INSTALLED"));
+        assert!(script.contains("WARMACHINE_NU_PREEXEC_INSTALLED"));
         assert!(script.contains("$env.config.hooks.pre_execution"));
-        assert!(script.contains("job spawn { run-external \"/tmp/goose\" \"term\" \"log\" $line | complete | ignore } | ignore"));
+        assert!(script.contains("job spawn { run-external \"/tmp/warmachine\" \"term\" \"log\" $line | complete | ignore } | ignore"));
         assert!(!script.contains("command_not_found = {|command_name|"));
     }
 
     #[test]
     fn render_term_init_script_includes_nushell_default_handler() {
-        let script = render_term_init_script(Shell::Nu, "session-123", "/tmp/goose", true);
+        let script = render_term_init_script(Shell::Nu, "session-123", "/tmp/warmachine", true);
 
         assert!(script.contains("$env.config.hooks.command_not_found = {|command_name|"));
         assert!(script
-            .contains("run-external \"/tmp/goose\" \"term\" \"run\" $prompt | complete | ignore"));
+            .contains("run-external \"/tmp/warmachine\" \"term\" \"run\" $prompt | complete | ignore"));
     }
 
     #[test]
     fn render_term_init_script_skips_unsupported_default_handler() {
-        let script = render_term_init_script(Shell::Fish, "session-123", "/tmp/goose", true);
+        let script = render_term_init_script(Shell::Fish, "session-123", "/tmp/warmachine", true);
 
         assert!(!script.contains("command_not_found"));
     }
 
     #[test]
     fn shell_history_skips_turn_context_events() {
-        use goose::conversation::message::MessageMetadata;
+        use warmachine::conversation::message::MessageMetadata;
 
         let older = Message::user().with_text("git status");
         let block = Message::user()

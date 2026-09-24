@@ -185,7 +185,7 @@ async fn load_image_bytes(source: &str, working_dir: Option<&Path>) -> Result<Ve
 async fn load_url_bytes(url: url::Url) -> Result<Vec<u8>, String> {
     let client = reqwest::Client::builder()
         .user_agent(concat!(
-            "goose/",
+            "warmachine/",
             env!("CARGO_PKG_VERSION"),
             " (+https://github.com/aaif-goose/goose)"
         ))

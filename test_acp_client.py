@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Simple ACP client to test the goose ACP agent.
-Connects to goose acp running on stdio.
+Simple ACP client to test the warmachine ACP agent.
+Connects to warmachine acp running on stdio.
 
 Tests:
 1. Initialize - Establish connection and verify capabilities

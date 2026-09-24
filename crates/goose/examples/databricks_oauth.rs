@@ -1,7 +1,7 @@
 use anyhow::Result;
 use dotenvy::dotenv;
-use goose::conversation::message::Message;
-use goose::providers::create_with_named_model;
+use warmachine::conversation::message::Message;
+use warmachine::providers::create_with_named_model;
 use goose_providers::databricks::DATABRICKS_DEFAULT_MODEL;
 
 #[tokio::main]
@@ -15,7 +15,7 @@ async fn main() -> Result<()> {
     let message = Message::user().with_text("Tell me a short joke about programming.");
 
     let model_config =
-        goose::model_config::model_config_from_user_config("databricks", DATABRICKS_DEFAULT_MODEL)?;
+        warmachine::model_config::model_config_from_user_config("databricks", DATABRICKS_DEFAULT_MODEL)?;
     let (response, usage) = provider
         .complete(
             &model_config,

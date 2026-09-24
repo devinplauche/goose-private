@@ -53,7 +53,7 @@ pub enum LiveVoiceInteractionOutcome {
 
 /// Dedicated provider notification for OAuth device-code flow.
 /// Sent during provider authentication when the ACP client supports
-/// `goose.customNotifications` — avoids a fake empty session ID.
+/// `warmachine.customNotifications` — avoids a fake empty session ID.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcNotification)]
 #[notification(method = "_goose/unstable/providers/authentication/device-code")]
 #[serde(rename_all = "camelCase")]

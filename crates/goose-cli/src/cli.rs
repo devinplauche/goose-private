@@ -2,15 +2,15 @@ use anyhow::Result;
 use clap::{Args, CommandFactory, Parser, Subcommand};
 use clap_complete::{generate, Shell as ClapShell};
 use clap_complete_nushell::Nushell as ClapNushell;
-use goose::agents::GoosePlatform;
+use warmachine::agents::GoosePlatform;
 #[cfg(feature = "bundled-mcp")]
-use goose::builtin_extension::register_builtin_extensions;
-use goose::config::{Config, GooseMode};
+use warmachine::builtin_extension::register_builtin_extensions;
+use warmachine::config::{Config, GooseMode};
 #[cfg(feature = "telemetry")]
-use goose::posthog::get_telemetry_choice;
-use goose::recipe::Recipe;
+use warmachine::posthog::get_telemetry_choice;
+use warmachine::recipe::Recipe;
 #[cfg(feature = "acp-http")]
-use goose::source_roots::SourceRoot;
+use warmachine::source_roots::SourceRoot;
 #[cfg(feature = "bundled-mcp")]
 use goose_mcp::mcp_server_runner::{serve, McpCommand};
 #[cfg(feature = "bundled-mcp")]
@@ -39,13 +39,13 @@ use crate::commands::skills::handle_skills_list;
 use crate::recipes::extract_from_cli::extract_recipe_info_from_cli;
 use crate::recipes::recipe::{explain_recipe, render_recipe_as_yaml};
 use crate::session::{build_session, SessionBuilderConfig};
-use goose::agents::Container;
-use goose::session::session_manager::SessionType;
-use goose::session::SessionManager;
+use warmachine::agents::Container;
+use warmachine::session::session_manager::SessionType;
+use warmachine::session::SessionManager;
 use std::io::Read;
 use std::path::PathBuf;
 #[cfg(feature = "acp-http")]
-const GOOSE_SERVER_SECRET_KEY_ENV: &str = "GOOSE_SERVER__SECRET_KEY";
+const WARMACHINE_SERVER_SECRET_KEY_ENV: &str = "WARMACHINE_SERVER__SECRET_KEY";
 
 #[cfg(feature = "acp-http")]
 fn generate_serve_secret_key() -> String {
@@ -74,7 +74,7 @@ impl From<ServePlatform> for GoosePlatform {
 }
 
 #[derive(Parser)]
-#[command(name = "goose", author, version, display_name = "", about, long_about = None)]
+#[command(name = "warmachine", author, version, display_name = "", about, long_about = None)]
 pub struct Cli {
     #[command(subcommand)]
     command: Option<Command>,
@@ -141,7 +141,7 @@ pub struct SessionOptions {
         long = "container",
         value_name = "CONTAINER_ID",
         help = "Docker container ID to run extensions inside",
-        long_help = "Run extensions (stdio and built-in) inside the specified container. The extension must exist in the container. For built-in extensions, goose must be installed inside the container."
+        long_help = "Run extensions (stdio and built-in) inside the specified container. The extension must exist in the container. For built-in extensions, warmachine must be installed inside the container."
     )]
     pub container: Option<String>,
 }
@@ -154,7 +154,7 @@ pub struct StreamableHttpOptions {
 
 fn parse_streamable_http_extension(input: &str) -> Result<StreamableHttpOptions, String> {
     let mut input_iter = input.split_whitespace();
-    let (mut url, mut timeout) = (String::new(), goose::config::DEFAULT_EXTENSION_TIMEOUT);
+    let (mut url, mut timeout) = (String::new(), warmachine::config::DEFAULT_EXTENSION_TIMEOUT);
 
     if let Some(url_str) = input_iter.next() {
         url.push_str(url_str);
@@ -204,7 +204,7 @@ pub struct ExtensionOptions {
         long = "with-builtin",
         value_name = "NAME",
         help = "Add builtin extensions by name (e.g., 'developer' or multiple: 'developer,github')",
-        long_help = "Add one or more builtin extensions that are bundled with goose by specifying their names, comma-separated",
+        long_help = "Add one or more builtin extensions that are bundled with warmachine by specifying their names, comma-separated",
         value_delimiter = ','
     )]
     pub builtins: Vec<String>,
@@ -235,8 +235,8 @@ pub struct InputOptions {
         short = 't',
         long = "text",
         value_name = "TEXT",
-        help = "Input text to provide to goose directly",
-        long_help = "Input text containing commands for goose. Use this in lieu of the instructions argument.",
+        help = "Input text to provide to warmachine directly",
+        long_help = "Input text containing commands for warmachine. Use this in lieu of the instructions argument.",
         conflicts_with = "instructions",
         conflicts_with = "recipe"
     )]
@@ -279,7 +279,7 @@ pub struct InputOptions {
         long = "sub-recipe",
         value_name = "RECIPE",
         help = "Sub-recipe name or file path (can be specified multiple times)",
-        long_help = "Specify sub-recipes to include alongside the main recipe. Can be:\n  - Recipe names from GitHub (if GOOSE_RECIPE_GITHUB_REPO is configured)\n  - Local file paths to YAML files\nCan be specified multiple times to include multiple sub-recipes.",
+        long_help = "Specify sub-recipes to include alongside the main recipe. Can be:\n  - Recipe names from GitHub (if WARMACHINE_RECIPE_GITHUB_REPO is configured)\n  - Local file paths to YAML files\nCan be specified multiple times to include multiple sub-recipes.",
         action = clap::ArgAction::Append
     )]
     pub additional_sub_recipes: Vec<String>,
@@ -338,7 +338,7 @@ pub struct ModelOptions {
         long = "provider",
         value_name = "PROVIDER",
         help = "Specify the LLM provider to use (e.g., 'openai', 'anthropic')",
-        long_help = "Override the GOOSE_PROVIDER environment variable for this run. Available providers include openai, anthropic, ollama, databricks, gemini-cli, claude-code, and others."
+        long_help = "Override the WARMACHINE_PROVIDER environment variable for this run. Available providers include openai, anthropic, ollama, databricks, gemini-cli, claude-code, and others."
     )]
     pub provider: Option<String>,
 
@@ -347,7 +347,7 @@ pub struct ModelOptions {
         long = "model",
         value_name = "MODEL",
         help = "Specify the model to use (e.g., 'gpt-4o', 'claude-sonnet-4-20250514')",
-        long_help = "Override the GOOSE_MODEL environment variable for this run. The model must be supported by the specified provider."
+        long_help = "Override the WARMACHINE_MODEL environment variable for this run. The model must be supported by the specified provider."
     )]
     pub model: Option<String>,
 }
@@ -578,7 +578,7 @@ enum SessionCommand {
 
         #[arg(
             long = "nostr",
-            help = "Publish the JSON session export as an encrypted Nostr event and print a Goose share link"
+            help = "Publish the JSON session export as an encrypted Nostr event and print a WarMachine share link"
         )]
         nostr: bool,
 
@@ -595,7 +595,7 @@ enum SessionCommand {
     )]
     Import {
         #[arg(
-            help = "Path to a goose session export, a Claude Code, Codex, or Pi .jsonl transcript, or a goose://sessions/nostr share link"
+            help = "Path to a warmachine session export, a Claude Code, Codex, or Pi .jsonl transcript, or a warmachine://sessions/nostr share link"
         )]
         input: String,
 
@@ -736,8 +736,8 @@ enum PluginCommand {
 
 #[derive(Subcommand)]
 enum SkillsCommand {
-    /// List all skills available to the goose agent
-    #[command(about = "List all skills available to the goose agent")]
+    /// List all skills available to the warmachine agent
+    #[command(about = "List all skills available to the warmachine agent")]
     List,
 }
 
@@ -769,8 +769,8 @@ enum RecipeCommand {
         params: Vec<String>,
     },
 
-    /// Open a recipe in Goose Desktop
-    #[command(about = "Open a recipe in Goose Desktop")]
+    /// Open a recipe in WarMachine Desktop
+    #[command(about = "Open a recipe in WarMachine Desktop")]
     Open {
         /// Recipe name to get recipe file to open
         #[arg(help = "recipe name or full path to the recipe file")]
@@ -809,12 +809,12 @@ enum RecipeCommand {
 
 #[derive(Subcommand)]
 enum Command {
-    /// Configure goose settings
-    #[command(about = "Configure goose settings")]
+    /// Configure warmachine settings
+    #[command(about = "Configure warmachine settings")]
     Configure {},
 
-    /// Display goose configuration information
-    #[command(about = "Display goose information")]
+    /// Display warmachine configuration information
+    #[command(about = "Display warmachine information")]
     Info {
         /// Show verbose information including current configuration
         #[arg(short, long, help = "Show verbose information including config.yaml")]
@@ -823,26 +823,26 @@ enum Command {
         check: bool,
     },
 
-    #[command(about = "Check that your Goose setup is working")]
+    #[command(about = "Check that your WarMachine setup is working")]
     Doctor {},
 
     /// Manage system prompts and behaviors
     #[cfg(feature = "bundled-mcp")]
-    #[command(about = "Run one of the mcp servers bundled with goose")]
+    #[command(about = "Run one of the mcp servers bundled with warmachine")]
     Mcp {
         #[arg(value_parser = clap::value_parser!(McpCommand))]
         server: McpCommand,
     },
 
-    /// Run goose as an ACP (Agent Client Protocol) agent
-    #[command(about = "Run goose as an ACP agent server on stdio")]
+    /// Run warmachine as an ACP (Agent Client Protocol) agent
+    #[command(about = "Run warmachine as an ACP agent server on stdio")]
     Acp {
         /// Add builtin extensions by name
         #[arg(
             long = "with-builtin",
             value_name = "NAME",
             help = "Add builtin extensions by name (e.g., 'developer' or multiple: 'developer,github')",
-            long_help = "Add one or more builtin extensions that are bundled with goose by specifying their names, comma-separated",
+            long_help = "Add one or more builtin extensions that are bundled with warmachine by specifying their names, comma-separated",
             value_delimiter = ','
         )]
         builtins: Vec<String>,
@@ -885,7 +885,7 @@ enum Command {
             long = "with-builtin",
             value_name = "NAME",
             help = "Add builtin extensions by name (e.g., 'developer' or multiple: 'developer,github')",
-            long_help = "Add one or more builtin extensions that are bundled with goose by specifying their names, comma-separated",
+            long_help = "Add one or more builtin extensions that are bundled with warmachine by specifying their names, comma-separated",
             value_delimiter = ',',
             action = clap::ArgAction::Append
         )]
@@ -893,7 +893,7 @@ enum Command {
 
         #[arg(
             long = "dangerously-unauthenticated",
-            help = "Start the ACP endpoint without requiring GOOSE_SERVER__SECRET_KEY"
+            help = "Start the ACP endpoint without requiring WARMACHINE_SERVER__SECRET_KEY"
         )]
         dangerously_unauthenticated: bool,
 
@@ -908,11 +908,11 @@ enum Command {
         #[arg(long, help = "Enable scheduled recipe execution")]
         enable_scheduler: bool,
 
-        /// Also expose this server over goose roam (p2p) so paired devices can connect remotely
+        /// Also expose this server over warmachine roam (p2p) so paired devices can connect remotely
         #[cfg(feature = "roaming")]
         #[arg(
             long,
-            help = "Also expose this server over goose roam (p2p) so paired devices can connect remotely"
+            help = "Also expose this server over warmachine roam (p2p) so paired devices can connect remotely"
         )]
         roam: bool,
     },
@@ -1047,35 +1047,35 @@ enum Command {
         command: GatewayCommand,
     },
 
-    /// Update the goose CLI version
+    /// Update the warmachine CLI version
     #[cfg(feature = "update")]
-    #[command(about = "Update the goose CLI version")]
+    #[command(about = "Update the warmachine CLI version")]
     Update {
         /// Update to canary version
         #[arg(
             short,
             long,
             help = "Update to canary version",
-            long_help = "Update to the latest canary version of the goose CLI, otherwise updates to the latest stable version."
+            long_help = "Update to the latest canary version of the warmachine CLI, otherwise updates to the latest stable version."
         )]
         canary: bool,
 
-        /// Enforce to re-configure goose during update
-        #[arg(short, long, help = "Enforce to re-configure goose during update")]
+        /// Enforce to re-configure warmachine during update
+        #[arg(short, long, help = "Enforce to re-configure warmachine during update")]
         reconfigure: bool,
     },
 
     /// Terminal-integrated session (one session per terminal)
     #[command(
-        about = "Terminal-integrated goose session",
-        long_about = "Runs a goose session tied to your terminal window.\n\
+        about = "Terminal-integrated warmachine session",
+        long_about = "Runs a warmachine session tied to your terminal window.\n\
                       Each terminal maintains its own persistent session that resumes automatically.\n\n\
                       Setup:\n  \
-                        eval \"$(goose term init zsh)\"  # zsh/bash\n  \
-                        let init = ($nu.cache-dir | path join \"goose-term-init.nu\"); ^goose term init nu | save --force $init; source $init\n\n\
+                        eval \"$(warmachine term init zsh)\"  # zsh/bash\n  \
+                        let init = ($nu.cache-dir | path join \"goose-term-init.nu\"); ^warmachine term init nu | save --force $init; source $init\n\n\
                       Usage:\n  \
-                        goose term run \"list files in this directory\"\n  \
-                        @goose \"create a python script\"  # using alias\n  \
+                        warmachine term run \"list files in this directory\"\n  \
+                        @warmachine \"create a python script\"  # using alias\n  \
                         @g \"quick question\"  # short alias"
     )]
     Term {
@@ -1099,7 +1099,7 @@ enum Command {
         #[arg(value_enum)]
         shell: CompletionShell,
 
-        #[arg(long, default_value = "goose", help = "Provide a custom binary name")]
+        #[arg(long, default_value = "warmachine", help = "Provide a custom binary name")]
         bin_name: String,
     },
 
@@ -1108,8 +1108,8 @@ enum Command {
     /// Discovers `**/.agents/checks/*.md` subagent reviewers and
     /// `**/.agents/REVIEW.md` scoped prompt overrides, builds a review
     /// request from the working tree (or an explicit diff range), and
-    /// runs the review through goose.
-    #[command(about = "Review the current diff using goose")]
+    /// runs the review through warmachine.
+    #[command(about = "Review the current diff using warmachine")]
     Review {
         /// Diff range to review (e.g. "main...HEAD"). Defaults to the working
         /// tree vs HEAD.
@@ -1153,7 +1153,7 @@ enum Command {
         /// Disable the Rust-driven parallel orchestrator and fall back to
         /// the single-prompt path that asks the main agent to delegate
         /// each check via `delegate(... async: true ...)`. The default
-        /// orchestrator dispatches one `goose run` subprocess per check
+        /// orchestrator dispatches one `warmachine run` subprocess per check
         /// (capped at 4 concurrent), bounding wall-clock to the slowest
         /// single check rather than waiting on the model to issue
         /// dispatches.
@@ -1214,7 +1214,7 @@ enum Command {
 
     #[command(
         name = "mcp-probe",
-        about = "Start a Goose MCP session without an LLM and inspect a stdio MCP server",
+        about = "Start a WarMachine MCP session without an LLM and inspect a stdio MCP server",
         hide = true
     )]
     McpProbe {
@@ -1289,17 +1289,17 @@ enum TermCommand {
     #[command(
         about = "Print shell initialization script",
         long_about = "Prints shell configuration to set up terminal-integrated sessions.\n\
-                      Each terminal gets a persistent goose session that automatically resumes.\n\n\
+                      Each terminal gets a persistent warmachine session that automatically resumes.\n\n\
                       Setup:\n  \
-                        echo 'eval \"$(goose term init zsh)\"' >> ~/.zshrc\n  \
+                        echo 'eval \"$(warmachine term init zsh)\"' >> ~/.zshrc\n  \
                         source ~/.zshrc\n\n\
                         Nushell:\n  \
                         let init = ($nu.cache-dir | path join \"goose-term-init.nu\")\n  \
-                        ^goose term init nu | save --force $init\n  \
+                        ^warmachine term init nu | save --force $init\n  \
                         source $init\n\n\
-                      With --default (anything typed that isn't a command goes to goose):\n  \
-                        echo 'eval \"$(goose term init zsh --default)\"' >> ~/.zshrc\n  \
-                        ^goose term init nu --default | save --force $init"
+                      With --default (anything typed that isn't a command goes to warmachine):\n  \
+                        echo 'eval \"$(warmachine term init zsh --default)\"' >> ~/.zshrc\n  \
+                        ^warmachine term init nu --default | save --force $init"
     )]
     Init {
         /// Shell type (bash, zsh, fish, nu, powershell)
@@ -1309,11 +1309,11 @@ enum TermCommand {
         #[arg(short, long, help = "Name for the terminal session")]
         name: Option<String>,
 
-        /// Make goose the default handler for unknown commands
+        /// Make warmachine the default handler for unknown commands
         #[arg(
             long = "default",
-            help = "Make goose the default handler for unknown commands",
-            long_help = "When enabled, anything you type that isn't a valid command will be sent to goose. Supported for zsh, bash, and nu."
+            help = "Make warmachine the default handler for unknown commands",
+            long_help = "When enabled, anything you type that isn't a valid command will be sent to warmachine. Supported for zsh, bash, and nu."
         )]
         default: bool,
     },
@@ -1330,12 +1330,12 @@ enum TermCommand {
         about = "Run a prompt in the terminal session",
         long_about = "Run a prompt in the terminal-integrated session.\n\n\
                       Examples:\n  \
-                        goose term run list files in this directory\n  \
-                        @goose list files  # using alias\n  \
+                        warmachine term run list files in this directory\n  \
+                        @warmachine list files  # using alias\n  \
                         @g why did that fail  # short alias"
     )]
     Run {
-        /// The prompt to send to goose (multiple words allowed without quotes)
+        /// The prompt to send to warmachine (multiple words allowed without quotes)
         #[arg(required = true, num_args = 1..)]
         prompt: Vec<String>,
     },
@@ -1427,7 +1427,7 @@ struct McpProbeScript {
     steps: Vec<McpProbeStep>,
     elicitation: Option<McpProbeElicitation>,
     #[serde(default)]
-    oauth: goose::oauth::OAuthFlowConfig,
+    oauth: warmachine::oauth::OAuthFlowConfig,
     protocol_version: Option<String>,
 }
 
@@ -1454,8 +1454,8 @@ enum McpProbeElicitation {
 }
 
 async fn handle_mcp_probe(extension_command: String, script_path: Option<String>) -> Result<()> {
-    use goose::agents::{Agent, AgentConfig, ToolCallContext};
-    use goose::config::ExtensionConfig;
+    use warmachine::agents::{Agent, AgentConfig, ToolCallContext};
+    use warmachine::config::ExtensionConfig;
     use rmcp::model::{ElicitRequestParams, ElicitResult, ElicitationAction};
     use tokio_util::sync::CancellationToken;
 
@@ -1476,7 +1476,7 @@ async fn handle_mcp_probe(extension_command: String, script_path: Option<String>
                 McpProbeStep::ListResources,
             ],
             elicitation: None,
-            oauth: goose::oauth::OAuthFlowConfig::default(),
+            oauth: warmachine::oauth::OAuthFlowConfig::default(),
             protocol_version: None,
         }
     };
@@ -1486,7 +1486,7 @@ async fn handle_mcp_probe(extension_command: String, script_path: Option<String>
     {
         crate::session::CliSession::parse_streamable_http_extension(
             &extension_command,
-            goose::config::DEFAULT_EXTENSION_TIMEOUT,
+            warmachine::config::DEFAULT_EXTENSION_TIMEOUT,
         )
     } else {
         crate::session::CliSession::parse_stdio_extension(&extension_command)?
@@ -1499,19 +1499,19 @@ async fn handle_mcp_probe(extension_command: String, script_path: Option<String>
     }
 
     if let Some(client_id) = &script.oauth.client_id {
-        std::env::set_var("GOOSE_MCP_OAUTH_CLIENT_ID", client_id);
+        std::env::set_var("WARMACHINE_MCP_OAUTH_CLIENT_ID", client_id);
     }
     if let Some(client_secret) = &script.oauth.client_secret {
-        std::env::set_var("GOOSE_MCP_OAUTH_CLIENT_SECRET", client_secret);
+        std::env::set_var("WARMACHINE_MCP_OAUTH_CLIENT_SECRET", client_secret);
     }
     if let Some(client_metadata_url) = &script.oauth.client_metadata_url {
-        std::env::set_var("GOOSE_MCP_OAUTH_CLIENT_METADATA_URL", client_metadata_url);
+        std::env::set_var("WARMACHINE_MCP_OAUTH_CLIENT_METADATA_URL", client_metadata_url);
     }
 
-    let config = goose::config::Config::global();
+    let config = warmachine::config::Config::global();
     let mut agent_config = AgentConfig::new(
         std::sync::Arc::new(SessionManager::instance()),
-        goose::config::permission::PermissionManager::instance(),
+        warmachine::config::permission::PermissionManager::instance(),
         None,
         config.get_goose_mode().unwrap_or_default(),
         true,
@@ -1561,7 +1561,7 @@ async fn handle_mcp_probe(extension_command: String, script_path: Option<String>
         .create_session(
             std::env::current_dir()?,
             "MCP Probe".to_string(),
-            goose::session::session_manager::SessionType::Hidden,
+            warmachine::session::session_manager::SessionType::Hidden,
             agent.config.goose_mode,
         )
         .await?;
@@ -1661,7 +1661,7 @@ type RoamShareSlot =
 
 #[cfg(feature = "roaming")]
 fn spawn_roam_share(
-    server: std::sync::Arc<goose::acp::server_factory::AcpServer>,
+    server: std::sync::Arc<warmachine::acp::server_factory::AcpServer>,
 ) -> RoamShareSlot {
     use crate::commands::roam::try_acquire_roam_lock_owner;
 
@@ -1686,7 +1686,7 @@ fn spawn_roam_share(
                     if !standing_by {
                         standing_by = true;
                         eprintln!(
-                            "another goose process owns the roaming endpoint; standing by to take over if it exits"
+                            "another warmachine process owns the roaming endpoint; standing by to take over if it exits"
                         );
                     }
                 }
@@ -1706,13 +1706,13 @@ fn spawn_roam_share(
 
 #[cfg(feature = "roaming")]
 async fn start_roam_share(
-    server: std::sync::Arc<goose::acp::server_factory::AcpServer>,
+    server: std::sync::Arc<warmachine::acp::server_factory::AcpServer>,
 ) -> Result<std::sync::Arc<goose_roaming::RoamingNode>> {
     use crate::commands::roam::{
         directory_path, load_identity, resolve_relay_settings, trust_path,
     };
     use crate::commands::roam_full_bridge::FullAcpBridge;
-    use goose::config::paths::Paths;
+    use warmachine::config::paths::Paths;
     use goose_roaming::{RoamingConfig, RoamingNode, TrustBook};
     use std::sync::Arc;
 
@@ -1732,7 +1732,7 @@ async fn start_roam_share(
     .await?;
 
     let agent_id = node.endpoint_id().to_string();
-    // Roaming sessions run where `goose serve` was started: the connector's
+    // Roaming sessions run where `warmachine serve` was started: the connector's
     // machine-local path is meaningless on this host, and the serve-wide
     // server keeps `session_cwd: None` for local ACP clients.
     let session_cwd =
@@ -1777,10 +1777,10 @@ async fn start_roam_share(
 #[cfg(feature = "acp-http")]
 async fn handle_serve_command(args: ServeCommandArgs) -> Result<()> {
     use axum::http::HeaderValue;
-    use goose::acp::server::AcpBuiltinSelection;
-    use goose::acp::server_factory::{AcpServer, AcpServerFactoryConfig};
-    use goose::acp::transport::create_router;
-    use goose::config::paths::Paths;
+    use warmachine::acp::server::AcpBuiltinSelection;
+    use warmachine::acp::server_factory::{AcpServer, AcpServerFactoryConfig};
+    use warmachine::acp::transport::create_router;
+    use warmachine::config::paths::Paths;
     use std::net::SocketAddr;
     use std::sync::Arc;
     use tracing::{info, warn};
@@ -1822,19 +1822,19 @@ async fn handle_serve_command(args: ServeCommandArgs) -> Result<()> {
         session_cwd: None,
         enable_scheduler,
     }));
-    let env_secret = std::env::var(GOOSE_SERVER_SECRET_KEY_ENV)
+    let env_secret = std::env::var(WARMACHINE_SERVER_SECRET_KEY_ENV)
         .ok()
         .map(|secret| secret.trim().to_string())
         .filter(|secret| !secret.is_empty());
     let require_token = env_secret.is_some();
     if !require_token && !dangerously_unauthenticated {
         anyhow::bail!(
-            "{GOOSE_SERVER_SECRET_KEY_ENV} must be set to start `goose serve`; pass --dangerously-unauthenticated to run without ACP authentication"
+            "{WARMACHINE_SERVER_SECRET_KEY_ENV} must be set to start `warmachine serve`; pass --dangerously-unauthenticated to run without ACP authentication"
         );
     }
     if dangerously_unauthenticated && !require_token {
         warn!(
-            "{GOOSE_SERVER_SECRET_KEY_ENV} is not set and --dangerously-unauthenticated was passed; the ACP endpoint will accept unauthenticated connections"
+            "{WARMACHINE_SERVER_SECRET_KEY_ENV} is not set and --dangerously-unauthenticated was passed; the ACP endpoint will accept unauthenticated connections"
         );
     }
     let additional_allowed_origins = allowed_origins
@@ -1868,11 +1868,11 @@ async fn handle_serve_command(args: ServeCommandArgs) -> Result<()> {
 
     let config = Config::global();
     let tls_cert_path =
-        tls_cert_path.or_else(|| config.get_param::<String>("GOOSE_TLS_CERT_PATH").ok());
+        tls_cert_path.or_else(|| config.get_param::<String>("WARMACHINE_TLS_CERT_PATH").ok());
     let tls_key_path =
-        tls_key_path.or_else(|| config.get_param::<String>("GOOSE_TLS_KEY_PATH").ok());
+        tls_key_path.or_else(|| config.get_param::<String>("WARMACHINE_TLS_KEY_PATH").ok());
     let tls = tls
-        || config.get_param::<bool>("GOOSE_TLS").unwrap_or(false)
+        || config.get_param::<bool>("WARMACHINE_TLS").unwrap_or(false)
         || tls_cert_path.is_some()
         || tls_key_path.is_some();
 
@@ -1880,7 +1880,7 @@ async fn handle_serve_command(args: ServeCommandArgs) -> Result<()> {
     if tls {
         #[cfg(any(feature = "rustls-tls", feature = "native-tls"))]
         {
-            let tls_setup = goose::acp::transport::tls::setup_tls(
+            let tls_setup = warmachine::acp::transport::tls::setup_tls(
                 tls_cert_path.as_deref(),
                 tls_key_path.as_deref(),
             )
@@ -2041,7 +2041,7 @@ async fn handle_interactive_session(args: InteractiveSessionArgs) -> Result<()> 
     };
 
     tracing::info!(
-        monotonic_counter.goose.session_starts = 1,
+        monotonic_counter.warmachine.session_starts = 1,
         session_type,
         interactive = true,
         "Session started"
@@ -2139,7 +2139,7 @@ async fn log_session_completion(
         .unwrap_or((0, 0));
 
     tracing::info!(
-        monotonic_counter.goose.session_completions = 1,
+        monotonic_counter.warmachine.session_completions = 1,
         session_type,
         exit_type,
         duration_ms = session_duration.as_millis() as u64,
@@ -2149,14 +2149,14 @@ async fn log_session_completion(
     );
 
     tracing::info!(
-        monotonic_counter.goose.session_duration_ms = session_duration.as_millis() as u64,
+        monotonic_counter.warmachine.session_duration_ms = session_duration.as_millis() as u64,
         session_type,
         "Session duration"
     );
 
     if total_tokens > 0 {
         tracing::info!(
-            monotonic_counter.goose.session_tokens = total_tokens,
+            monotonic_counter.warmachine.session_tokens = total_tokens,
             session_type,
             "Session tokens"
         );
@@ -2188,7 +2188,7 @@ fn parse_run_input(
         (Some(file), _, _) => {
             let contents = std::fs::read_to_string(file).unwrap_or_else(|err| {
                 eprintln!(
-                    "Instruction file not found — did you mean to use goose run --text?\n{}",
+                    "Instruction file not found — did you mean to use warmachine run --text?\n{}",
                     err
                 );
                 std::process::exit(1);
@@ -2217,7 +2217,7 @@ fn parse_run_input(
             let recipe_version = crate::recipes::search_recipe::load_recipe_file(recipe_name)
                 .ok()
                 .and_then(|rf| {
-                    goose::recipe::template_recipe::parse_recipe_content(
+                    warmachine::recipe::template_recipe::parse_recipe_content(
                         &rf.content,
                         Some(rf.parent_dir.display().to_string()),
                     )
@@ -2239,7 +2239,7 @@ fn parse_run_input(
             }
 
             tracing::info!(
-                monotonic_counter.goose.recipe_runs = 1,
+                monotonic_counter.warmachine.recipe_runs = 1,
                 recipe_name = %recipe_display_name,
                 recipe_version = %recipe_version,
                 session_type = "recipe",
@@ -2336,7 +2336,7 @@ async fn handle_run_command(
         let session_type = if recipe.is_some() { "recipe" } else { "run" };
 
         tracing::info!(
-            monotonic_counter.goose.session_starts = 1,
+            monotonic_counter.warmachine.session_starts = 1,
             session_type,
             interactive = false,
             "Headless session started"
@@ -2362,7 +2362,7 @@ async fn handle_gateway_command(command: GatewayCommand) -> Result<()> {
             bot_token,
         } => {
             let mut platform_config = serde_json::json!({ "bot_token": bot_token });
-            if let Some(ids) = goose::gateway::manager::saved_allowed_user_ids(&gateway_type) {
+            if let Some(ids) = warmachine::gateway::manager::saved_allowed_user_ids(&gateway_type) {
                 platform_config["allowed_user_ids"] = serde_json::json!(ids);
             }
             gateway::handle_gateway_start(gateway_type, platform_config).await
@@ -2438,11 +2438,11 @@ async fn handle_term_subcommand(command: TermCommand) -> Result<()> {
 }
 
 #[cfg(feature = "local-inference")]
-fn print_download_progress(manager: &goose::download_manager::DownloadManager) {
+fn print_download_progress(manager: &warmachine::download_manager::DownloadManager) {
     let Some(progress) = manager
         .list_progress()
         .into_iter()
-        .find(|progress| progress.status == goose::download_manager::DownloadStatus::Downloading)
+        .find(|progress| progress.status == warmachine::download_manager::DownloadStatus::Downloading)
     else {
         return;
     };
@@ -2509,9 +2509,9 @@ fn local_search_memory_limit(ram_gb: Option<f64>) -> Result<u64> {
         return gb_to_bytes(gb);
     }
 
-    match goose::providers::local_inference::InferenceRuntime::get_or_init() {
+    match warmachine::providers::local_inference::InferenceRuntime::get_or_init() {
         Ok(runtime) => Ok(
-            goose::providers::local_inference::available_inference_memory_bytes(runtime.as_ref()),
+            warmachine::providers::local_inference::available_inference_memory_bytes(runtime.as_ref()),
         ),
         Err(_) => gb_to_bytes(16.0),
     }
@@ -2528,10 +2528,10 @@ fn format_size(bytes: u64) -> String {
 
 #[cfg(feature = "local-inference")]
 fn recommended_variant(
-    model: &goose::providers::local_inference::hf_models::HfModelInfo,
+    model: &warmachine::providers::local_inference::hf_models::HfModelInfo,
     available_memory: u64,
-) -> Option<&goose::providers::local_inference::hf_models::HfModelVariant> {
-    use goose::providers::local_inference::hf_models::{recommend_variant, HfQuantVariant};
+) -> Option<&warmachine::providers::local_inference::hf_models::HfModelVariant> {
+    use warmachine::providers::local_inference::hf_models::{recommend_variant, HfQuantVariant};
 
     let mut variant_indexes = Vec::new();
     let mut gguf_variants = Vec::new();
@@ -2557,9 +2557,9 @@ fn recommended_variant(
 
 #[cfg(feature = "local-inference")]
 async fn handle_local_models_command(command: LocalModelsCommand) -> Result<()> {
-    use goose::providers::local_inference::hf_models;
+    use warmachine::providers::local_inference::hf_models;
 
-    goose::providers::local_inference::configure_huggingface_auth();
+    warmachine::providers::local_inference::configure_huggingface_auth();
 
     match command {
         LocalModelsCommand::Search {
@@ -2662,7 +2662,7 @@ async fn handle_local_models_command(command: LocalModelsCommand) -> Result<()> 
                         format_size(variant.size_bytes)
                     );
                     println!(
-                        "    Download: goose local-models download '{}'",
+                        "    Download: warmachine local-models download '{}'",
                         variant.download_id
                     );
                 } else {
@@ -2693,7 +2693,7 @@ async fn handle_local_models_command(command: LocalModelsCommand) -> Result<()> 
                     );
                     if variant.supported {
                         println!(
-                            "    Download: goose local-models download '{}'",
+                            "    Download: warmachine local-models download '{}'",
                             variant.download_id
                         );
                     }
@@ -2702,7 +2702,7 @@ async fn handle_local_models_command(command: LocalModelsCommand) -> Result<()> 
         }
         LocalModelsCommand::Download { spec } => {
             println!("Resolving {}...", spec);
-            let manager = goose::download_manager::get_download_manager();
+            let manager = warmachine::download_manager::get_download_manager();
             let resolve_task = hf_models::resolve_local_model_spec(&spec);
             tokio::pin!(resolve_task);
             let resolved = loop {
@@ -2804,7 +2804,7 @@ pub async fn cli() -> anyhow::Result<()> {
 
     let command_name = get_command_name(&cli.command);
     tracing::info!(
-        monotonic_counter.goose.cli_commands = 1,
+        monotonic_counter.warmachine.cli_commands = 1,
         command = command_name,
         "CLI command executed"
     );
@@ -2823,7 +2823,7 @@ pub async fn cli() -> anyhow::Result<()> {
         Some(Command::Acp {
             builtins,
             enable_scheduler,
-        }) => goose::acp::server::run(builtins, enable_scheduler).await,
+        }) => warmachine::acp::server::run(builtins, enable_scheduler).await,
         #[cfg(feature = "roaming")]
         Some(Command::Roam { command }) => handle_roam_command(command).await,
         #[cfg(feature = "acp-http")]
@@ -2962,7 +2962,7 @@ pub async fn cli() -> anyhow::Result<()> {
             .await
         }
         Some(Command::ValidateExtensions { file }) => {
-            use goose::agents::validate_extensions::validate_bundled_extensions;
+            use warmachine::agents::validate_extensions::validate_bundled_extensions;
             match validate_bundled_extensions(&file) {
                 Ok(msg) => {
                     println!("{msg}");
@@ -2985,7 +2985,7 @@ mod tests {
 
     #[test]
     fn completion_command_accepts_nushell_alias() {
-        let cli = Cli::try_parse_from(["goose", "completion", "nushell"]).expect("parse failed");
+        let cli = Cli::try_parse_from(["warmachine", "completion", "nushell"]).expect("parse failed");
 
         match cli.command {
             Some(Command::Completion {
@@ -2999,7 +2999,7 @@ mod tests {
     #[test]
     fn session_resume_accepts_provider_and_model_overrides() {
         let cli = Cli::try_parse_from([
-            "goose",
+            "warmachine",
             "session",
             "--resume",
             "--provider",
@@ -3023,7 +3023,7 @@ mod tests {
 
     #[test]
     fn session_accepts_provider_override_without_resume() {
-        let cli = Cli::try_parse_from(["goose", "session", "--provider", "openai"])
+        let cli = Cli::try_parse_from(["warmachine", "session", "--provider", "openai"])
             .expect("provider override should work for a new session");
 
         match cli.command {
@@ -3039,7 +3039,7 @@ mod tests {
 
     #[test]
     fn session_accepts_model_override_without_resume() {
-        let cli = Cli::try_parse_from(["goose", "session", "--model", "gpt-5.4"])
+        let cli = Cli::try_parse_from(["warmachine", "session", "--model", "gpt-5.4"])
             .expect("model override should work for a new session");
 
         match cli.command {
@@ -3055,7 +3055,7 @@ mod tests {
 
     #[test]
     fn session_accepts_system_prompt() {
-        let cli = Cli::try_parse_from(["goose", "session", "--system", "extra instructions"])
+        let cli = Cli::try_parse_from(["warmachine", "session", "--system", "extra instructions"])
             .expect("system prompt should work for a new session");
 
         match cli.command {
@@ -3071,11 +3071,11 @@ mod tests {
         let mut cmd = Cli::command();
         let mut buffer = Vec::new();
 
-        CompletionShell::Nu.generate(&mut cmd, "goose", &mut buffer);
+        CompletionShell::Nu.generate(&mut cmd, "warmachine", &mut buffer);
 
         let script = String::from_utf8(buffer).expect("utf8");
         assert!(script.contains("module completions"));
-        assert!(script.contains("export extern goose"));
+        assert!(script.contains("export extern warmachine"));
         assert!(script.contains("export use completions *"));
     }
 
@@ -3089,7 +3089,7 @@ mod tests {
         init.write_long_help(&mut buffer).expect("write help");
 
         let help = String::from_utf8(buffer).expect("utf8");
-        assert!(help.contains("goose term init nu"));
+        assert!(help.contains("warmachine term init nu"));
         assert!(help.contains("Supported for zsh, bash, and nu"));
     }
 
@@ -3109,7 +3109,7 @@ mod tests {
 
     #[test]
     fn skills_command_accepts_list_subcommand() {
-        let cli = Cli::try_parse_from(["goose", "skills", "list"]).expect("parse failed");
+        let cli = Cli::try_parse_from(["warmachine", "skills", "list"]).expect("parse failed");
 
         match cli.command {
             Some(Command::Skills {
@@ -3123,7 +3123,7 @@ mod tests {
     #[test]
     fn serve_command_accepts_dangerously_unauthenticated_flag() {
         let cli = Cli::try_parse_from([
-            "goose",
+            "warmachine",
             "serve",
             "--dangerously-unauthenticated",
             "--allowed-origin",
@@ -3152,7 +3152,7 @@ mod tests {
     #[test]
     fn review_command_accepts_options() {
         let cli = Cli::try_parse_from([
-            "goose",
+            "warmachine",
             "review",
             "origin/main...HEAD",
             "--prompt",

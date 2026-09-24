@@ -35,7 +35,7 @@ impl SubprocessExt for std::process::Command {
 /// a minimal PATH like `/usr/bin:/bin`. This function spawns a login shell to
 /// source the user's profile and recover the full PATH.
 ///
-/// Ported from `crates/goose/src/agents/platform_extensions/developer/shell.rs`
+/// Ported from `crates/warmachine/src/agents/platform_extensions/developer/shell.rs`
 /// where it was introduced in #5774 for the developer extension. This makes the
 /// same fix available to all MCP extensions in goose-mcp.
 #[cfg(not(windows))]
@@ -65,7 +65,7 @@ fn resolve_login_shell_path() -> Option<String> {
         .stderr(Stdio::null());
 
     // Spawn in a new session so that interactive shell job-control setup
-    // cannot steal the terminal foreground from the parent goose process.
+    // cannot steal the terminal foreground from the parent warmachine process.
     cmd.wrap(ProcessSession);
 
     let child = cmd.spawn().ok()?;

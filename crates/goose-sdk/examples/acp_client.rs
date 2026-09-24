@@ -1,11 +1,11 @@
 //! ACP Client Example
 //!
-//! Spawns `goose acp` as a child process and sends it a completion request
+//! Spawns `warmachine acp` as a child process and sends it a completion request
 //! using the Agent Client Protocol over stdio.
 //!
 //! # Prerequisites
 //!
-//! You must have goose built and a provider configured (`goose configure`).
+//! You must have warmachine built and a provider configured (`warmachine configure`).
 //!
 //! # Usage
 //!
@@ -13,10 +13,10 @@
 //! cargo run -p goose-sdk --example acp_client -- "What is 2 + 2?"
 //! ```
 //!
-//! Or with a custom goose binary path:
+//! Or with a custom warmachine binary path:
 //!
 //! ```bash
-//! cargo run -p goose-sdk --example acp_client -- --goose-bin ./target/debug/goose "Explain Rust's ownership model in one sentence"
+//! cargo run -p goose-sdk --example acp_client -- --goose-bin ./target/debug/warmachine "Explain Rust's ownership model in one sentence"
 //! ```
 
 use agent_client_protocol::schema::v1::{
@@ -136,7 +136,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn parse_args(args: &[String]) -> Result<(PathBuf, String), String> {
-    let mut goose_bin = PathBuf::from("goose");
+    let mut goose_bin = PathBuf::from("warmachine");
     let mut i = 0;
 
     while i < args.len() {

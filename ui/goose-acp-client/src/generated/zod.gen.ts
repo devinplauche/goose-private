@@ -211,7 +211,7 @@ export const zReadResourceResponse_unstable = z.object({
 });
 
 /**
- * List available goose apps, optionally scoped to a session.
+ * List available warmachine apps, optionally scoped to a session.
  */
 export const zAppsListRequest_unstable = z.object({
     sessionId: z.string().nullish()
@@ -222,7 +222,7 @@ export const zAppsListResponse_unstable = z.object({
 });
 
 /**
- * Export a goose app as HTML.
+ * Export a warmachine app as HTML.
  */
 export const zAppsExportRequest_unstable = z.object({
     name: z.string()
@@ -233,7 +233,7 @@ export const zAppsExportResponse_unstable = z.object({
 });
 
 /**
- * Import a goose app from HTML.
+ * Import a warmachine app from HTML.
  */
 export const zAppsImportRequest_unstable = z.object({
     html: z.string()
@@ -245,7 +245,7 @@ export const zAppsImportResponse_unstable = z.object({
 });
 
 /**
- * Delete a goose app by name.
+ * Delete a warmachine app by name.
  */
 export const zAppsDeleteRequest_unstable = z.object({
     name: z.string()
@@ -275,7 +275,7 @@ export const zSessionSystemPromptMode = z.union([
 /**
  * Set, append, or clear system prompt text for a session.
  *
- * `mode: "set"` replaces goose's base system prompt. `mode: "append"` adds an
+ * `mode: "set"` replaces warmachine's base system prompt. `mode: "append"` adds an
  * instruction under "Additional Instructions". Reusing a key replaces the
  * previous value for that mode/key; sending empty text clears it.
  */
@@ -469,7 +469,7 @@ export const zDiagnosticsGetResponse_unstable = z.object({
 });
 
 /**
- * List all available goose prompt templates.
+ * List all available warmachine prompt templates.
  */
 export const zListPromptsRequest_unstable = z.record(z.string(), z.unknown());
 
@@ -489,7 +489,7 @@ export const zListPromptsResponse_unstable = z.object({
 });
 
 /**
- * Read a goose prompt template.
+ * Read a warmachine prompt template.
  */
 export const zGetPromptRequest_unstable = z.object({
     name: z.string()
@@ -503,7 +503,7 @@ export const zGetPromptResponse_unstable = z.object({
 });
 
 /**
- * Save a custom goose prompt template.
+ * Save a custom warmachine prompt template.
  */
 export const zSavePromptRequest_unstable = z.object({
     name: z.string(),
@@ -515,7 +515,7 @@ export const zPromptOperationResponse_unstable = z.object({
 });
 
 /**
- * Reset a goose prompt template to its default content.
+ * Reset a warmachine prompt template to its default content.
  */
 export const zResetPromptRequest_unstable = z.object({
     name: z.string()
@@ -541,7 +541,7 @@ export const zGetConfigExtensionsResponse_unstable = z.object({
 });
 
 /**
- * Persist a new extension to the user's global goose config.
+ * Persist a new extension to the user's global warmachine config.
  */
 export const zAddConfigExtensionRequest_unstable = z.object({
     extension: zGooseExtension,
@@ -549,14 +549,14 @@ export const zAddConfigExtensionRequest_unstable = z.object({
 });
 
 /**
- * Remove a persisted extension from the user's global goose config.
+ * Remove a persisted extension from the user's global warmachine config.
  */
 export const zRemoveConfigExtensionRequest_unstable = z.object({
     configKey: z.string()
 });
 
 /**
- * Set the `enabled` flag for a persisted extension in the user's global goose config.
+ * Set the `enabled` flag for a persisted extension in the user's global warmachine config.
  */
 export const zSetConfigExtensionEnabledRequest_unstable = z.object({
     configKey: z.string(),
@@ -765,7 +765,7 @@ export const zProviderCatalogTemplateResponse_unstable = z.object({
 });
 
 /**
- * Create a custom provider backed by goose's declarative provider store.
+ * Create a custom provider backed by warmachine's declarative provider store.
  */
 export const zCustomProviderCreateRequest_unstable = z.object({
     engine: z.string(),
@@ -844,7 +844,7 @@ export const zCustomProviderReadResponse_unstable = z.object({
 });
 
 /**
- * Update a custom provider backed by goose's declarative provider store.
+ * Update a custom provider backed by warmachine's declarative provider store.
  */
 export const zCustomProviderUpdateRequest_unstable = z.object({
     providerId: z.string(),
@@ -869,7 +869,7 @@ export const zCustomProviderUpdateResponse_unstable = z.object({
 });
 
 /**
- * Delete a custom provider from goose's declarative provider store.
+ * Delete a custom provider from warmachine's declarative provider store.
  */
 export const zCustomProviderDeleteRequest_unstable = z.object({
     providerId: z.string()
@@ -963,7 +963,7 @@ export const zProviderConfigAuthenticateRequest_unstable = z.object({
 });
 
 /**
- * List provider credentials stored locally by goose.
+ * List provider credentials stored locally by warmachine.
  */
 export const zProviderSecretsListRequest_unstable = z.record(z.string(), z.unknown());
 
@@ -1058,7 +1058,7 @@ export const zPreferencesSaveRequest_unstable = z.object({
 });
 
 /**
- * Read one goose configuration value.
+ * Read one warmachine configuration value.
  */
 export const zConfigReadRequest_unstable = z.object({
     key: z.string(),
@@ -1070,7 +1070,7 @@ export const zConfigReadResponse_unstable = z.object({
 });
 
 /**
- * Create or replace one goose configuration value.
+ * Create or replace one warmachine configuration value.
  */
 export const zConfigUpsertRequest_unstable = z.object({
     key: z.string(),
@@ -1079,7 +1079,7 @@ export const zConfigUpsertRequest_unstable = z.object({
 });
 
 /**
- * Remove one goose configuration value.
+ * Remove one warmachine configuration value.
  */
 export const zConfigRemoveRequest_unstable = z.object({
     key: z.string(),
@@ -1087,7 +1087,7 @@ export const zConfigRemoveRequest_unstable = z.object({
 });
 
 /**
- * Read all non-secret goose configuration values.
+ * Read all non-secret warmachine configuration values.
  */
 export const zConfigReadAllRequest_unstable = z.record(z.string(), z.unknown());
 
@@ -1096,7 +1096,7 @@ export const zConfigReadAllResponse_unstable = z.object({
 });
 
 /**
- * Read goose default provider and model configuration.
+ * Read warmachine default provider and model configuration.
  */
 export const zDefaultsReadRequest_unstable = z.record(z.string(), z.unknown());
 
@@ -1106,7 +1106,7 @@ export const zDefaultsReadResponse_unstable = z.object({
 });
 
 /**
- * Save goose default provider and model configuration.
+ * Save warmachine default provider and model configuration.
  */
 export const zDefaultsSaveRequest_unstable = z.object({
     providerId: z.string(),
@@ -1114,7 +1114,7 @@ export const zDefaultsSaveRequest_unstable = z.object({
 });
 
 /**
- * Clear goose default provider and model configuration.
+ * Clear warmachine default provider and model configuration.
  */
 export const zDefaultsClearRequest_unstable = z.record(z.string(), z.unknown());
 
@@ -1124,7 +1124,7 @@ export const zDefaultsClearRequest_unstable = z.record(z.string(), z.unknown());
 export const zOnboardingImportSourceKind = z.enum(['goose_config', 'claude_desktop']);
 
 /**
- * Scan for existing goose and compatible app data that onboarding can import.
+ * Scan for existing warmachine and compatible app data that onboarding can import.
  */
 export const zOnboardingImportScanRequest_unstable = z.object({
     sources: z.array(zOnboardingImportSourceKind).optional().default([])
@@ -1178,7 +1178,7 @@ export const zExportSessionRequest_unstable = z.object({
 });
 
 /**
- * Export session response — raw JSON of the goose session with `conversation`,
+ * Export session response — raw JSON of the warmachine session with `conversation`,
  * or a markdown transcript when `format` is `markdown`.
  */
 export const zExportSessionResponse_unstable = z.object({
@@ -1351,7 +1351,7 @@ export const zRecipeDto = z.object({
 });
 
 /**
- * Encode a recipe as a goose deep link.
+ * Encode a recipe as a warmachine deep link.
  */
 export const zEncodeRecipeRequest_unstable = z.object({
     recipe: zRecipeDto
@@ -1362,7 +1362,7 @@ export const zEncodeRecipeResponse_unstable = z.object({
 });
 
 /**
- * Decode a goose deep link into a recipe.
+ * Decode a warmachine deep link into a recipe.
  */
 export const zDecodeRecipeRequest_unstable = z.object({
     deeplink: z.string()
@@ -1690,7 +1690,7 @@ export const zCreateSourceRequest_unstable = z.object({
 });
 
 /**
- * A source discovered by Goose. Filesystem sources use an on-disk path;
+ * A source discovered by WarMachine. Filesystem sources use an on-disk path;
  * built-in sources use a stable synthetic path. Sources may be either
  * `global` (shared across all projects) or project-specific.
  */
@@ -2299,7 +2299,7 @@ export const zGooseSessionNotification_unstable = z.object({
 /**
  * Dedicated provider notification for OAuth device-code flow.
  * Sent during provider authentication when the ACP client supports
- * `goose.customNotifications` — avoids a fake empty session ID.
+ * `warmachine.customNotifications` — avoids a fake empty session ID.
  */
 export const zProviderDeviceCodeNotification_unstable = z.object({
     providerId: z.string(),

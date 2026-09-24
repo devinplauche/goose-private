@@ -51,8 +51,8 @@ vi.mock('./ConfigContext', () => ({
 vi.mock('../sessions', () => ({ createSession: vi.fn() }));
 
 vi.mock('../utils/workingDir', () => ({
-  getInitialWorkingDir: () => '/tmp/goose',
-  getEffectiveWorkingDir: () => Promise.resolve('/tmp/goose'),
+  getInitialWorkingDir: () => '/tmp/warmachine',
+  getEffectiveWorkingDir: () => Promise.resolve('/tmp/warmachine'),
 }));
 
 vi.mock('../utils/nextChatExtensions', () => ({
@@ -156,7 +156,7 @@ describe('Hub', () => {
     });
     await submit();
 
-    expect(createSession).toHaveBeenCalledWith('/tmp/goose', { extensionConfigs: [] });
+    expect(createSession).toHaveBeenCalledWith('/tmp/warmachine', { extensionConfigs: [] });
   });
 
   it('leaves the set unspecified when the picker was never touched', async () => {
@@ -165,7 +165,7 @@ describe('Hub', () => {
 
     await submit();
 
-    expect(createSession).toHaveBeenCalledWith('/tmp/goose', { allExtensions: [] });
+    expect(createSession).toHaveBeenCalledWith('/tmp/warmachine', { allExtensions: [] });
   });
 
   it('hands the draft to the input', () => {

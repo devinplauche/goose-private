@@ -2,7 +2,7 @@
  * Provider smoke tests — code execution mode (JS batching).
  *
  * Each available (non-agentic) provider/model pair gets its own test that
- * spawns `goose run` with the memory + code_execution builtins and validates
+ * spawns `warmachine run` with the memory + code_execution builtins and validates
  * that the code_execution tool was invoked.
  */
 
@@ -37,7 +37,7 @@ testAll('invokes code_execution tool', async (tc, { expect }) => {
       testdir,
       "Store a memory with category 'test' and data 'hello world', then retrieve all memories from category 'test'.",
       BUILTINS,
-      { GOOSE_PROVIDER: tc.provider, GOOSE_MODEL: tc.model },
+      { WARMACHINE_PROVIDER: tc.provider, WARMACHINE_MODEL: tc.model },
       55_000,
       (output) => codeExecPattern.test(output)
     );

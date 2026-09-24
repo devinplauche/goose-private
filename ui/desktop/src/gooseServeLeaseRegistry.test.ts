@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import { describe, expect, it, vi } from 'vitest';
 import type { GooseServeResult, Logger } from './gooseServe';
 import {
-  GOOSE_SERVE_EXITED_USER_MESSAGE,
+  WARMACHINE_SERVE_EXITED_USER_MESSAGE,
   GooseServeLeaseRegistry,
 } from './gooseServeLeaseRegistry';
 
@@ -52,10 +52,10 @@ describe('GooseServeLeaseRegistry', () => {
 
     result.process.emit('exit', 1, null);
 
-    expect(() => store.getAcpUrl(1)).toThrow(GOOSE_SERVE_EXITED_USER_MESSAGE);
-    expect(() => store.getSecretKey(1)).toThrow(GOOSE_SERVE_EXITED_USER_MESSAGE);
+    expect(() => store.getAcpUrl(1)).toThrow(WARMACHINE_SERVE_EXITED_USER_MESSAGE);
+    expect(() => store.getSecretKey(1)).toThrow(WARMACHINE_SERVE_EXITED_USER_MESSAGE);
     expect(logger.error).toHaveBeenCalledWith(
-      'Goose ACP server exited unexpectedly',
+      'WarMachine ACP server exited unexpectedly',
       expect.objectContaining({ code: 1, signal: null, windowIds: [1] })
     );
   });
@@ -72,7 +72,7 @@ describe('GooseServeLeaseRegistry', () => {
 
     store.attachWindow(1, lease);
 
-    expect(() => store.getAcpUrl(1)).toThrow(GOOSE_SERVE_EXITED_USER_MESSAGE);
+    expect(() => store.getAcpUrl(1)).toThrow(WARMACHINE_SERVE_EXITED_USER_MESSAGE);
   });
 
   it('cleans up once after the last attached window is released', async () => {
@@ -95,11 +95,11 @@ describe('GooseServeLeaseRegistry', () => {
 
   it('creates an external ACP lease without process cleanup', async () => {
     const store = new GooseServeLeaseRegistry(createLogger());
-    const lease = store.createExternal('wss://example.com/goose/acp?token=test', 'external-secret');
+    const lease = store.createExternal('wss://example.com/warmachine/acp?token=test', 'external-secret');
 
     store.attachWindow(1, lease);
 
-    expect(store.getAcpUrl(1)).toBe('wss://example.com/goose/acp?token=test');
+    expect(store.getAcpUrl(1)).toBe('wss://example.com/warmachine/acp?token=test');
     expect(store.getSecretKey(1)).toBe('external-secret');
 
     await store.releaseWindow(1);
@@ -111,7 +111,7 @@ describe('GooseServeLeaseRegistry', () => {
     const cleanup = vi.fn(async () => undefined);
     const store = new GooseServeLeaseRegistry(createLogger());
     const lease = store.createExternal(
-      'wss://example.com/goose/acp?token=test',
+      'wss://example.com/warmachine/acp?token=test',
       'external-secret',
       cleanup
     );

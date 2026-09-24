@@ -29,11 +29,11 @@ const resolverDependencies: BinaryResolverDependencies = {
 };
 
 export function resolveGooseBinary(): string {
-  const override = process.env.GOOSE_BINARY?.trim();
+  const override = process.env.WARMACHINE_BINARY?.trim();
   if (override) {
     const binaryPath = resolve(override);
     if (!resolverDependencies.isFile(binaryPath)) {
-      throw new Error(`GOOSE_BINARY does not point to a file: ${binaryPath}.`);
+      throw new Error(`WARMACHINE_BINARY does not point to a file: ${binaryPath}.`);
     }
     return binaryPath;
   }
@@ -55,7 +55,7 @@ export function resolveGooseBinaryForRuntime(
 
   if (!packageName) {
     throw new Error(
-      `No Goose npm binary is available for ${platformKey}. Supported platforms: ${Object.keys(PLATFORM_PACKAGES).join(", ")}.`,
+      `No WarMachine npm binary is available for ${platformKey}. Supported platforms: ${Object.keys(PLATFORM_PACKAGES).join(", ")}.`,
     );
   }
 
@@ -66,17 +66,17 @@ export function resolveGooseBinaryForRuntime(
     );
   } catch (cause) {
     throw new Error(
-      `Goose binary package ${packageName} is not installed. Reinstall @aaif/goose-acp with optional dependencies enabled.`,
+      `WarMachine binary package ${packageName} is not installed. Reinstall @aaif/goose-acp with optional dependencies enabled.`,
       { cause },
     );
   }
 
-  const executableName = platform === "win32" ? "goose.exe" : "goose";
+  const executableName = platform === "win32" ? "warmachine.exe" : "warmachine";
   const binaryPath = resolve(dirname(packageJsonPath), "bin", executableName);
 
   if (!dependencies.isFile(binaryPath)) {
     throw new Error(
-      `Goose executable from ${packageName} was not found at ${binaryPath}.`,
+      `WarMachine executable from ${packageName} was not found at ${binaryPath}.`,
     );
   }
 

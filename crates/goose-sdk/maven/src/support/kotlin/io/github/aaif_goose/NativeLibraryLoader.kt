@@ -5,11 +5,11 @@ import java.nio.file.Files
 
 internal object NativeLibraryLoader {
     init {
-        val componentName = "goose"
+        val componentName = "warmachine"
         if (System.getProperty("uniffi.component.$componentName.libraryOverride") == null) {
             val resource = nativeResourcePath()
             val stream = NativeLibraryLoader::class.java.classLoader.getResourceAsStream(resource)
-                ?: error("Goose SDK native library resource not found: $resource")
+                ?: error("WarMachine SDK native library resource not found: $resource")
             val library = Files.createTempFile("goose-sdk-", nativeLibraryFileName()).toFile()
             library.deleteOnExit()
             stream.use { input -> library.outputStream().use { output -> input.copyTo(output) } }

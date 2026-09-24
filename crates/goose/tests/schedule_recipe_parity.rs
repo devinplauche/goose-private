@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use goose::recipe::validate_recipe::{
+use warmachine::recipe::validate_recipe::{
     validate_recipe_for_scheduling, validate_recipe_template_from_content, RecipeFileFormat,
 };
 
@@ -8,7 +8,7 @@ fn workspace_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .and_then(Path::parent)
-        .expect("goose crate must be inside the workspace crates directory")
+        .expect("warmachine crate must be inside the workspace crates directory")
         .to_path_buf()
 }
 

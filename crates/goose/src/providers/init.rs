@@ -416,9 +416,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_custom_provider_context_limit_is_applied_from_file() {
-        let _guard = env_lock::lock_env([("GOOSE_PATH_ROOT", None::<&str>)]);
+        let _guard = env_lock::lock_env([("WARMACHINE_PATH_ROOT", None::<&str>)]);
         let temp_dir = tempfile::tempdir().expect("tempdir should be created");
-        std::env::set_var("GOOSE_PATH_ROOT", temp_dir.path());
+        std::env::set_var("WARMACHINE_PATH_ROOT", temp_dir.path());
 
         let custom_dir = Paths::config_dir().join("custom_providers");
         fs::create_dir_all(&custom_dir).expect("custom providers dir should be created");
@@ -478,19 +478,19 @@ mod tests {
             goose_providers::model::DEFAULT_CONTEXT_LIMIT
         );
 
-        std::env::remove_var("GOOSE_PATH_ROOT");
+        std::env::remove_var("WARMACHINE_PATH_ROOT");
     }
 
     #[tokio::test]
     async fn test_goose_context_limit_overrides_known_models_and_defaults() {
         let _guard = env_lock::lock_env([
-            ("GOOSE_PATH_ROOT", None::<&str>),
-            ("GOOSE_CONTEXT_LIMIT", Some("1000000")),
-            ("GOOSE_MAX_TOKENS", None::<&str>),
-            ("GOOSE_TEMPERATURE", None::<&str>),
-            ("GOOSE_TOOLSHIM", None::<&str>),
-            ("GOOSE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
-            ("GOOSE_THINKING_EFFORT", None::<&str>),
+            ("WARMACHINE_PATH_ROOT", None::<&str>),
+            ("WARMACHINE_CONTEXT_LIMIT", Some("1000000")),
+            ("WARMACHINE_MAX_TOKENS", None::<&str>),
+            ("WARMACHINE_TEMPERATURE", None::<&str>),
+            ("WARMACHINE_TOOLSHIM", None::<&str>),
+            ("WARMACHINE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
+            ("WARMACHINE_THINKING_EFFORT", None::<&str>),
         ]);
 
         let openai = get_from_registry("openai")
@@ -508,7 +508,7 @@ mod tests {
         );
 
         let temp_dir = tempfile::tempdir().expect("tempdir should be created");
-        std::env::set_var("GOOSE_PATH_ROOT", temp_dir.path());
+        std::env::set_var("WARMACHINE_PATH_ROOT", temp_dir.path());
 
         let custom_dir = Paths::config_dir().join("custom_providers");
         fs::create_dir_all(&custom_dir).expect("custom providers dir should be created");
@@ -546,7 +546,7 @@ mod tests {
             1_000_000
         );
 
-        std::env::remove_var("GOOSE_PATH_ROOT");
+        std::env::remove_var("WARMACHINE_PATH_ROOT");
     }
 
     #[tokio::test]

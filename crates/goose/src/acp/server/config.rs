@@ -68,14 +68,14 @@ impl GooseAcpAgent {
     ) -> Result<ConfigReadResponse, agent_client_protocol::Error> {
         let config = self.config()?;
 
-        if req.key == "GOOSE_PROVIDER" || req.key == "active_provider" {
+        if req.key == "WARMACHINE_PROVIDER" || req.key == "active_provider" {
             let value = config
                 .get_goose_provider()
                 .map(serde_json::Value::String)
                 .unwrap_or(serde_json::Value::Null);
             return Ok(ConfigReadResponse { value });
         }
-        if req.key == "GOOSE_MODEL" {
+        if req.key == "WARMACHINE_MODEL" {
             let value = config
                 .get_goose_model()
                 .map(serde_json::Value::String)
@@ -100,7 +100,7 @@ impl GooseAcpAgent {
     ) -> Result<EmptyResponse, agent_client_protocol::Error> {
         let config = self.config()?;
 
-        if req.key == "GOOSE_PROVIDER" {
+        if req.key == "WARMACHINE_PROVIDER" {
             if let Some(name) = req.value.as_str() {
                 let model = crate::config::get_provider_entry(config, name)
                     .map(|e| e.model)
@@ -110,7 +110,7 @@ impl GooseAcpAgent {
                 return Ok(EmptyResponse {});
             }
         }
-        if req.key == "GOOSE_MODEL" {
+        if req.key == "WARMACHINE_MODEL" {
             if let Some(model) = req.value.as_str() {
                 if let Ok(provider) = config.get_goose_provider() {
                     crate::config::set_active_provider(config, &provider, model).internal_err()?;
@@ -133,14 +133,14 @@ impl GooseAcpAgent {
 
         if req.is_secret {
             config.delete_secret(&req.key).internal_err()?;
-        } else if req.key == "GOOSE_PROVIDER" || req.key == "active_provider" {
+        } else if req.key == "WARMACHINE_PROVIDER" || req.key == "active_provider" {
             config.delete("active_provider").internal_err()?;
-            config.delete("GOOSE_PROVIDER").internal_err()?;
-        } else if req.key == "GOOSE_MODEL" {
+            config.delete("WARMACHINE_PROVIDER").internal_err()?;
+        } else if req.key == "WARMACHINE_MODEL" {
             if let Ok(provider) = config.get_goose_provider() {
                 crate::config::set_active_provider(config, &provider, "").internal_err()?;
             }
-            config.delete("GOOSE_MODEL").internal_err()?;
+            config.delete("WARMACHINE_MODEL").internal_err()?;
         } else {
             config.delete(&req.key).internal_err()?;
         }
@@ -277,12 +277,12 @@ struct PreferenceDef {
 const PREFERENCE_DEFS: &[PreferenceDef] = &[
     PreferenceDef {
         key: PreferenceKey::AutoCompactThreshold,
-        config_key: "GOOSE_AUTO_COMPACT_THRESHOLD",
+        config_key: "WARMACHINE_AUTO_COMPACT_THRESHOLD",
         prepare: prepare_auto_compact_threshold,
     },
     PreferenceDef {
         key: PreferenceKey::GooseThinkingEffort,
-        config_key: "GOOSE_THINKING_EFFORT",
+        config_key: "WARMACHINE_THINKING_EFFORT",
         prepare: prepare_thinking_effort,
     },
     PreferenceDef {

@@ -1,6 +1,6 @@
 # goose-local-inference
 
-On-device model inference for goose. Runs GGUF models through `llama.cpp` (via
+On-device model inference for warmachine. Runs GGUF models through `llama.cpp` (via
 `llama-cpp-2`), with an optional MLX backend on Apple silicon.
 
 Reach it through [`goose-providers`](../goose-providers) with the
@@ -42,7 +42,7 @@ file uses the llama.cpp backend. An MLX model directory containing
 a path to one of its `.safetensors` files is accepted as well. Relative paths
 are resolved from the process working directory.
 
-Models loaded this way remain user-owned: Goose can load and evict them from
+Models loaded this way remain user-owned: WarMachine can load and evict them from
 memory, but does not include them in the cached-model inventory or delete their
 files.
 

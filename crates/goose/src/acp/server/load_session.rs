@@ -70,14 +70,14 @@ fn build_replayed_tool_call(
     let goose_meta = tool_call
         .meta
         .get_or_insert_default()
-        .entry("goose".to_string())
+        .entry("warmachine".to_string())
         .or_insert_with(|| serde_json::Value::Object(serde_json::Map::new()));
     if !goose_meta.is_object() {
         *goose_meta = serde_json::Value::Object(serde_json::Map::new());
     }
     goose_meta
         .as_object_mut()
-        .expect("goose metadata was initialized as an object")
+        .expect("warmachine metadata was initialized as an object")
         .extend([tool_chain_summary(&chain_summary)]);
 
     tool_call
@@ -690,15 +690,15 @@ mod tests {
         message.metadata.output_token_limit_reached = true;
         let tool_call =
             build_replayed_tool_call(&persisted_enriched_tool_request(), &message, true);
-        let goose = tool_call
+        let warmachine = tool_call
             .meta
             .as_ref()
-            .and_then(|meta| meta.get("goose"))
-            .expect("valid initial tool call should contain goose metadata");
+            .and_then(|meta| meta.get("warmachine"))
+            .expect("valid initial tool call should contain warmachine metadata");
 
         assert_eq!(tool_call.title, "applied dark mode polish");
         assert_eq!(
-            goose,
+            warmachine,
             &serde_json::json!({
                 "created": 1_700_000_000,
                 "messageId": "msg_replay",
@@ -720,15 +720,15 @@ mod tests {
         let message = Message::new(Role::Assistant, 1_700_000_000, vec![]).with_id("msg_replay");
         let tool_call =
             build_replayed_tool_call(&persisted_enriched_tool_request(), &message, false);
-        let goose = tool_call
+        let warmachine = tool_call
             .meta
             .as_ref()
-            .and_then(|meta| meta.get("goose"))
-            .expect("valid initial tool call should contain goose metadata");
+            .and_then(|meta| meta.get("warmachine"))
+            .expect("valid initial tool call should contain warmachine metadata");
 
         assert_eq!(tool_call.title, "developer: shell");
         assert_eq!(
-            goose,
+            warmachine,
             &serde_json::json!({
                 "created": 1_700_000_000,
                 "messageId": "msg_replay",

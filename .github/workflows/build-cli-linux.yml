@@ -29,7 +29,7 @@ permissions:
 
 jobs:
   build-cli-linux:
-    name: Build Goose (Linux, ${{ matrix.architecture }}, ${{ matrix.variant }})
+    name: Build WarMachine (Linux, ${{ matrix.architecture }}, ${{ matrix.variant }})
     runs-on: ${{ matrix.build-on }}
     container: ${{ matrix.container }}
     strategy:
@@ -141,11 +141,11 @@ jobs:
           fi
 
           if [ "${{ matrix.variant }}" = "musl" ]; then
-            cargo build --release --target ${TARGET} -p goose-cli --bin goose \
+            cargo build --release --target ${TARGET} -p goose-cli --bin warmachine \
               --no-default-features \
               --features portable-default
           else
-            cargo build --release --target ${TARGET} -p goose-cli --bin goose "${FEATURE_ARGS[@]}"
+            cargo build --release --target ${TARGET} -p goose-cli --bin warmachine "${FEATURE_ARGS[@]}"
           fi
 
       - name: Build CLI (manylinux container)
@@ -167,7 +167,7 @@ jobs:
           rustup toolchain install "$RUST_CHANNEL" --profile minimal \
             --component rustc,cargo --target "$TARGET"
           rustup show
-          cargo build --release --target "$TARGET" -p goose-cli --bin goose
+          cargo build --release --target "$TARGET" -p goose-cli --bin warmachine
 
       - name: Package CLI
         run: |
@@ -184,8 +184,8 @@ jobs:
           # Create a directory for the package contents
           mkdir -p "target/${TARGET}/release/goose-package"
 
-          # Copy the goose binary
-          cp "target/${TARGET}/release/goose" "target/${TARGET}/release/goose-package/"
+          # Copy the warmachine binary
+          cp "target/${TARGET}/release/warmachine" "target/${TARGET}/release/goose-package/"
 
           cd "target/${TARGET}/release"
           tar -cjf "goose-${TARGET}${VARIANT_SUFFIX}.tar.bz2" -C goose-package .
@@ -201,16 +201,16 @@ jobs:
             ${{ env.ARTIFACT_BZ2 }}
             ${{ env.ARTIFACT_GZ }}
 
-      - name: Prepare internal Goose binary
+      - name: Prepare internal WarMachine binary
         if: ${{ inputs.package_desktop && matrix.target-suffix == 'unknown-linux-gnu' }}
         env:
           TARGET: ${{ matrix.architecture }}-${{ matrix.target-suffix }}
           VARIANT_SUFFIX: ${{ matrix.variant == 'vulkan' && '-vulkan' || '' }}
         run: |
           mkdir -p artifacts
-          cp "target/${TARGET}/release/goose" "artifacts/internal-goose-${TARGET}${VARIANT_SUFFIX}"
+          cp "target/${TARGET}/release/warmachine" "artifacts/internal-goose-${TARGET}${VARIANT_SUFFIX}"
 
-      - name: Upload internal Goose binary
+      - name: Upload internal WarMachine binary
         if: ${{ inputs.package_desktop && matrix.target-suffix == 'unknown-linux-gnu' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
@@ -332,7 +332,7 @@ jobs:
       - name: Setup Flatpak runtimes
         run: flatpak remote-add --if-not-exists --user flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-      - name: Download internal Goose binary
+      - name: Download internal WarMachine binary
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
         with:
           name: internal-goose-${{ matrix.target }}${{ matrix.variant_suffix }}
@@ -343,10 +343,10 @@ jobs:
           INTERNAL_BINARY: internal-goose-${{ matrix.target }}${{ matrix.variant_suffix }}
         run: |
           mkdir -p ui/desktop/src/bin
-          rm -f ui/desktop/src/bin/goose
-          mv "backend/${INTERNAL_BINARY}" ui/desktop/src/bin/goose
-          chmod +x ui/desktop/src/bin/goose
-          file ui/desktop/src/bin/goose
+          rm -f ui/desktop/src/bin/warmachine
+          mv "backend/${INTERNAL_BINARY}" ui/desktop/src/bin/warmachine
+          chmod +x ui/desktop/src/bin/warmachine
+          file ui/desktop/src/bin/warmachine
 
       - name: Cache pnpm dependencies
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
@@ -368,13 +368,13 @@ jobs:
         env:
           ELECTRON_ARCH: ${{ matrix.electron_arch }}
           FLATPAK_ARCH: ${{ matrix.flatpak_arch }}
-          GOOSE_DESKTOP_LINUX_VARIANT: ${{ matrix.variant }}
+          WARMACHINE_DESKTOP_LINUX_VARIANT: ${{ matrix.variant }}
         run: |
           source ./bin/activate-hermit
           cd ui/desktop
           pnpm run make --platform=linux --arch="${ELECTRON_ARCH}"
 
-          if [ "${GOOSE_DESKTOP_LINUX_VARIANT}" = "vulkan" ]; then
+          if [ "${WARMACHINE_DESKTOP_LINUX_VARIANT}" = "vulkan" ]; then
             for package in \
               "out/make/deb/${ELECTRON_ARCH}/"*.deb \
               "out/make/rpm/${ELECTRON_ARCH}/"*.rpm \

@@ -208,7 +208,7 @@ pub fn cancel_download(model_id: &str) -> Result<()> {
 pub async fn delete_model(model_id: &str) -> Result<()> {
     if crate::explicit_model_path(model_id)?.is_some() {
         anyhow::bail!(
-            "Model '{}' was loaded from a user-owned path and cannot be deleted by Goose",
+            "Model '{}' was loaded from a user-owned path and cannot be deleted by WarMachine",
             model_id
         );
     }

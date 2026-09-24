@@ -143,8 +143,8 @@ export const ModelAndProviderProvider: React.FC<ModelAndProviderProviderProps> =
   );
 
   const getFallbackModelAndProvider = useCallback(async () => {
-    const provider = window.appConfig.get('GOOSE_DEFAULT_PROVIDER') as string;
-    const model = window.appConfig.get('GOOSE_DEFAULT_MODEL') as string;
+    const provider = window.appConfig.get('WARMACHINE_DEFAULT_PROVIDER') as string;
+    const model = window.appConfig.get('WARMACHINE_DEFAULT_MODEL') as string;
     if (provider && model) {
       try {
         await acpSaveDefaults(provider, model);

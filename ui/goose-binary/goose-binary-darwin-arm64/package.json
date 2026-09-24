@@ -1,14 +1,14 @@
 {
   "name": "@aaif/goose-binary-darwin-arm64",
   "version": "1.52.0",
-  "description": "Goose binary for macOS ARM64",
+  "description": "WarMachine binary for macOS ARM64",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aaif-goose/goose.git"
   },
   "keywords": [
-    "goose",
+    "warmachine",
     "ai",
     "agent",
     "binary"
@@ -20,9 +20,9 @@
     "arm64"
   ],
   "bin": {
-    "goose-binary-darwin-arm64": "./bin/goose"
+    "goose-binary-darwin-arm64": "./bin/warmachine"
   },
   "files": [
-    "bin/goose"
+    "bin/warmachine"
   ]
 }

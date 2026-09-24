@@ -10,9 +10,9 @@ use common_tests::fixtures::server::{
 use common_tests::fixtures::{
     run_test, spawn_acp_server_in_process, Connection, OpenAiFixture, TestConnectionConfig,
 };
-use goose::config::GooseMode;
-use goose::conversation::message::{Message, MessageContent};
-use goose::session::{SessionManager, SessionType};
+use warmachine::config::GooseMode;
+use warmachine::conversation::message::{Message, MessageContent};
+use warmachine::session::{SessionManager, SessionType};
 use std::path::Path;
 
 async fn new_connection(data_root: &Path) -> AcpServerConnection {
@@ -46,7 +46,7 @@ async fn seed_session_with_messages(
     session_manager: &SessionManager,
     cwd: &Path,
     messages: &[(&str, i64)],
-) -> goose::session::Session {
+) -> warmachine::session::Session {
     let session = session_manager
         .create_session(
             cwd.to_path_buf(),

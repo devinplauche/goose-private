@@ -233,8 +233,8 @@ impl Default for ComputerControllerServer {
 impl ComputerControllerServer {
     pub fn new() -> Self {
         // choose_app_strategy().cache_dir()
-        // - macOS/Linux: ~/.cache/goose/computer_controller/
-        // - Windows:     ~\AppData\Local\Block\goose\cache\computer_controller\
+        // - macOS/Linux: ~/.cache/warmachine/computer_controller/
+        // - Windows:     ~\AppData\Local\Block\warmachine\cache\computer_controller\
         // keep previous behavior of defaulting to /tmp/
         let cache_dir = choose_app_strategy(crate::APP_STRATEGY.clone())
             .map(|strategy| strategy.in_cache_dir("computer_controller"))

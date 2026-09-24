@@ -1,6 +1,6 @@
-use goose::conversation::message::ToolRequest;
-use goose::permission::permission_judge::PermissionCheckResult;
-use goose::tool_inspection::{
+use warmachine::conversation::message::ToolRequest;
+use warmachine::permission::permission_judge::PermissionCheckResult;
+use warmachine::tool_inspection::{
     apply_inspection_results_to_permissions, InspectionAction, InspectionResult,
 };
 use rmcp::model::CallToolRequestParams;

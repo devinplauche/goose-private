@@ -130,7 +130,7 @@ async fn stream_messages(
 
 #[tokio::test]
 async fn state_machine_confirmation_through_agent_resumes_tool_call() -> Result<()> {
-    let _guard = env_lock::lock_env([("GOOSE_STATE_MACHINE", Some("1"))]);
+    let _guard = env_lock::lock_env([("WARMACHINE_STATE_MACHINE", Some("1"))]);
     let (agent, api, session_id, calculator, _temp_dir) = agent_with_calculator().await?;
     let agent = Arc::new(agent);
 
@@ -521,7 +521,7 @@ async fn assert_bang_shell_uses_only_user_visible_content() -> Result<()> {
 
 #[tokio::test]
 async fn bang_shell_not_executed_in_legacy_loop() -> Result<()> {
-    let _guard = env_lock::lock_env([("GOOSE_STATE_MACHINE", None::<&str>)]);
+    let _guard = env_lock::lock_env([("WARMACHINE_STATE_MACHINE", None::<&str>)]);
     let (agent, api, session_id, _temp_dir) = agent_with_dummy_api().await?;
     api.on("!echo hello").reply("treated as text");
     let messages =
@@ -533,6 +533,6 @@ async fn bang_shell_not_executed_in_legacy_loop() -> Result<()> {
 
 #[tokio::test]
 async fn bang_shell_visibility_is_enforced_when_state_machine_is_enabled() -> Result<()> {
-    let _guard = env_lock::lock_env([("GOOSE_STATE_MACHINE", Some("1"))]);
+    let _guard = env_lock::lock_env([("WARMACHINE_STATE_MACHINE", Some("1"))]);
     assert_bang_shell_uses_only_user_visible_content().await
 }

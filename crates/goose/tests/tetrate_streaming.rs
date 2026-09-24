@@ -1,8 +1,8 @@
 use anyhow::Result;
 use futures::StreamExt;
-use goose::conversation::message::{Message, MessageContent};
-use goose::providers::base::Provider;
-use goose::providers::tetrate::TetrateProvider;
+use warmachine::conversation::message::{Message, MessageContent};
+use warmachine::providers::base::Provider;
+use warmachine::providers::tetrate::TetrateProvider;
 use goose_providers::model::ModelConfig;
 use rmcp::model::Tool;
 use rmcp::object;
@@ -323,7 +323,7 @@ mod tetrate_streaming_tests {
 
     // Helper function to process a stream and collect content
     async fn process_stream(
-        mut stream: goose::providers::base::MessageStream,
+        mut stream: warmachine::providers::base::MessageStream,
         label: &str,
     ) -> Result<String> {
         let mut content = String::new();

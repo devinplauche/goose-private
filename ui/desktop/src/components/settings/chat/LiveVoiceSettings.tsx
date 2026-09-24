@@ -3,7 +3,7 @@ import { useConfig } from '../../ConfigContext';
 import { Switch } from '../../ui/switch';
 import { defineMessages, useIntl } from '../../../i18n';
 
-const LIVE_VOICE_ENABLED_CONFIG_KEY = 'GOOSE_LIVE_VOICE_ENABLED';
+const LIVE_VOICE_ENABLED_CONFIG_KEY = 'WARMACHINE_LIVE_VOICE_ENABLED';
 
 const i18n = defineMessages({
   title: {
@@ -12,7 +12,7 @@ const i18n = defineMessages({
   },
   description: {
     id: 'liveVoiceSettings.description',
-    defaultMessage: 'Have a real-time voice conversation with Goose',
+    defaultMessage: 'Have a real-time voice conversation with WarMachine',
   },
 });
 

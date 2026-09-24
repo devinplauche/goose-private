@@ -81,7 +81,7 @@ steps:
     env:
       ANTHROPIC_BASE_URL: https://oidc-proxy.your-subdomain.workers.dev
       ANTHROPIC_API_KEY: ${{ steps.oidc.outputs.token }}
-    run: goose run --recipe my-recipe.yaml
+    run: warmachine run --recipe my-recipe.yaml
 ```
 
 ## Testing

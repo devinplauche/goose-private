@@ -111,7 +111,7 @@ pub(super) fn agent_name(session: &Session) -> &str {
     session
         .recipe
         .as_ref()
-        .map_or("goose", |recipe| recipe.title.as_str())
+        .map_or("warmachine", |recipe| recipe.title.as_str())
 }
 
 pub(super) fn tool_result_json(result: &ToolResult<CallToolResult>) -> String {
@@ -578,6 +578,6 @@ mod tests {
     #[test]
     fn agent_name_returns_goose_default() {
         let session = Session::default();
-        assert_eq!(agent_name(&session), "goose");
+        assert_eq!(agent_name(&session), "warmachine");
     }
 }

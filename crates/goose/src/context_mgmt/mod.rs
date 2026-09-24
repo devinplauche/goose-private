@@ -26,7 +26,7 @@ pub(crate) const TOOLCALL_SUMMARIZATION_BATCH_SIZE: usize = 10;
 
 pub(crate) fn tool_pair_summarization_enabled() -> bool {
     Config::global()
-        .get_param::<bool>("GOOSE_TOOL_PAIR_SUMMARIZATION")
+        .get_param::<bool>("WARMACHINE_TOOL_PAIR_SUMMARIZATION")
         .unwrap_or(false)
 }
 
@@ -235,7 +235,7 @@ pub async fn check_if_compaction_needed(
     let config = Config::global();
     let threshold = threshold_override.unwrap_or_else(|| {
         config
-            .get_param::<f64>("GOOSE_AUTO_COMPACT_THRESHOLD")
+            .get_param::<f64>("WARMACHINE_AUTO_COMPACT_THRESHOLD")
             .unwrap_or(DEFAULT_COMPACTION_THRESHOLD)
     });
 
@@ -1174,7 +1174,7 @@ mod tests {
 
     #[tokio::test]
     async fn parallel_tool_calls_share_one_summary_request() {
-        let _guard = env_lock::lock_env([("GOOSE_TOOL_PAIR_SUMMARIZATION", Some("true"))]);
+        let _guard = env_lock::lock_env([("WARMACHINE_TOOL_PAIR_SUMMARIZATION", Some("true"))]);
         let provider = Arc::new(MockProvider::new(
             Message::assistant().with_text("summary"),
             1000,

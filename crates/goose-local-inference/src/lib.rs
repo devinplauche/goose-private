@@ -351,7 +351,7 @@ fn configured_draft_model(
         .draft_model
         .clone()
         .or_else(|| {
-            config_resolver::string_param("GOOSE_LOCAL_DRAFT_MODEL")
+            config_resolver::string_param("WARMACHINE_LOCAL_DRAFT_MODEL")
                 .ok()
                 .flatten()
         })
@@ -797,7 +797,7 @@ impl Provider for LocalInferenceProvider {
         if let Some(false) = model_config
             .request_param::<bool>("enable_thinking")
             .or_else(|| {
-                config_resolver::bool_param("GOOSE_LOCAL_ENABLE_THINKING")
+                config_resolver::bool_param("WARMACHINE_LOCAL_ENABLE_THINKING")
                     .ok()
                     .flatten()
             })

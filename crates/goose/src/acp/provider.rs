@@ -853,7 +853,7 @@ impl Provider for AcpProvider {
             None
         };
         if claim.include_context && memo.is_none() {
-            // Nothing fit beside this turn's prompt, so the context never left goose. Give
+            // Nothing fit beside this turn's prompt, so the context never left warmachine. Give
             // it back rather than marking a handoff that never happened as done — a single
             // oversized turn would otherwise cost the session its whole history.
             handoff_claim_guard.rollback();
@@ -952,12 +952,12 @@ impl Provider for AcpProvider {
                                 params = params.with_arguments(map);
                             }
                             // external_dispatch tells the agent loop not to redispatch this
-                            // call. goose.acp.kind preserves ACP's stable categorization for
+                            // call. warmachine.acp.kind preserves ACP's stable categorization for
                             // downstream consumers (metrics, observability, icon selection)
                             // independent of the display title we put in `name`.
                             let tool_meta = Some(serde_json::json!({
                                 TOOL_META_EXTERNAL_DISPATCH_KEY: true,
-                                "goose.acp.kind": kind,
+                                "warmachine.acp.kind": kind,
                             }));
                             let message = Message::assistant().with_tool_request_with_metadata(
                                 id,
@@ -1307,7 +1307,7 @@ impl AcpClientLoop {
                                     // `title` (display) and `kind` (category). We pass `title`
                                     // for renderer affordance, surface `kind` separately via
                                     // tool_meta for stable categorization, and the
-                                    // goose.external_dispatch marker keeps `name` off the
+                                    // warmachine.external_dispatch marker keeps `name` off the
                                     // agent loop's routing/auth paths.
                                     let _ = tx.try_send(AcpUpdate::ToolCallStart {
                                         id: id.clone(),
@@ -1460,7 +1460,7 @@ async fn forward_child_stderr(mut stderr: tokio::process::ChildStderr) {
                 }
             }
             Err(e) => {
-                tracing::debug!(target: "goose::acp::child::stderr", error = %e, "stderr read error");
+                tracing::debug!(target: "warmachine::acp::child::stderr", error = %e, "stderr read error");
                 break;
             }
         }
@@ -1473,7 +1473,7 @@ fn emit_stderr_line(line: &mut Vec<u8>) {
         return;
     }
     let trimmed = line.strip_suffix(b"\r").unwrap_or(line);
-    tracing::info!(target: "goose::acp::child::stderr", "{}", String::from_utf8_lossy(trimmed));
+    tracing::info!(target: "warmachine::acp::child::stderr", "{}", String::from_utf8_lossy(trimmed));
     line.clear();
 }
 
@@ -2042,7 +2042,7 @@ fn acp_text_update_message(text: TextContent, id: String, created: i64) -> Messa
         .with_id(id)
 }
 
-/// Convert ACP `ToolCallContent` blocks into the rmcp `Content` shape goose's
+/// Convert ACP `ToolCallContent` blocks into the rmcp `Content` shape warmachine's
 /// `Message::with_tool_response` consumes. Handles `Content` (text/image/other),
 /// `Diff`, and `Terminal` variants; falls back to a JSON serialization of
 /// `raw_output` when no blocks are present so the renderer always has something.
@@ -2270,8 +2270,8 @@ fn replace_effort_state(
     previous
 }
 
-/// Map a goose effort value onto the agent's advertised vocabulary. Values goose
-/// and the agent share pass through; goose's own enum values map onto their
+/// Map a warmachine effort value onto the agent's advertised vocabulary. Values warmachine
+/// and the agent share pass through; warmachine's own enum values map onto their
 /// closest agent equivalent. Anything else yields `None` so we never send a
 /// value the agent would reject.
 pub(super) fn map_effort_value(
@@ -2323,7 +2323,7 @@ pub(super) fn resolve_effort_value(
 /// Separate a value the agent evaluated and refused from an operational failure.
 /// Only an agent that actually processed the request answers with the JSON-RPC
 /// `invalid_params` code; the client library synthesizes `internal_error` for a
-/// dead subprocess or dropped connection, and goose's own send failures carry no
+/// dead subprocess or dropped connection, and warmachine's own send failures carry no
 /// ACP error at all.
 fn effort_option_error(value: &str, error: anyhow::Error) -> ProviderError {
     match error.downcast_ref::<agent_client_protocol::Error>() {
@@ -2571,7 +2571,7 @@ mod tests {
         assert_eq!(blocks.len(), 2);
         let memo = prompt_text(&blocks[0]);
         assert!(memo.starts_with(
-            "Conversation context from goose before this ACP provider session was created:"
+            "Conversation context from warmachine before this ACP provider session was created:"
         ));
         assert!(memo.contains("[user]: inspect src/lib.rs"));
         assert!(memo.contains("[assistant]: I found the file"));
@@ -2913,7 +2913,7 @@ mod tests {
 
     #[tokio::test]
     async fn handoff_budget_honors_global_context_limit_override() {
-        let _guard = env_lock::lock_env([("GOOSE_CONTEXT_LIMIT", Some("64"))]);
+        let _guard = env_lock::lock_env([("WARMACHINE_CONTEXT_LIMIT", Some("64"))]);
         let (provider, model) = test_provider();
         provider.context_size.store(200_000, Ordering::Relaxed);
         let messages = vec![
@@ -3099,7 +3099,7 @@ mod tests {
 
     #[tokio::test]
     async fn failed_handoff_send_consumes_the_claim() {
-        let _guard = env_lock::lock_env([("GOOSE_CONTEXT_LIMIT", None::<&str>)]);
+        let _guard = env_lock::lock_env([("WARMACHINE_CONTEXT_LIMIT", None::<&str>)]);
         let (tx, rx) = mpsc::channel(1);
         drop(rx);
         let (provider, model) = test_provider_with_tx(Some(tx));
@@ -3282,7 +3282,7 @@ mod tests {
 
         assert!(
             provider.claim_handoff_context(&messages).include_context,
-            "context that never left goose must still be handed off later"
+            "context that never left warmachine must still be handed off later"
         );
     }
 
@@ -3882,7 +3882,7 @@ mod tests {
 
     /// A refresh that reverts the agent's own effort (e.g. a model switch
     /// rebuilding per-model levels) must not be masked by a stale record of
-    /// what goose last sent: the persisted value gets re-applied.
+    /// what warmachine last sent: the persisted value gets re-applied.
     #[tokio::test]
     async fn apply_effort_if_changed_resends_after_the_agent_resets_its_effort() {
         let (tx, mut rx) = mpsc::channel(1);
@@ -3920,7 +3920,7 @@ mod tests {
     /// current while the client shows the global.
     #[tokio::test]
     async fn apply_effort_if_changed_falls_back_to_the_global_default() {
-        let _guard = env_lock::lock_env([("GOOSE_THINKING_EFFORT", Some("high"))]);
+        let _guard = env_lock::lock_env([("WARMACHINE_THINKING_EFFORT", Some("high"))]);
         let (tx, mut rx) = mpsc::channel(1);
         let provider =
             test_provider_with_effort(tx, Some(effort_capability(&["default", "high"], "default")));
@@ -3941,7 +3941,7 @@ mod tests {
     async fn apply_effort_if_changed_skips_unmapped_value() {
         // Unoffered by the capability below, so the global default never wins
         // and the test doesn't depend on the machine's configured value.
-        let _guard = env_lock::lock_env([("GOOSE_THINKING_EFFORT", Some("medium"))]);
+        let _guard = env_lock::lock_env([("WARMACHINE_THINKING_EFFORT", Some("medium"))]);
         let (tx, mut rx) = mpsc::channel(1);
         let provider =
             test_provider_with_effort(tx, Some(effort_capability(&["default", "high"], "default")));
@@ -3969,7 +3969,7 @@ mod tests {
 
     #[tokio::test]
     async fn apply_effort_if_changed_skips_session_without_a_persisted_value() {
-        let _guard = env_lock::lock_env([("GOOSE_THINKING_EFFORT", Some("medium"))]);
+        let _guard = env_lock::lock_env([("WARMACHINE_THINKING_EFFORT", Some("medium"))]);
         let (tx, mut rx) = mpsc::channel(1);
         let provider =
             test_provider_with_effort(tx, Some(effort_capability(&["default", "high"], "default")));
@@ -4712,7 +4712,7 @@ mod tests {
         for (kind, expected) in cases {
             let tool_meta = serde_json::json!({
                 TOOL_META_EXTERNAL_DISPATCH_KEY: true,
-                "goose.acp.kind": kind,
+                "warmachine.acp.kind": kind,
             });
             assert_eq!(
                 tool_meta[TOOL_META_EXTERNAL_DISPATCH_KEY],
@@ -4720,9 +4720,9 @@ mod tests {
                 "external_dispatch marker missing for kind={kind:?}"
             );
             assert_eq!(
-                tool_meta["goose.acp.kind"],
+                tool_meta["warmachine.acp.kind"],
                 serde_json::Value::String(expected.to_string()),
-                "goose.acp.kind serialized wrong for kind={kind:?}"
+                "warmachine.acp.kind serialized wrong for kind={kind:?}"
             );
         }
     }

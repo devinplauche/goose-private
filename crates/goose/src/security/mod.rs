@@ -99,7 +99,7 @@ impl SecurityManager {
     ) -> Result<Vec<SecurityResult>> {
         if !self.is_prompt_injection_detection_enabled() {
             tracing::debug!(
-                monotonic_counter.goose.prompt_injection_scanner_disabled = 1,
+                monotonic_counter.warmachine.prompt_injection_scanner_disabled = 1,
                 "Security scanning disabled"
             );
             return Ok(vec![]);
@@ -120,8 +120,8 @@ impl SecurityManager {
                 .unwrap_or(false);
 
             tracing::info!(
-                monotonic_counter.goose.security_command_classifier_enabled = if command_classifier_enabled { 1 } else { 0 },
-                monotonic_counter.goose.security_prompt_classifier_enabled = if prompt_classifier_enabled { 1 } else { 0 },
+                monotonic_counter.warmachine.security_command_classifier_enabled = if command_classifier_enabled { 1 } else { 0 },
+                monotonic_counter.warmachine.security_prompt_classifier_enabled = if prompt_classifier_enabled { 1 } else { 0 },
                 "Security classifier configuration"
             );
 
@@ -131,7 +131,7 @@ impl SecurityManager {
                 match PromptInjectionScanner::with_ml_detection() {
                     Ok(s) => {
                         tracing::info!(
-                            monotonic_counter.goose.prompt_injection_scanner_enabled = 1,
+                            monotonic_counter.warmachine.prompt_injection_scanner_enabled = 1,
                             "Security scanner initialized with ML-based detection"
                         );
                         s
@@ -147,7 +147,7 @@ impl SecurityManager {
                 }
             } else {
                 tracing::info!(
-                    monotonic_counter.goose.prompt_injection_scanner_enabled = 1,
+                    monotonic_counter.warmachine.prompt_injection_scanner_enabled = 1,
                     "Security scanner initialized with pattern-based detection only"
                 );
                 PromptInjectionScanner::new()
@@ -183,7 +183,7 @@ impl SecurityManager {
                     let action = if above_threshold { "BLOCK" } else { "LOG" };
 
                     tracing::warn!(
-                        monotonic_counter.goose.prompt_injection_finding = 1,
+                        monotonic_counter.warmachine.prompt_injection_finding = 1,
                         security.event_type = "prompt_injection_scan",
                         security.action = action,
                         security.confidence = analysis_result.confidence,
@@ -217,7 +217,7 @@ impl SecurityManager {
                         serde_json::to_string(&tool_call).unwrap_or_else(|_| "{}".to_string());
 
                     tracing::info!(
-                        monotonic_counter.goose.prompt_injection_tool_call_passed = 1,
+                        monotonic_counter.warmachine.prompt_injection_tool_call_passed = 1,
                         security.event_type = "prompt_injection_scan",
                         security.action = "ALLOW",
                         security.confidence = analysis_result.confidence,
@@ -234,7 +234,7 @@ impl SecurityManager {
         }
 
         tracing::info!(
-            monotonic_counter.goose.prompt_injection_analysis_performed = 1,
+            monotonic_counter.warmachine.prompt_injection_analysis_performed = 1,
             security_issues_found = results.len(),
             "Prompt injection detection: Security analysis complete"
         );

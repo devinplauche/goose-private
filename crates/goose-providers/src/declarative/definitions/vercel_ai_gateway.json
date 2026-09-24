@@ -7,7 +7,7 @@
   "base_url": "https://ai-gateway.vercel.sh/v1/chat/completions",
   "headers": {
     "http-referer": "https://goose-docs.ai",
-    "x-title": "goose"
+    "x-title": "warmachine"
   },
   "models": [
     {

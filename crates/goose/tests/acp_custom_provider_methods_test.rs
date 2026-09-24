@@ -5,10 +5,10 @@ mod common_tests;
 
 use common_tests::fixtures::server::AcpServerConnection;
 use common_tests::fixtures::{run_test, send_custom, Connection, TestConnectionConfig};
-use goose::config::base::CONFIG_YAML_NAME;
-use goose::config::declarative_providers::load_provider;
-use goose::config::paths::Paths;
-use goose::config::{Config, ConfigError, DeclarativeProviderConfig};
+use warmachine::config::base::CONFIG_YAML_NAME;
+use warmachine::config::declarative_providers::load_provider;
+use warmachine::config::paths::Paths;
+use warmachine::config::{Config, ConfigError, DeclarativeProviderConfig};
 use goose_test_support::EnforceSessionId;
 use serial_test::serial;
 use std::sync::Arc;
@@ -26,7 +26,7 @@ fn write_secrets(config_dir: &std::path::Path, contents: &str) {
 #[serial]
 fn acp_catalog_and_custom_provider_methods_use_core_provider_store() {
     let _env = env_lock::lock_env([
-        ("GOOSE_DISABLE_KEYRING", Some("1")),
+        ("WARMACHINE_DISABLE_KEYRING", Some("1")),
         ("XAI_API_KEY", None),
         ("XAI_HOST", None),
         ("CUSTOM_STARK_ACP_PROVIDER_API_KEY", None),
@@ -36,7 +36,7 @@ fn acp_catalog_and_custom_provider_methods_use_core_provider_store() {
         let config_dir = Paths::config_dir();
         write_config(
             &config_dir,
-            "GOOSE_MODEL: gpt-4o\nGOOSE_PROVIDER: openai\nGOOSE_DISABLE_KEYRING: true\nXAI_HOST: https://api.x.ai/v1\n",
+            "WARMACHINE_MODEL: gpt-4o\nGOOSE_PROVIDER: openai\nGOOSE_DISABLE_KEYRING: true\nXAI_HOST: https://api.x.ai/v1\n",
         );
         write_secrets(&config_dir, "XAI_API_KEY: xai-configured-key\n");
         Config::global().invalidate_secrets_cache();
@@ -82,7 +82,7 @@ fn acp_catalog_and_custom_provider_methods_use_core_provider_store() {
             .and_then(|providers| providers.as_array())
             .expect("setup catalog response should include providers");
         for provider_id in [
-            "goose",
+            "warmachine",
             "anthropic",
             "openai",
             "claude-acp",
@@ -298,7 +298,7 @@ fn acp_catalog_and_custom_provider_methods_use_core_provider_store() {
             .join(format!("{provider_id}.json"));
         assert!(
             custom_provider_path.exists(),
-            "custom provider should be saved in Goose's declarative provider store"
+            "custom provider should be saved in WarMachine's declarative provider store"
         );
         #[cfg(unix)]
         {
@@ -338,7 +338,7 @@ fn acp_catalog_and_custom_provider_methods_use_core_provider_store() {
                 .get_secret::<String>("CUSTOM_STARK_ACP_PROVIDER_API_KEY")
                 .unwrap(),
             "created-custom-key",
-            "custom provider create should write through Goose's config store"
+            "custom provider create should write through WarMachine's config store"
         );
         assert!(
             load_provider(&provider_id)
@@ -437,7 +437,7 @@ fn acp_catalog_and_custom_provider_methods_use_core_provider_store() {
                 .get_secret::<String>("CUSTOM_STARK_ACP_PROVIDER_API_KEY")
                 .unwrap(),
             "updated-custom-key",
-            "custom provider update should write through Goose's config store"
+            "custom provider update should write through WarMachine's config store"
         );
         let updated_provider: DeclarativeProviderConfig =
             serde_json::from_str(&std::fs::read_to_string(&custom_provider_path).unwrap())
@@ -604,7 +604,7 @@ fn acp_catalog_and_custom_provider_methods_use_core_provider_store() {
 
         for valid_id in ["custom_openai", "openai-compat", "a1"] {
             assert!(
-                goose::config::declarative_providers::validate_provider_id(valid_id).is_ok(),
+                warmachine::config::declarative_providers::validate_provider_id(valid_id).is_ok(),
                 "provider id should be valid: {valid_id}"
             );
         }

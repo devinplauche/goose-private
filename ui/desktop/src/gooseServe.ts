@@ -64,20 +64,20 @@ const existingFile = (candidate: string): boolean => {
 
 export const findGooseBinaryPath = (options: FindGooseBinaryOptions = {}): string => {
   const { isPackaged = false, resourcesPath } = options;
-  const pathFromEnv = process.env.GOOSE_BINARY;
+  const pathFromEnv = process.env.WARMACHINE_BINARY;
   if (pathFromEnv) {
     if (isPackaged) {
-      throw new Error('GOOSE_BINARY is only supported in development builds');
+      throw new Error('WARMACHINE_BINARY is only supported in development builds');
     }
 
     const resolvedPath = path.resolve(pathFromEnv);
     if (existingFile(resolvedPath)) {
       return resolvedPath;
     }
-    throw new Error(`Invalid GOOSE_BINARY path: ${pathFromEnv} (pwd is ${process.cwd()})`);
+    throw new Error(`Invalid WARMACHINE_BINARY path: ${pathFromEnv} (pwd is ${process.cwd()})`);
   }
 
-  const binaryName = process.platform === 'win32' ? 'goose.exe' : 'goose';
+  const binaryName = process.platform === 'win32' ? 'warmachine.exe' : 'warmachine';
   const possiblePaths: string[] = [];
 
   if (isPackaged && resourcesPath) {
@@ -98,7 +98,7 @@ export const findGooseBinaryPath = (options: FindGooseBinaryOptions = {}): strin
   }
 
   throw new Error(
-    `Goose binary not found in any of the possible paths: ${possiblePaths.join(', ')}`
+    `WarMachine binary not found in any of the possible paths: ${possiblePaths.join(', ')}`
   );
 };
 
@@ -134,7 +134,7 @@ const appendErrorTail = (target: string[], lines: string[], maxLines = 100): voi
   }
 };
 
-const CERT_FINGERPRINT_PREFIX = 'GOOSED_CERT_FINGERPRINT=';
+const CERT_FINGERPRINT_PREFIX = 'WARMACHINE_CERT_FINGERPRINT=';
 const TLS_FINGERPRINT_TIMEOUT_MS = 5000;
 
 const fetchStatus = async (
@@ -317,7 +317,7 @@ const buildGooseServeEnv = (
     }
   }
 
-  env.GOOSE_SERVER__SECRET_KEY = serverSecret;
+  env.WARMACHINE_SERVER__SECRET_KEY = serverSecret;
 
   return env;
 };
@@ -339,7 +339,7 @@ export const startGooseServe = async ({
   const startupDiagnosticsPath = startupTrace?.diagnosticsPath ?? null;
   const secretKey = serverSecret.trim();
   if (!secretKey) {
-    const message = 'GOOSE_SERVER__SECRET_KEY is required for goose serve';
+    const message = 'WARMACHINE_SERVER__SECRET_KEY is required for warmachine serve';
     startupTrace?.record('configuration_error', { message });
     throw new Error(withStartupDiagnosticsPath(message, startupDiagnosticsPath));
   }
@@ -373,7 +373,7 @@ export const startGooseServe = async ({
     String(port),
   ];
 
-  logger.info(`Starting goose serve from: ${goosePath} on port ${port} in dir ${workingDir}`);
+  logger.info(`Starting warmachine serve from: ${goosePath} on port ${port} in dir ${workingDir}`);
   if (startupTrace) {
     startupTrace.diagnostics.binaryPath = goosePath;
     startupTrace.diagnostics.httpBaseUrl = httpBaseUrl;
@@ -468,7 +468,7 @@ export const startGooseServe = async ({
     }
     for (const line of lines) {
       if (line.trim() && isFatalError(line)) {
-        logger.error(`goose serve stderr for port ${port} and dir ${workingDir}: ${line}`);
+        logger.error(`warmachine serve stderr for port ${port} and dir ${workingDir}: ${line}`);
       }
     }
   };
@@ -480,7 +480,7 @@ export const startGooseServe = async ({
     exitCode = code;
     exitSignal = signal;
     logger.info(
-      `goose serve process exited with code ${code} and signal ${signal} for port ${port} and dir ${workingDir}`
+      `warmachine serve process exited with code ${code} and signal ${signal} for port ${port} and dir ${workingDir}`
     );
     if (startupTrace) {
       startupTrace.diagnostics.childExitCode = code;
@@ -493,7 +493,7 @@ export const startGooseServe = async ({
   gooseProcess.on('error', (error) => {
     spawnFailed = true;
     errorLog.push(error.message);
-    logger.error(`Failed to start goose serve on port ${port} and dir ${workingDir}`, error);
+    logger.error(`Failed to start warmachine serve on port ${port} and dir ${workingDir}`, error);
     startupTrace?.record('spawn_error', { message: error.message, name: error.name });
   });
 
@@ -514,7 +514,7 @@ export const startGooseServe = async ({
 
       gooseProcess.once('close', finish);
 
-      logger.info('Terminating goose serve');
+      logger.info('Terminating warmachine serve');
       try {
         if (process.platform === 'win32') {
           if (gooseProcess.pid) {
@@ -524,7 +524,7 @@ export const startGooseServe = async ({
           gooseProcess.kill('SIGTERM');
         }
       } catch (error) {
-        logger.error('Error while terminating goose serve process:', error);
+        logger.error('Error while terminating warmachine serve process:', error);
       }
 
       setTimeout(() => {
@@ -557,7 +557,7 @@ export const startGooseServe = async ({
     const stderrDetails = errorLog.length ? ` Stderr: ${errorLog.join('\n')}` : '';
     throw new Error(
       withStartupDiagnosticsPath(
-        `goose serve did not become ready on ${statusUrl}.${exitDetails}${stderrDetails}`,
+        `warmachine serve did not become ready on ${statusUrl}.${exitDetails}${stderrDetails}`,
         startupDiagnosticsPath
       )
     );
@@ -581,7 +581,7 @@ export const startGooseServe = async ({
       });
       throw new Error(
         withStartupDiagnosticsPath(
-          `goose serve did not emit TLS certificate fingerprint on ${statusUrl}.${exitDetails}${stderrDetails}`,
+          `warmachine serve did not emit TLS certificate fingerprint on ${statusUrl}.${exitDetails}${stderrDetails}`,
           startupDiagnosticsPath
         )
       );

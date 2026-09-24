@@ -17,7 +17,7 @@ const POSTHOG_API_KEY: &str = "phc_RyX5CaY01VtZJCQyhSR5KFh6qimUy81YwxsEpotAftT";
 const POSTHOG_CAPTURE_URL: &str = "https://us.i.posthog.com/capture/";
 
 /// Config key for telemetry opt-out preference
-pub const TELEMETRY_ENABLED_KEY: &str = "GOOSE_TELEMETRY_ENABLED";
+pub const TELEMETRY_ENABLED_KEY: &str = "WARMACHINE_TELEMETRY_ENABLED";
 
 /// Check if the user has made a telemetry choice.
 ///
@@ -31,8 +31,8 @@ pub fn get_telemetry_choice() -> Option<bool> {
 /// Check if telemetry is enabled.
 ///
 /// Returns false if:
-/// - GOOSE_TELEMETRY_OFF environment variable is set to "1" or "true"
-/// - GOOSE_TELEMETRY_ENABLED config value is set to false
+/// - WARMACHINE_TELEMETRY_OFF environment variable is set to "1" or "true"
+/// - WARMACHINE_TELEMETRY_ENABLED config value is set to false
 /// - User has not made a telemetry choice yet (opt-in required)
 ///
 /// Returns true only if the user has explicitly opted in.
@@ -192,7 +192,7 @@ fn detect_install_method() -> String {
         }
     }
 
-    if std::env::var("GOOSE_DESKTOP").is_ok() {
+    if std::env::var("WARMACHINE_DESKTOP").is_ok() {
         return "desktop".to_string();
     }
 
@@ -397,10 +397,10 @@ async fn send_session_event(installation: &InstallationData) -> Result<(), Strin
         insert(&mut props, "model", model);
     }
 
-    if let Ok(mode) = config.get_param::<String>("GOOSE_MODE") {
+    if let Ok(mode) = config.get_param::<String>("WARMACHINE_MODE") {
         insert(&mut props, "setting_mode", mode);
     }
-    if let Ok(max_turns) = config.get_param::<i64>("GOOSE_MAX_TURNS") {
+    if let Ok(max_turns) = config.get_param::<i64>("WARMACHINE_MAX_TURNS") {
         insert(&mut props, "setting_max_turns", max_turns);
     }
 

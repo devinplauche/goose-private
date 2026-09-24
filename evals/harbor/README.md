@@ -1,7 +1,7 @@
-# Harbor benchmark tooling for Goose
+# Harbor benchmark tooling for WarMachine
 
 A small command-line tool for running and comparing terminal-bench-style
-benchmarks against different agent harnesses, models, and goose builds.
+benchmarks against different agent harnesses, models, and warmachine builds.
 
 ## Current results
 
@@ -32,11 +32,11 @@ Quick read:
 
 - `goose-sonnet46-full-code-mode` and `sonnet46-sum_codem` (both run codemode,
   the latter also enabling summon) lead at **57.3%**.
-- Stock goose (`sonnet46-full`, `developer,todo`) lands at **50.6%**, roughly
+- Stock warmachine (`sonnet46-full`, `developer,todo`) lands at **50.6%**, roughly
   on par with `opencode` (52.8%) and ahead of `pi` (47.2%) on the same model.
   Notably, `pi` also burned the most compute (24.4h) — slowest *and* lowest
   scoring of the sonnet runs.
-- `claude-sonnet46-full` at **55.1%** is harbor's vanilla `Goose` harness
+- `claude-sonnet46-full` at **55.1%** is harbor's vanilla `WarMachine` harness
   (curl-installed) — useful sanity check that our `GooseBinaryAgent` adapter
   isn't leaving points on the floor.
 - `nemotron-full` solves 1 task using roughly the same compute budget but
@@ -64,37 +64,37 @@ OPENAI_API_KEY=sk-...
 
 alternatively, you can just export them in the session where you run the benchmark
 
-## Running a goose benchmark
+## Running a warmachine benchmark
 
 The `run` subcommand builds a harbor config that uses our `GooseBinaryAgent`
-adapter — it uploads your local goose binary into each task container,
+adapter — it uploads your local warmachine binary into each task container,
 generates a `config.yaml` from the template with the requested extensions
 flipped on, runs the recipe, and streams JSON output.
 
 ```bash
 # Pin a specific binary, default everything else
-./evals/harbor/cmd.py run /path/to/goose --job-name my-run
+./evals/harbor/cmd.py run /path/to/warmachine --job-name my-run
 
 # Different model
-./evals/harbor/cmd.py run /path/to/goose \
+./evals/harbor/cmd.py run /path/to/warmachine \
   --model anthropic/claude-opus-4-5 --job-name opus-run
 
 # OpenRouter
-./evals/harbor/cmd.py run /path/to/goose \
+./evals/harbor/cmd.py run /path/to/warmachine \
   --model openrouter/nvidia/nemotron-3-nano-30b-a3b \
   --job-name nemotron-smoke
 
 # Subset of tasks (note: harbor wants the qualified form)
-./evals/harbor/cmd.py run /path/to/goose \
+./evals/harbor/cmd.py run /path/to/warmachine \
   --tasks terminal-bench/fix-git,terminal-bench/extract-elf \
   --job-name smoke
 
 # Toggle which extensions are enabled in config.yaml
-./evals/harbor/cmd.py run /path/to/goose \
+./evals/harbor/cmd.py run /path/to/warmachine \
   --extensions developer,todo,codemode --job-name codemode-run
 
 # Double the per-task timeout (useful for rerunning AgentTimeoutError trials)
-./evals/harbor/cmd.py run /path/to/goose \
+./evals/harbor/cmd.py run /path/to/warmachine \
   --timeout-multiplier 2.0 \
   --tasks terminal-bench/oom,terminal-bench/compile-vim \
   --job-name oom-retry-2x
@@ -120,7 +120,7 @@ secrets from env. Write a harbor YAML config directly and call `harbor run`:
 ```yaml
 # opencode-sonnet46-full.yaml
 job_name: opencode-sonnet46-full
-jobs_dir: /path/to/goose/evals/harbor/runs    # so cmd.py picks it up
+jobs_dir: /path/to/warmachine/evals/harbor/runs    # so cmd.py picks it up
 n_attempts: 1
 n_concurrent_trials: 4
 environment:
@@ -143,7 +143,7 @@ harbor run -c opencode-sonnet46-full.yaml
 ```
 
 The output lands under `evals/harbor/runs/opencode-sonnet46-full/`, alongside
-goose runs. `cmd.py list / show / compare` treats them identically — they're
+warmachine runs. `cmd.py list / show / compare` treats them identically — they're
 all harbor `TrialResult` JSON under the hood.
 
 For pi specifically you can lift the existing config we used:
@@ -199,17 +199,17 @@ If you run benchmarks on a remote box and want to inspect them locally:
 
 ```bash
 # Pull everything
-./evals/harbor/cmd.py pull tbench@douwe.com:/home/tbench/work/goose
+./evals/harbor/cmd.py pull tbench@douwe.com:/home/tbench/work/warmachine
 
 # Just specific jobs
-./evals/harbor/cmd.py pull tbench@douwe.com:/home/tbench/work/goose \
+./evals/harbor/cmd.py pull tbench@douwe.com:/home/tbench/work/warmachine \
   --jobs sonnet46-full pi-sonnet46-full
 
 # Mirror exactly (delete local runs that aren't on the remote)
-./evals/harbor/cmd.py pull tbench@douwe.com:/home/tbench/work/goose --delete
+./evals/harbor/cmd.py pull tbench@douwe.com:/home/tbench/work/warmachine --delete
 ```
 
-The remote argument is `user@host:/path/to/goose` — `pull` appends
+The remote argument is `user@host:/path/to/warmachine` — `pull` appends
 `evals/harbor/runs/` to it and rsyncs into the local `runs/`.
 
 ## A typical comparison workflow
@@ -217,13 +217,13 @@ The remote argument is `user@host:/path/to/goose` — `pull` appends
 ```bash
 # Run two configurations on the remote (in screen / mosh / tmux)
 ssh tbench@douwe.com
-cd /home/tbench/work/goose
-./evals/harbor/cmd.py run ./target/release/goose --job-name baseline
-./evals/harbor/cmd.py run ./target/release/goose \
+cd /home/tbench/work/warmachine
+./evals/harbor/cmd.py run ./target/release/warmachine --job-name baseline
+./evals/harbor/cmd.py run ./target/release/warmachine \
   --extensions developer,todo,codemode --job-name codemode
 
 # Pull results locally
-./evals/harbor/cmd.py pull tbench@douwe.com:/home/tbench/work/goose \
+./evals/harbor/cmd.py pull tbench@douwe.com:/home/tbench/work/warmachine \
   --jobs baseline codemode
 
 # Diff

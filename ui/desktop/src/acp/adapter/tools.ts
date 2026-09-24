@@ -347,12 +347,12 @@ function mcpAppMetadata(update: ToolCallUpdate): DesktopMcpAppMeta | undefined {
     return undefined;
   }
 
-  const goose = update._meta.goose;
-  if (!isRecord(goose) || !isRecord(goose.mcpApp)) {
+  const warmachine = update._meta.warmachine;
+  if (!isRecord(warmachine) || !isRecord(warmachine.mcpApp)) {
     return undefined;
   }
 
-  const resourceUri = goose.mcpApp.resourceUri;
+  const resourceUri = warmachine.mcpApp.resourceUri;
   if (typeof resourceUri !== 'string') {
     return undefined;
   }
@@ -362,11 +362,11 @@ function mcpAppMetadata(update: ToolCallUpdate): DesktopMcpAppMeta | undefined {
       resourceUri,
     },
     extensionName:
-      typeof goose.mcpApp.extensionName === 'string' ? goose.mcpApp.extensionName : undefined,
-    toolName: typeof goose.mcpApp.toolName === 'string' ? goose.mcpApp.toolName : undefined,
+      typeof warmachine.mcpApp.extensionName === 'string' ? warmachine.mcpApp.extensionName : undefined,
+    toolName: typeof warmachine.mcpApp.toolName === 'string' ? warmachine.mcpApp.toolName : undefined,
     toolNameIsActual:
-      typeof goose.mcpApp.toolNameIsActual === 'boolean'
-        ? goose.mcpApp.toolNameIsActual
+      typeof warmachine.mcpApp.toolNameIsActual === 'boolean'
+        ? warmachine.mcpApp.toolNameIsActual
         : undefined,
   };
 }

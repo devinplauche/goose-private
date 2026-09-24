@@ -1,7 +1,7 @@
-use goose::config::GooseMode;
-use goose::conversation::message::{Message, MessageContent, ToolRequest};
-use goose::security::adversary_inspector::AdversaryInspector;
-use goose::tool_inspection::ToolInspector;
+use warmachine::config::GooseMode;
+use warmachine::conversation::message::{Message, MessageContent, ToolRequest};
+use warmachine::security::adversary_inspector::AdversaryInspector;
+use warmachine::tool_inspection::ToolInspector;
 use rmcp::model::CallToolRequestParams;
 use rmcp::object;
 use std::sync::Arc;
@@ -32,7 +32,7 @@ async fn test_adversary_disabled_without_config_file() {
     let provider = Arc::new(Mutex::new(None));
     let inspector = AdversaryInspector::with_config_dir(
         provider,
-        Arc::new(goose::session::SessionManager::new(
+        Arc::new(warmachine::session::SessionManager::new(
             tmp.path().to_path_buf(),
         )),
         tmp.path().to_path_buf(),
@@ -66,7 +66,7 @@ async fn test_adversary_enabled_default_tools() {
     let provider = Arc::new(Mutex::new(None));
     let inspector = AdversaryInspector::with_config_dir(
         provider,
-        Arc::new(goose::session::SessionManager::new(
+        Arc::new(warmachine::session::SessionManager::new(
             tmp.path().to_path_buf(),
         )),
         tmp.path().to_path_buf(),
@@ -98,7 +98,7 @@ async fn test_adversary_enabled_default_tools() {
     assert_eq!(results.len(), 1);
     assert!(matches!(
         results[0].action,
-        goose::tool_inspection::InspectionAction::Allow
+        warmachine::tool_inspection::InspectionAction::Allow
     ));
 
     // write is NOT reviewed by default — skipped entirely
@@ -130,7 +130,7 @@ async fn test_adversary_custom_tool_filter() {
     let provider = Arc::new(Mutex::new(None));
     let inspector = AdversaryInspector::with_config_dir(
         provider,
-        Arc::new(goose::session::SessionManager::new(
+        Arc::new(warmachine::session::SessionManager::new(
             tmp.path().to_path_buf(),
         )),
         tmp.path().to_path_buf(),

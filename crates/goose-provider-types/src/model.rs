@@ -23,7 +23,7 @@ const INHERITED_SESSION_PARAM_KEYS: &[&str] = &[
     "preserve_unsigned_thinking",
 ];
 
-/// Request params goose consumes itself: formats that forward unknown params into
+/// Request params warmachine consumes itself: formats that forward unknown params into
 /// the payload must skip these, or the provider gets an unrecognized wire parameter.
 pub fn is_goose_internal_request_param(key: &str) -> bool {
     matches!(
@@ -659,12 +659,12 @@ mod tests {
         #[test]
         fn effort_suffix_stripped_from_model_name() {
             let _guard = env_lock::lock_env([
-                ("GOOSE_THINKING_EFFORT", None::<&str>),
-                ("GOOSE_MAX_TOKENS", None::<&str>),
-                ("GOOSE_TEMPERATURE", None::<&str>),
-                ("GOOSE_CONTEXT_LIMIT", None::<&str>),
-                ("GOOSE_TOOLSHIM", None::<&str>),
-                ("GOOSE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
+                ("WARMACHINE_THINKING_EFFORT", None::<&str>),
+                ("WARMACHINE_MAX_TOKENS", None::<&str>),
+                ("WARMACHINE_TEMPERATURE", None::<&str>),
+                ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
+                ("WARMACHINE_TOOLSHIM", None::<&str>),
+                ("WARMACHINE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
             ]);
             let config = ModelConfig::new("o3-mini-high");
             assert_eq!(config.model_name, "o3-mini");
@@ -674,12 +674,12 @@ mod tests {
         #[test]
         fn none_suffix_stripped_from_model_name() {
             let _guard = env_lock::lock_env([
-                ("GOOSE_THINKING_EFFORT", Some("high")),
-                ("GOOSE_MAX_TOKENS", None::<&str>),
-                ("GOOSE_TEMPERATURE", None::<&str>),
-                ("GOOSE_CONTEXT_LIMIT", None::<&str>),
-                ("GOOSE_TOOLSHIM", None::<&str>),
-                ("GOOSE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
+                ("WARMACHINE_THINKING_EFFORT", Some("high")),
+                ("WARMACHINE_MAX_TOKENS", None::<&str>),
+                ("WARMACHINE_TEMPERATURE", None::<&str>),
+                ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
+                ("WARMACHINE_TOOLSHIM", None::<&str>),
+                ("WARMACHINE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
             ]);
             let config = ModelConfig::new("o3-mini-none");
             assert_eq!(config.model_name, "o3-mini");
@@ -689,12 +689,12 @@ mod tests {
         #[test]
         fn xhigh_suffix_stripped_from_model_name() {
             let _guard = env_lock::lock_env([
-                ("GOOSE_THINKING_EFFORT", Some("low")),
-                ("GOOSE_MAX_TOKENS", None::<&str>),
-                ("GOOSE_TEMPERATURE", None::<&str>),
-                ("GOOSE_CONTEXT_LIMIT", None::<&str>),
-                ("GOOSE_TOOLSHIM", None::<&str>),
-                ("GOOSE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
+                ("WARMACHINE_THINKING_EFFORT", Some("low")),
+                ("WARMACHINE_MAX_TOKENS", None::<&str>),
+                ("WARMACHINE_TEMPERATURE", None::<&str>),
+                ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
+                ("WARMACHINE_TOOLSHIM", None::<&str>),
+                ("WARMACHINE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
             ]);
             let config = ModelConfig::new("gpt-5.4-xhigh");
             assert_eq!(config.model_name, "gpt-5.4");
@@ -704,12 +704,12 @@ mod tests {
         #[test]
         fn effort_suffix_not_stripped_when_thinking_effort_set() {
             let _guard = env_lock::lock_env([
-                ("GOOSE_THINKING_EFFORT", None::<&str>),
-                ("GOOSE_MAX_TOKENS", None::<&str>),
-                ("GOOSE_TEMPERATURE", None::<&str>),
-                ("GOOSE_CONTEXT_LIMIT", None::<&str>),
-                ("GOOSE_TOOLSHIM", None::<&str>),
-                ("GOOSE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
+                ("WARMACHINE_THINKING_EFFORT", None::<&str>),
+                ("WARMACHINE_MAX_TOKENS", None::<&str>),
+                ("WARMACHINE_TEMPERATURE", None::<&str>),
+                ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
+                ("WARMACHINE_TOOLSHIM", None::<&str>),
+                ("WARMACHINE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
             ]);
             let mut params = HashMap::new();
             params.insert("thinking_effort".to_string(), serde_json::json!("low"));
@@ -727,12 +727,12 @@ mod tests {
         #[test]
         fn no_suffix_no_change() {
             let _guard = env_lock::lock_env([
-                ("GOOSE_THINKING_EFFORT", None::<&str>),
-                ("GOOSE_MAX_TOKENS", None::<&str>),
-                ("GOOSE_TEMPERATURE", None::<&str>),
-                ("GOOSE_CONTEXT_LIMIT", None::<&str>),
-                ("GOOSE_TOOLSHIM", None::<&str>),
-                ("GOOSE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
+                ("WARMACHINE_THINKING_EFFORT", None::<&str>),
+                ("WARMACHINE_MAX_TOKENS", None::<&str>),
+                ("WARMACHINE_TEMPERATURE", None::<&str>),
+                ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
+                ("WARMACHINE_TOOLSHIM", None::<&str>),
+                ("WARMACHINE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
             ]);
             let config = ModelConfig::new("o3-mini");
             assert_eq!(config.model_name, "o3-mini");
@@ -741,12 +741,12 @@ mod tests {
         #[test]
         fn non_reasoning_model_suffix_not_stripped() {
             let _guard = env_lock::lock_env([
-                ("GOOSE_THINKING_EFFORT", None::<&str>),
-                ("GOOSE_MAX_TOKENS", None::<&str>),
-                ("GOOSE_TEMPERATURE", None::<&str>),
-                ("GOOSE_CONTEXT_LIMIT", None::<&str>),
-                ("GOOSE_TOOLSHIM", None::<&str>),
-                ("GOOSE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
+                ("WARMACHINE_THINKING_EFFORT", None::<&str>),
+                ("WARMACHINE_MAX_TOKENS", None::<&str>),
+                ("WARMACHINE_TEMPERATURE", None::<&str>),
+                ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
+                ("WARMACHINE_TOOLSHIM", None::<&str>),
+                ("WARMACHINE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
             ]);
             let config = ModelConfig::new("claude-sonnet-4-high");
             assert_eq!(config.model_name, "claude-sonnet-4-high");
@@ -755,12 +755,12 @@ mod tests {
         #[test]
         fn xai_reasoning_effort_suffix_is_normalized() {
             let _guard = env_lock::lock_env([
-                ("GOOSE_THINKING_EFFORT", None::<&str>),
-                ("GOOSE_MAX_TOKENS", None::<&str>),
-                ("GOOSE_TEMPERATURE", None::<&str>),
-                ("GOOSE_CONTEXT_LIMIT", None::<&str>),
-                ("GOOSE_TOOLSHIM", None::<&str>),
-                ("GOOSE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
+                ("WARMACHINE_THINKING_EFFORT", None::<&str>),
+                ("WARMACHINE_MAX_TOKENS", None::<&str>),
+                ("WARMACHINE_TEMPERATURE", None::<&str>),
+                ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
+                ("WARMACHINE_TOOLSHIM", None::<&str>),
+                ("WARMACHINE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
             ]);
             let config = ModelConfig::new("grok-4.5-high");
             assert_eq!(config.model_name, "grok-4.5");
@@ -827,8 +827,8 @@ mod tests {
         #[test]
         fn sets_limits_from_canonical_model() {
             let _guard = env_lock::lock_env([
-                ("GOOSE_MAX_TOKENS", None::<&str>),
-                ("GOOSE_CONTEXT_LIMIT", None::<&str>),
+                ("WARMACHINE_MAX_TOKENS", None::<&str>),
+                ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
             ]);
             let config = ModelConfig::new("gpt-4o").with_canonical_limits("openai");
             assert_eq!(config.max_tokens, Some(16_384));
@@ -838,8 +838,8 @@ mod tests {
         #[test]
         fn does_not_override_existing_max_tokens() {
             let _guard = env_lock::lock_env([
-                ("GOOSE_MAX_TOKENS", None::<&str>),
-                ("GOOSE_CONTEXT_LIMIT", None::<&str>),
+                ("WARMACHINE_MAX_TOKENS", None::<&str>),
+                ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
             ]);
             let mut config = ModelConfig::new("gpt-4o");
             config.max_tokens = Some(1_000);
@@ -851,8 +851,8 @@ mod tests {
         #[test]
         fn skips_canonical_output_limit_when_it_equals_context_limit() {
             let _guard = env_lock::lock_env([
-                ("GOOSE_MAX_TOKENS", None::<&str>),
-                ("GOOSE_CONTEXT_LIMIT", None::<&str>),
+                ("WARMACHINE_MAX_TOKENS", None::<&str>),
+                ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
             ]);
             let config = ModelConfig::new("moonshotai/kimi-k2.6").with_canonical_limits("nvidia");
             assert_eq!(config.max_tokens, None);
@@ -862,8 +862,8 @@ mod tests {
         #[test]
         fn resolves_claude_sonnet_5_on_aws_bedrock() {
             let _guard = env_lock::lock_env([
-                ("GOOSE_MAX_TOKENS", None::<&str>),
-                ("GOOSE_CONTEXT_LIMIT", None::<&str>),
+                ("WARMACHINE_MAX_TOKENS", None::<&str>),
+                ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
             ]);
             let config = ModelConfig::new("global.anthropic.claude-sonnet-5")
                 .with_canonical_limits("aws_bedrock");
@@ -874,8 +874,8 @@ mod tests {
         #[test]
         fn unknown_model_leaves_fields_none() {
             let _guard = env_lock::lock_env([
-                ("GOOSE_MAX_TOKENS", None::<&str>),
-                ("GOOSE_CONTEXT_LIMIT", None::<&str>),
+                ("WARMACHINE_MAX_TOKENS", None::<&str>),
+                ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
             ]);
             let config = ModelConfig::new("totally-unknown-model").with_canonical_limits("openai");
 
@@ -887,8 +887,8 @@ mod tests {
         #[test]
         fn resolves_after_stripping_reasoning_effort_suffix() {
             let _guard = env_lock::lock_env([
-                ("GOOSE_MAX_TOKENS", None::<&str>),
-                ("GOOSE_CONTEXT_LIMIT", None::<&str>),
+                ("WARMACHINE_MAX_TOKENS", None::<&str>),
+                ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
             ]);
 
             // "gpt-5.6-sol-xhigh" should resolve via "gpt-5.6-sol"
@@ -907,15 +907,15 @@ mod tests {
         #[test]
         fn resolves_gpt_6_astra_limits_for_databricks_model_service() {
             let _guard = env_lock::lock_env([
-                ("GOOSE_MAX_TOKENS", None::<&str>),
-                ("GOOSE_CONTEXT_LIMIT", None::<&str>),
+                ("WARMACHINE_MAX_TOKENS", None::<&str>),
+                ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
             ]);
-            let config = ModelConfig::new("data_workflow_tools.goose.goose-gpt-6-astra")
+            let config = ModelConfig::new("data_workflow_tools.warmachine.warmachine-gpt-6-astra")
                 .with_canonical_limits("databricks_v2");
 
             let canonical = crate::canonical::maybe_get_canonical_model(
                 "databricks_v2",
-                "data_workflow_tools.goose.goose-gpt-6-astra",
+                "data_workflow_tools.warmachine.warmachine-gpt-6-astra",
             )
             .expect("GPT-6 Astra should have canonical metadata");
             assert_eq!(canonical.limit.context, 1_050_000);
@@ -928,8 +928,8 @@ mod tests {
         #[test]
         fn fills_supports_vision_from_canonical_model() {
             let _guard = env_lock::lock_env([
-                ("GOOSE_MAX_TOKENS", None::<&str>),
-                ("GOOSE_CONTEXT_LIMIT", None::<&str>),
+                ("WARMACHINE_MAX_TOKENS", None::<&str>),
+                ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
             ]);
             // gpt-4o is a vision model in the canonical catalog (image input modality).
             let config = ModelConfig::new("gpt-4o").with_canonical_limits("openai");
@@ -939,8 +939,8 @@ mod tests {
         #[test]
         fn does_not_override_existing_supports_vision() {
             let _guard = env_lock::lock_env([
-                ("GOOSE_MAX_TOKENS", None::<&str>),
-                ("GOOSE_CONTEXT_LIMIT", None::<&str>),
+                ("WARMACHINE_MAX_TOKENS", None::<&str>),
+                ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
             ]);
             let config = ModelConfig::new("gpt-4o")
                 .with_vision_support(false)
@@ -953,11 +953,11 @@ mod tests {
         use super::*;
 
         const ENV_LOCK_KEYS: [(&str, Option<&str>); 5] = [
-            ("GOOSE_MAX_TOKENS", None),
-            ("GOOSE_TEMPERATURE", None),
-            ("GOOSE_CONTEXT_LIMIT", None),
-            ("GOOSE_TOOLSHIM", None),
-            ("GOOSE_TOOLSHIM_OLLAMA_MODEL", None),
+            ("WARMACHINE_MAX_TOKENS", None),
+            ("WARMACHINE_TEMPERATURE", None),
+            ("WARMACHINE_CONTEXT_LIMIT", None),
+            ("WARMACHINE_TOOLSHIM", None),
+            ("WARMACHINE_TOOLSHIM_OLLAMA_MODEL", None),
         ];
 
         #[test]
@@ -1003,11 +1003,11 @@ mod tests {
         use super::*;
 
         const ENV_LOCK_KEYS: [(&str, Option<&str>); 5] = [
-            ("GOOSE_MAX_TOKENS", None),
-            ("GOOSE_TEMPERATURE", None),
-            ("GOOSE_CONTEXT_LIMIT", None),
-            ("GOOSE_TOOLSHIM", None),
-            ("GOOSE_TOOLSHIM_OLLAMA_MODEL", None),
+            ("WARMACHINE_MAX_TOKENS", None),
+            ("WARMACHINE_TEMPERATURE", None),
+            ("WARMACHINE_CONTEXT_LIMIT", None),
+            ("WARMACHINE_TOOLSHIM", None),
+            ("WARMACHINE_TOOLSHIM_OLLAMA_MODEL", None),
         ];
 
         #[test]
@@ -1018,7 +1018,7 @@ mod tests {
             assert!(ModelConfig::new("gemini-3-pro").is_reasoning_model());
             assert!(ModelConfig::new("glm-5.3").is_reasoning_model());
             assert!(
-                ModelConfig::new("data_workflow_tools.goose.goose-glm-5-3").is_reasoning_model()
+                ModelConfig::new("data_workflow_tools.warmachine.warmachine-glm-5-3").is_reasoning_model()
             );
             assert!(!ModelConfig::new("glm-5.30").is_reasoning_model());
             assert!(!ModelConfig::new("glm_5_3_models.prod.llama-3").is_reasoning_model());
@@ -1032,7 +1032,7 @@ mod tests {
             for model in [
                 "kimi-k3",
                 "moonshotai/kimi-k3",
-                "catalog.schema.goose-kimi-k3",
+                "catalog.schema.warmachine-kimi-k3",
                 "Kimi-K3",
             ] {
                 assert!(ModelConfig::new(model).is_reasoning_model(), "{model}");

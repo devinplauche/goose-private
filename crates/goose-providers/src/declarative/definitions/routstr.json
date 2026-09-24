@@ -2,7 +2,7 @@
   "name": "routstr",
   "engine": "openai",
   "display_name": "Routstr",
-  "description": "OpenAI-compatible aggregator that fronts dozens of upstream providers (OpenAI, Anthropic, Google, DeepSeek, Llama, …) behind a single API. Authenticate with an sk-... bearer issued by a Routstr instance — payment (e.g. Cashu top-up) is handled outside goose.",
+  "description": "OpenAI-compatible aggregator that fronts dozens of upstream providers (OpenAI, Anthropic, Google, DeepSeek, Llama, …) behind a single API. Authenticate with an sk-... bearer issued by a Routstr instance — payment (e.g. Cashu top-up) is handled outside warmachine.",
   "api_key_env": "ROUTSTR_API_KEY",
   "base_url": "${ROUTSTR_HOST}/v1",
   "env_vars": [

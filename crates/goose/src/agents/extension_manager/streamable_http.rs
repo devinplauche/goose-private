@@ -192,12 +192,12 @@ pub(super) fn resolve_static_oauth_client(
     }))
 }
 
-const GOOSE_USER_AGENT: reqwest::header::HeaderValue =
-    reqwest::header::HeaderValue::from_static(concat!("goose/", env!("CARGO_PKG_VERSION")));
+const WARMACHINE_USER_AGENT: reqwest::header::HeaderValue =
+    reqwest::header::HeaderValue::from_static(concat!("warmachine/", env!("CARGO_PKG_VERSION")));
 
 fn header_map(headers: &HashMap<String, String>) -> ExtensionResult<HeaderMap> {
     let mut map = HeaderMap::new();
-    map.insert(reqwest::header::USER_AGENT, GOOSE_USER_AGENT);
+    map.insert(reqwest::header::USER_AGENT, WARMACHINE_USER_AGENT);
     for (key, value) in headers {
         map.insert(
             HeaderName::try_from(key)

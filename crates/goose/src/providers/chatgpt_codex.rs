@@ -517,7 +517,7 @@ fn build_authorize_url(redirect_uri: &str, pkce: &PkceChallenge, state: &str) ->
         ("id_token_add_organizations", "true"),
         ("codex_cli_simplified_flow", "true"),
         ("state", state),
-        ("originator", "goose"),
+        ("originator", "warmachine"),
     ];
     let query = serde_urlencoded::to_string(params)?;
     Ok(format!("{}/oauth/authorize?{}", ISSUER, query))
@@ -592,7 +592,7 @@ async fn refresh_access_token_with_issuer(
 const HTML_SUCCESS_TEMPLATE: &str = r#"<!doctype html>
 <html>
   <head>
-    <title>goose - ChatGPT Authorization Successful</title>
+    <title>warmachine - ChatGPT Authorization Successful</title>
     <style>
       body {
         font-family: system-ui, -apple-system, sans-serif;
@@ -612,7 +612,7 @@ const HTML_SUCCESS_TEMPLATE: &str = r#"<!doctype html>
   <body>
     <div class="container">
       <h1>Authorization Successful</h1>
-      <p>You can close this window and return to goose.</p>
+      <p>You can close this window and return to warmachine.</p>
     </div>
     <script>const AUTO_CLOSE_TIMEOUT_MS = __AUTO_CLOSE_TIMEOUT_MS__; setTimeout(() => window.close(), AUTO_CLOSE_TIMEOUT_MS)</script>
   </body>
@@ -631,7 +631,7 @@ fn html_error(error: &str) -> String {
         r#"<!doctype html>
 <html>
   <head>
-    <title>goose - ChatGPT Authorization Failed</title>
+    <title>warmachine - ChatGPT Authorization Failed</title>
     <style>
       body {{
         font-family: system-ui, -apple-system, sans-serif;
@@ -1102,7 +1102,7 @@ mod tests {
     fn inventory_configured_uses_oauth_token_cache() {
         let root = tempfile::tempdir().unwrap();
         let root_path = root.path().to_string_lossy().to_string();
-        let _guard = env_lock::lock_env([("GOOSE_PATH_ROOT", Some(root_path.as_str()))]);
+        let _guard = env_lock::lock_env([("WARMACHINE_PATH_ROOT", Some(root_path.as_str()))]);
 
         TokenCache::new().clear();
         assert!(!TokenCache::new().has_token());

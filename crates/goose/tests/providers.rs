@@ -1,27 +1,27 @@
 use anyhow::Result;
 use dotenvy::dotenv;
 use futures::StreamExt;
-use goose::acp::ACP_CURRENT_MODEL;
-use goose::agents::{Agent, AgentConfig, AgentEvent, GoosePlatform, PromptManager, SessionConfig};
-use goose::config::{ExtensionConfig, GooseMode, PermissionManager};
-use goose::conversation::message::{ActionRequiredData, Message, MessageContent};
-use goose::permission::Permission;
-use goose::providers::anthropic::ANTHROPIC_DEFAULT_MODEL;
-use goose::providers::azure::AZURE_DEFAULT_MODEL;
-use goose::providers::base::Provider;
+use warmachine::acp::ACP_CURRENT_MODEL;
+use warmachine::agents::{Agent, AgentConfig, AgentEvent, GoosePlatform, PromptManager, SessionConfig};
+use warmachine::config::{ExtensionConfig, GooseMode, PermissionManager};
+use warmachine::conversation::message::{ActionRequiredData, Message, MessageContent};
+use warmachine::permission::Permission;
+use warmachine::providers::anthropic::ANTHROPIC_DEFAULT_MODEL;
+use warmachine::providers::azure::AZURE_DEFAULT_MODEL;
+use warmachine::providers::base::Provider;
 #[cfg(feature = "aws-providers")]
-use goose::providers::bedrock::BEDROCK_DEFAULT_MODEL;
-use goose::providers::claude_code::CLAUDE_CODE_DEFAULT_MODEL;
-use goose::providers::codex::CODEX_DEFAULT_MODEL;
-use goose::providers::create_with_named_model;
-use goose::providers::google::GOOGLE_DEFAULT_MODEL;
-use goose::providers::litellm::LITELLM_DEFAULT_MODEL;
-use goose::providers::openai::OPEN_AI_DEFAULT_MODEL;
+use warmachine::providers::bedrock::BEDROCK_DEFAULT_MODEL;
+use warmachine::providers::claude_code::CLAUDE_CODE_DEFAULT_MODEL;
+use warmachine::providers::codex::CODEX_DEFAULT_MODEL;
+use warmachine::providers::create_with_named_model;
+use warmachine::providers::google::GOOGLE_DEFAULT_MODEL;
+use warmachine::providers::litellm::LITELLM_DEFAULT_MODEL;
+use warmachine::providers::openai::OPEN_AI_DEFAULT_MODEL;
 #[cfg(feature = "aws-providers")]
-use goose::providers::sagemaker_tgi::SAGEMAKER_TGI_DEFAULT_MODEL;
-use goose::providers::snowflake::SNOWFLAKE_DEFAULT_MODEL;
-use goose::providers::xai::XAI_DEFAULT_MODEL;
-use goose::session::{SessionManager, SessionType};
+use warmachine::providers::sagemaker_tgi::SAGEMAKER_TGI_DEFAULT_MODEL;
+use warmachine::providers::snowflake::SNOWFLAKE_DEFAULT_MODEL;
+use warmachine::providers::xai::XAI_DEFAULT_MODEL;
+use warmachine::session::{SessionManager, SessionType};
 use goose_providers::databricks::DATABRICKS_DEFAULT_MODEL;
 use goose_providers::errors::ProviderError;
 use goose_providers::thinking::ThinkingEffortSupport;
@@ -220,7 +220,7 @@ impl ProviderTestConfig {
 impl ProviderFixture {
     async fn setup(config: &ProviderTestConfig, mode: GooseMode) -> Result<Self> {
         let mut env_vars: Vec<(&'static str, Option<&str>)> =
-            vec![("GOOSE_MODE", Some(<&str>::from(mode)))];
+            vec![("WARMACHINE_MODE", Some(<&str>::from(mode)))];
         for &var in config.clear_env {
             env_vars.push((var, None));
         }
@@ -246,7 +246,7 @@ impl ProviderFixture {
         )
         .await
         .map_err(|e| anyhow::anyhow!("{}", e))?;
-        let model_config = goose::model_config::model_config_from_user_config(
+        let model_config = warmachine::model_config::model_config_from_user_config(
             &config.name.to_lowercase(),
             config.model_name,
         )?;
@@ -325,7 +325,7 @@ impl ProviderFixture {
 
         let message = Message::user().with_text(prompt);
         let model_config = model_config.unwrap_or_else(|| self.model_config.clone());
-        let (response1, _) = goose::session_context::with_session_id(
+        let (response1, _) = warmachine::session_context::with_session_id(
             Some(self.session_id.clone()),
             self.provider.complete(
                 &model_config,
@@ -355,7 +355,7 @@ impl ProviderFixture {
         }
 
         let params = tool_req.tool_call.as_ref().unwrap().clone();
-        let ctx = goose::agents::ToolCallContext::new(
+        let ctx = warmachine::agents::ToolCallContext::new(
             self.session_id.to_string(),
             None,
             Some("test-id".to_string()),
@@ -371,7 +371,7 @@ impl ProviderFixture {
             .unwrap();
         let tool_response = Message::user().with_tool_response(&tool_req.id, Ok(result));
 
-        let (response2, _) = goose::session_context::with_session_id(
+        let (response2, _) = warmachine::session_context::with_session_id(
             Some(self.session_id.clone()),
             self.provider.complete(
                 &model_config,
@@ -388,7 +388,7 @@ impl ProviderFixture {
         let message = Message::user().with_text("Just say hello!");
         let model_config = self.model_config.clone();
 
-        let (response, _) = goose::session_context::with_session_id(
+        let (response, _) = warmachine::session_context::with_session_id(
             Some(self.session_id.clone()),
             self.provider.complete(
                 &model_config,
@@ -429,7 +429,7 @@ impl ProviderFixture {
         let messages = vec![Message::user().with_text(&large_message_content)];
         let model_config = self.model_config.clone();
 
-        let result = goose::session_context::with_session_id(
+        let result = warmachine::session_context::with_session_id(
             Some(self.session_id.clone()),
             self.provider.complete(
                 &model_config,
@@ -469,7 +469,7 @@ impl ProviderFixture {
             .await?;
         let text = response.as_concat_text().to_lowercase();
         assert!(
-            text.contains("hello goose") || text.contains("test image"),
+            text.contains("hello warmachine") || text.contains("test image"),
             "{text}"
         );
         println!("=== {}::image_content === {}", self.name, text);
@@ -483,7 +483,7 @@ impl ProviderFixture {
             goose_providers::model::ModelConfig::new(alt).with_canonical_limits(&self.name);
 
         let message = Message::user().with_text("Just say hello!");
-        let (response, _) = goose::session_context::with_session_id(
+        let (response, _) = warmachine::session_context::with_session_id(
             Some(self.session_id.clone()),
             self.provider
                 .complete(&alt_config, "You are a helpful assistant.", &[message], &[]),
@@ -533,7 +533,7 @@ impl ProviderFixture {
                 serde_json::json!(target),
             )]));
         let message = Message::user().with_text("Just say hello!");
-        let (response, _) = goose::session_context::with_session_id(
+        let (response, _) = warmachine::session_context::with_session_id(
             Some(self.session_id.clone()),
             self.provider.complete(
                 &effort_config,
@@ -593,7 +593,7 @@ impl ProviderFixture {
             .reply(
                 message,
                 session_config,
-                goose::agents::state_machine::enabled(),
+                warmachine::agents::state_machine::enabled(),
                 None,
             )
             .await?;

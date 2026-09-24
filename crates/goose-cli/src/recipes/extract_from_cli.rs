@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use anyhow::{anyhow, Result};
-use goose::recipe::{Recipe, SubRecipe};
+use warmachine::recipe::{Recipe, SubRecipe};
 
 use crate::cli::InputConfig;
 use crate::recipes::print_recipe::print_recipe_info;

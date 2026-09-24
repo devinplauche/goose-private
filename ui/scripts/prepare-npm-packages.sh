@@ -10,7 +10,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 release_tag="$1"
 release_version="${release_tag#v}"
 output_dir="$2"
-repository="${GITHUB_REPOSITORY:-aaif-goose/goose}"
+repository="${GITHUB_REPOSITORY:-aaif-goose/warmachine}"
 work_dir="$(mktemp -d)"
 asset_dir="$work_dir/assets"
 extract_root="$work_dir/extracted"
@@ -34,13 +34,13 @@ copy_unix_binary() {
   local platform="$1"
   local target="$2"
   local extract_dir="$extract_root/$platform"
-  local destination="$repo_root/ui/goose-binary/goose-binary-$platform/bin/goose"
+  local destination="$repo_root/ui/goose-binary/goose-binary-$platform/bin/warmachine"
 
   mkdir -p "$extract_dir" "$(dirname "$destination")"
   tar -xjf "$asset_dir/goose-$target.tar.bz2" -C "$extract_dir"
-  test -f "$extract_dir/goose"
+  test -f "$extract_dir/warmachine"
   rm -f "$destination"
-  install -m 755 "$extract_dir/goose" "$destination"
+  install -m 755 "$extract_dir/warmachine" "$destination"
 }
 
 copy_release_binaries() {
@@ -50,12 +50,12 @@ copy_release_binaries() {
   copy_unix_binary linux-x64 x86_64-unknown-linux-gnu
 
   local extract_dir="$extract_root/win32-x64"
-  local destination="$repo_root/ui/goose-binary/goose-binary-win32-x64/bin/goose.exe"
+  local destination="$repo_root/ui/goose-binary/goose-binary-win32-x64/bin/warmachine.exe"
   mkdir -p "$extract_dir" "$(dirname "$destination")"
   unzip -q "$asset_dir/goose-x86_64-pc-windows-msvc.zip" -d "$extract_dir"
-  test -f "$extract_dir/goose-package/goose.exe"
+  test -f "$extract_dir/goose-package/warmachine.exe"
   rm -f "$destination"
-  install -m 755 "$extract_dir/goose-package/goose.exe" "$destination"
+  install -m 755 "$extract_dir/goose-package/warmachine.exe" "$destination"
 }
 
 assert_version() {
@@ -74,14 +74,14 @@ current_platform() {
 
 current_platform_binary() {
   local platform
-  local executable="goose"
+  local executable="warmachine"
   platform="$(current_platform)"
 
   case "$platform" in
     darwin-arm64 | darwin-x64 | linux-arm64 | linux-x64) ;;
-    win32-x64) executable="goose.exe" ;;
+    win32-x64) executable="warmachine.exe" ;;
     *)
-      echo "No Goose npm binary is available for $platform" >&2
+      echo "No WarMachine npm binary is available for $platform" >&2
       return 1
       ;;
   esac
@@ -141,7 +141,7 @@ verify_packed_wrapper() {
       "$output_dir/aaif-goose-acp-$release_version.tgz"
 
     assert_version "Packed wrapper" \
-      "$(env -u GOOSE_BINARY "$repo_root/bin/pnpm" exec goose --version | xargs)"
+      "$(env -u WARMACHINE_BINARY "$repo_root/bin/pnpm" exec warmachine --version | xargs)"
   )
 }
 

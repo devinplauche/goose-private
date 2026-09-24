@@ -33,7 +33,7 @@ jobs:
               - '!documentation/**'
 
   goose-acp-npm-packages:
-    name: goose ACP npm packages
+    name: warmachine ACP npm packages
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.code == 'true' || github.event_name != 'pull_request'
@@ -201,7 +201,7 @@ jobs:
         run: |
           gnome-keyring-daemon --components=secrets --daemonize --unlock <<< 'foobar'
           export CARGO_INCREMENTAL=0
-          cargo test -p goose --no-default-features --features ${{ matrix.tls-feature }},code-mode,tree-sitter,live-voice,scheduler,platform-apps,chat-recall,acp-http
+          cargo test -p warmachine --no-default-features --features ${{ matrix.tls-feature }},code-mode,tree-sitter,live-voice,scheduler,platform-apps,chat-recall,acp-http
           cargo test -p goose-providers --no-default-features --features ${{ matrix.tls-feature }},live-websocket
           cargo test -p goose-cli --no-default-features --features ${{ matrix.tls-feature }},code-mode,tree-sitter,live-voice,scheduler,platform-apps,chat-recall,acp-http -- --skip scenario_tests::scenarios::tests
           cargo test -p goose-cli --no-default-features --features ${{ matrix.tls-feature }},code-mode,tree-sitter,live-voice,scheduler,platform-apps,chat-recall,acp-http --jobs 1 scenario_tests::scenarios::tests

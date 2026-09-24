@@ -8,7 +8,7 @@
   "catalog_provider_id": "orcarouter",
   "headers": {
     "http-referer": "https://goose-docs.ai",
-    "x-title": "goose"
+    "x-title": "warmachine"
   },
   "models": [
     { "name": "anthropic/claude-sonnet-4.6", "context_limit": 200000 },

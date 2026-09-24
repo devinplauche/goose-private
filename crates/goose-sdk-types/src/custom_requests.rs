@@ -121,7 +121,7 @@ pub struct GooseToolCallResponse {
     pub meta: Option<serde_json::Value>,
 }
 
-/// List available goose apps, optionally scoped to a session.
+/// List available warmachine apps, optionally scoped to a session.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(method = "_goose/unstable/apps/list", response = AppsListResponse)]
 #[serde(rename_all = "camelCase")]
@@ -136,7 +136,7 @@ pub struct AppsListResponse {
     pub apps: Vec<serde_json::Value>,
 }
 
-/// Export a goose app as HTML.
+/// Export a warmachine app as HTML.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(method = "_goose/unstable/apps/export", response = AppsExportResponse)]
 #[serde(rename_all = "camelCase")]
@@ -149,7 +149,7 @@ pub struct AppsExportResponse {
     pub html: String,
 }
 
-/// Import a goose app from HTML.
+/// Import a warmachine app from HTML.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(method = "_goose/unstable/apps/import", response = AppsImportResponse)]
 #[serde(rename_all = "camelCase")]
@@ -163,7 +163,7 @@ pub struct AppsImportResponse {
     pub message: String,
 }
 
-/// Delete a goose app by name.
+/// Delete a warmachine app by name.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(method = "_goose/unstable/apps/delete", response = AppsDeleteResponse)]
 #[serde(rename_all = "camelCase")]
@@ -190,16 +190,16 @@ pub struct UpdateWorkingDirRequest {
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum SessionSystemPromptMode {
-    /// Replace Goose's base system prompt with the provided text.
+    /// Replace WarMachine's base system prompt with the provided text.
     Set,
-    /// Append the provided text under Goose's "Additional Instructions" section.
+    /// Append the provided text under WarMachine's "Additional Instructions" section.
     #[default]
     Append,
 }
 
 /// Set, append, or clear system prompt text for a session.
 ///
-/// `mode: "set"` replaces goose's base system prompt. `mode: "append"` adds an
+/// `mode: "set"` replaces warmachine's base system prompt. `mode: "append"` adds an
 /// instruction under "Additional Instructions". Reusing a key replaces the
 /// previous value for that mode/key; sending empty text clears it.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
@@ -236,7 +236,7 @@ pub struct SteerSessionRequest {
 pub struct SteerSessionResponse {
     pub run_id: String,
     /// Stable id of the queued steer message. The same id later appears as
-    /// `messageId` on the streamed `UserMessageChunk` (with `_meta.goose.steer`),
+    /// `messageId` on the streamed `UserMessageChunk` (with `_meta.warmachine.steer`),
     /// letting clients correlate a queued steer with its pickup.
     pub message_id: String,
 }
@@ -337,7 +337,7 @@ pub struct PromptTemplateEntry {
     pub is_customized: bool,
 }
 
-/// List all available goose prompt templates.
+/// List all available warmachine prompt templates.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(method = "_goose/unstable/config/prompts/list", response = ListPromptsResponse)]
 #[serde(rename_all = "camelCase")]
@@ -349,7 +349,7 @@ pub struct ListPromptsResponse {
     pub prompts: Vec<PromptTemplateEntry>,
 }
 
-/// Read a goose prompt template.
+/// Read a warmachine prompt template.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(method = "_goose/unstable/config/prompts/get", response = GetPromptResponse)]
 #[serde(rename_all = "camelCase")]
@@ -366,7 +366,7 @@ pub struct GetPromptResponse {
     pub is_customized: bool,
 }
 
-/// Save a custom goose prompt template.
+/// Save a custom warmachine prompt template.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(method = "_goose/unstable/config/prompts/save", response = PromptOperationResponse)]
 #[serde(rename_all = "camelCase")]
@@ -375,7 +375,7 @@ pub struct SavePromptRequest {
     pub content: String,
 }
 
-/// Reset a goose prompt template to its default content.
+/// Reset a warmachine prompt template to its default content.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(method = "_goose/unstable/config/prompts/reset", response = PromptOperationResponse)]
 #[serde(rename_all = "camelCase")]
@@ -497,7 +497,7 @@ pub struct GetConfigExtensionsResponse {
 pub type GetExtensionsRequest = GetConfigExtensionsRequest;
 pub type GetExtensionsResponse = GetConfigExtensionsResponse;
 
-/// Persist a new extension to the user's global goose config.
+/// Persist a new extension to the user's global warmachine config.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(method = "_goose/unstable/config/extensions/add", response = EmptyResponse)]
 #[serde(rename_all = "camelCase")]
@@ -507,7 +507,7 @@ pub struct AddConfigExtensionRequest {
     pub enabled: bool,
 }
 
-/// Remove a persisted extension from the user's global goose config.
+/// Remove a persisted extension from the user's global warmachine config.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(method = "_goose/unstable/config/extensions/remove", response = EmptyResponse)]
 #[serde(rename_all = "camelCase")]
@@ -515,7 +515,7 @@ pub struct RemoveConfigExtensionRequest {
     pub config_key: String,
 }
 
-/// Set the `enabled` flag for a persisted extension in the user's global goose config.
+/// Set the `enabled` flag for a persisted extension in the user's global warmachine config.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(
     method = "_goose/unstable/config/extensions/set-enabled",
@@ -558,7 +558,7 @@ pub struct PreferencesSaveRequest {
     pub values: Vec<PreferenceValue>,
 }
 
-/// Read one goose configuration value.
+/// Read one warmachine configuration value.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(method = "_goose/unstable/config/read", response = ConfigReadResponse)]
 #[serde(rename_all = "camelCase")]
@@ -575,7 +575,7 @@ pub struct ConfigReadResponse {
     pub value: serde_json::Value,
 }
 
-/// Create or replace one goose configuration value.
+/// Create or replace one warmachine configuration value.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(method = "_goose/unstable/config/upsert", response = EmptyResponse)]
 #[serde(rename_all = "camelCase")]
@@ -586,7 +586,7 @@ pub struct ConfigUpsertRequest {
     pub is_secret: bool,
 }
 
-/// Remove one goose configuration value.
+/// Remove one warmachine configuration value.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(method = "_goose/unstable/config/remove", response = EmptyResponse)]
 #[serde(rename_all = "camelCase")]
@@ -596,7 +596,7 @@ pub struct ConfigRemoveRequest {
     pub is_secret: bool,
 }
 
-/// Read all non-secret goose configuration values.
+/// Read all non-secret warmachine configuration values.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(method = "_goose/unstable/config/read-all", response = ConfigReadAllResponse)]
 #[serde(rename_all = "camelCase")]
@@ -633,7 +633,7 @@ pub struct PreferencesReadResponse {
     pub values: Vec<PreferenceValue>,
 }
 
-/// Read goose default provider and model configuration.
+/// Read warmachine default provider and model configuration.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(method = "_goose/unstable/defaults/read", response = DefaultsReadResponse)]
 #[serde(rename_all = "camelCase")]
@@ -646,7 +646,7 @@ pub struct DefaultsReadResponse {
     pub model_id: Option<String>,
 }
 
-/// Save goose default provider and model configuration.
+/// Save warmachine default provider and model configuration.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(method = "_goose/unstable/defaults/save", response = DefaultsReadResponse)]
 #[serde(rename_all = "camelCase")]
@@ -656,7 +656,7 @@ pub struct DefaultsSaveRequest {
     pub model_id: Option<String>,
 }
 
-/// Clear goose default provider and model configuration.
+/// Clear warmachine default provider and model configuration.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(method = "_goose/unstable/defaults/clear", response = DefaultsReadResponse)]
 #[serde(rename_all = "camelCase")]
@@ -694,7 +694,7 @@ pub struct OnboardingImportCandidate {
     pub warnings: Vec<String>,
 }
 
-/// Scan for existing goose and compatible app data that onboarding can import.
+/// Scan for existing warmachine and compatible app data that onboarding can import.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(
     method = "_goose/unstable/onboarding/import/scan",
@@ -819,7 +819,7 @@ pub enum SessionExportFormat {
     Markdown,
 }
 
-/// Export session response — raw JSON of the goose session with `conversation`,
+/// Export session response — raw JSON of the warmachine session with `conversation`,
 /// or a markdown transcript when `format` is `markdown`.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcResponse)]
 pub struct ExportSessionResponse {
@@ -1028,7 +1028,7 @@ pub struct ProviderSecretDto {
     pub configure_provider: Option<String>,
 }
 
-/// List provider credentials stored locally by goose.
+/// List provider credentials stored locally by warmachine.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(
     method = "_goose/unstable/providers/secrets/list",
@@ -1305,7 +1305,7 @@ pub struct CustomProviderUpsertDto {
     pub preserves_thinking: Option<bool>,
 }
 
-/// Create a custom provider backed by goose's declarative provider store.
+/// Create a custom provider backed by warmachine's declarative provider store.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(
     method = "_goose/unstable/providers/custom/create",
@@ -1345,7 +1345,7 @@ pub struct CustomProviderReadResponse {
     pub status: ProviderConfigStatusDto,
 }
 
-/// Update a custom provider backed by goose's declarative provider store.
+/// Update a custom provider backed by warmachine's declarative provider store.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(
     method = "_goose/unstable/providers/custom/update",
@@ -1367,7 +1367,7 @@ pub struct CustomProviderUpdateResponse {
     pub refresh: RefreshProviderInventoryResponse,
 }
 
-/// Delete a custom provider from goose's declarative provider store.
+/// Delete a custom provider from warmachine's declarative provider store.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema, JsonRpcRequest)]
 #[request(
     method = "_goose/unstable/providers/custom/delete",
@@ -1413,7 +1413,7 @@ impl std::fmt::Display for SourceType {
     }
 }
 
-/// A source discovered by Goose. Filesystem sources use an on-disk path;
+/// A source discovered by WarMachine. Filesystem sources use an on-disk path;
 /// built-in sources use a stable synthetic path. Sources may be either
 /// `global` (shared across all projects) or project-specific.
 #[derive(Debug, Default, Clone, Serialize, Deserialize, JsonSchema)]
@@ -1833,7 +1833,7 @@ pub struct ProviderInventoryEntryDto {
     pub description: String,
     /// The default/recommended model for this provider.
     pub default_model: String,
-    /// Whether Goose has enough configuration to use this provider.
+    /// Whether WarMachine has enough configuration to use this provider.
     pub configured: bool,
     /// Whether the provider's external runtime or required configuration is available.
     pub available: bool,

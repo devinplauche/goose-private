@@ -3,15 +3,15 @@ use crate::cli::StreamableHttpOptions;
 use super::output;
 use super::{derive_extension_name_from_command, split_extension_name_prefix, CliSession};
 use console::style;
-use goose::agents::{Agent, Container, ExtensionError};
-use goose::config::extensions::name_to_key;
-use goose::config::resolve_extensions_for_new_session;
-use goose::config::{Config, ExtensionConfig, GooseMode};
-use goose::model_config::model_config_from_user_config;
-use goose::providers::create;
-use goose::recipe::Recipe;
-use goose::session::session_manager::SessionType;
-use goose::session::EnabledExtensionsState;
+use warmachine::agents::{Agent, Container, ExtensionError};
+use warmachine::config::extensions::name_to_key;
+use warmachine::config::resolve_extensions_for_new_session;
+use warmachine::config::{Config, ExtensionConfig, GooseMode};
+use warmachine::model_config::model_config_from_user_config;
+use warmachine::providers::create;
+use warmachine::recipe::Recipe;
+use warmachine::session::session_manager::SessionType;
+use warmachine::session::EnabledExtensionsState;
 use rustyline::EditMode;
 use std::collections::{HashMap, HashSet};
 use std::process;
@@ -148,7 +148,7 @@ fn parse_cli_flag_extensions(
     extensions_to_load
 }
 
-/// Configuration for building a new Goose session
+/// Configuration for building a new WarMachine session
 ///
 /// This struct contains all the parameters needed to create a new session,
 /// including session identification, extension configuration, and debug settings.
@@ -307,7 +307,7 @@ async fn resolve_provider_and_model(
         .or_else(|| recipe_settings.and_then(|s| s.goose_provider.clone()))
         .or_else(|| configured_provider.clone())
         .unwrap_or_else(|| {
-            output::render_error("No provider configured. Run 'goose configure' first.");
+            output::render_error("No provider configured. Run 'warmachine configure' first.");
             process::exit(1);
         });
 
@@ -327,7 +327,7 @@ async fn resolve_provider_and_model(
     });
     let matching_environment_model =
         if provider_overridden && configured_provider.as_deref() == Some(provider_name.as_str()) {
-            std::env::var("GOOSE_MODEL").ok()
+            std::env::var("WARMACHINE_MODEL").ok()
         } else {
             None
         };
@@ -338,7 +338,7 @@ async fn resolve_provider_and_model(
             None
         };
     let configured_provider_model = session_config.provider.as_ref().and_then(|_| {
-        goose::config::get_provider_entry(config, &provider_name)
+        warmachine::config::get_provider_entry(config, &provider_name)
             .map(|entry| entry.model)
             .filter(|model| !model.is_empty())
     });
@@ -350,7 +350,7 @@ async fn resolve_provider_and_model(
         && configured_provider_model.is_none()
     {
         Some(
-            goose::providers::get_from_registry(&provider_name)
+            warmachine::providers::get_from_registry(&provider_name)
                 .await
                 .unwrap_or_else(|e| {
                     output::render_error(&e.to_string());
@@ -402,7 +402,7 @@ async fn resolve_provider_and_model(
             }
         })
         .unwrap_or_else(|| {
-            output::render_error("No model configured. Run 'goose configure' first.");
+            output::render_error("No model configured. Run 'warmachine configure' first.");
             process::exit(1);
         });
 
@@ -414,7 +414,7 @@ async fn resolve_provider_and_model(
     {
         let mut config = saved_model_config.unwrap();
         config.normalize_effort_suffix();
-        config = goose::model_config::with_rederived_cache_ttl(config).unwrap_or_else(|e| {
+        config = warmachine::model_config::with_rederived_cache_ttl(config).unwrap_or_else(|e| {
             output::render_error(&format!("Invalid cache TTL configuration: {}", e));
             process::exit(1);
         });
@@ -424,7 +424,7 @@ async fn resolve_provider_and_model(
         config
     } else {
         let mut config =
-            goose::model_config::model_config_from_user_config(&provider_name, &model_name)
+            warmachine::model_config::model_config_from_user_config(&provider_name, &model_name)
                 .unwrap_or_else(|e| {
                     output::render_error(&format!("Failed to create model configuration: {}", e));
                     process::exit(1);
@@ -448,7 +448,7 @@ async fn resolve_provider_and_model(
 
 async fn resolve_session_id(
     session_config: &SessionBuilderConfig,
-    session_manager: &goose::session::session_manager::SessionManager,
+    session_manager: &warmachine::session::session_manager::SessionManager,
     goose_mode: GooseMode,
 ) -> String {
     if session_config.no_session {
@@ -593,7 +593,7 @@ async fn collect_extension_configs(
     if !session_config.no_profile && !session_config.resume && recipe_extensions.is_none() {
         let project_root = std::env::current_dir().ok();
         all.extend(
-            goose::plugins::mcp_servers::enabled_plugin_mcp_servers(project_root.as_deref())
+            warmachine::plugins::mcp_servers::enabled_plugin_mcp_servers(project_root.as_deref())
                 .into_iter()
                 .map(|config| (config.name(), config)),
         );
@@ -629,7 +629,7 @@ async fn configure_session_prompts(
             .await;
     }
 
-    let system_prompt_file: Option<String> = config.get_param("GOOSE_SYSTEM_PROMPT_FILE_PATH").ok();
+    let system_prompt_file: Option<String> = config.get_param("WARMACHINE_SYSTEM_PROMPT_FILE_PATH").ok();
     if let Some(ref path) = system_prompt_file {
         let override_prompt = std::fs::read_to_string(path).unwrap_or_else(|e| {
             output::render_error(&format!(
@@ -644,7 +644,7 @@ async fn configure_session_prompts(
 
 pub async fn build_session(session_config: SessionBuilderConfig) -> CliSession {
     #[cfg(feature = "telemetry")]
-    goose::posthog::set_session_context("cli", session_config.resume);
+    warmachine::posthog::set_session_context("cli", session_config.resume);
 
     let config = Config::global();
     let agent: Agent = Agent::new();
@@ -716,11 +716,11 @@ pub async fn build_session(session_config: SessionBuilderConfig) -> CliSession {
                     && is_provider_unavailable_error(&e) =>
             {
                 let fallback_provider = config.get_goose_provider().unwrap_or_else(|_| {
-                    output::render_error("No provider configured. Run 'goose configure' first.");
+                    output::render_error("No provider configured. Run 'warmachine configure' first.");
                     process::exit(1);
                 });
                 let fallback_model = config.get_goose_model().unwrap_or_else(|_| {
-                    output::render_error("No model configured. Run 'goose configure' first.");
+                    output::render_error("No model configured. Run 'warmachine configure' first.");
                     process::exit(1);
                 });
                 eprintln!(
@@ -754,7 +754,7 @@ pub async fn build_session(session_config: SessionBuilderConfig) -> CliSession {
                     Err(e2) => {
                         output::render_error(&format!(
                         "Error {}.\n\
-                        Please check your system keychain and run 'goose configure' again.\n\
+                        Please check your system keychain and run 'warmachine configure' again.\n\
                         If your system is unable to use the keyring, please try setting secret key(s) via environment variables.\n\
                         For more info, see: https://goose-docs.ai/docs/troubleshooting/#keychainkeyring-errors",
                         e2
@@ -766,7 +766,7 @@ pub async fn build_session(session_config: SessionBuilderConfig) -> CliSession {
             Err(e) => {
                 output::render_error(&format!(
                 "Error {}.\n\
-                Please check your system keychain and run 'goose configure' again.\n\
+                Please check your system keychain and run 'warmachine configure' again.\n\
                 If your system is unable to use the keyring, please try setting secret key(s) via environment variables.\n\
                 For more info, see: https://goose-docs.ai/docs/troubleshooting/#keychainkeyring-errors",
                 e
@@ -816,7 +816,7 @@ pub async fn build_session(session_config: SessionBuilderConfig) -> CliSession {
         }
     }
 
-    for warning in goose::config::get_warnings() {
+    for warning in warmachine::config::get_warnings() {
         eprintln!("{}", style(format!("Warning: {}", warning)).yellow());
     }
 
@@ -849,7 +849,7 @@ pub async fn build_session(session_config: SessionBuilderConfig) -> CliSession {
             }
         });
 
-    let debug_mode = session_config.debug || config.get_param("GOOSE_DEBUG").unwrap_or(false);
+    let debug_mode = session_config.debug || config.get_param("WARMACHINE_DEBUG").unwrap_or(false);
 
     let session = CliSession::new(
         agent_ptr,
@@ -889,8 +889,8 @@ fn is_provider_unavailable_error(e: &anyhow::Error) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use goose::config::{set_provider_entry, ProviderEntry};
-    use goose::session::SessionManager;
+    use warmachine::config::{set_provider_entry, ProviderEntry};
+    use warmachine::session::SessionManager;
     use tempfile::TempDir;
 
     fn stdio_names(extensions: &[&str]) -> Vec<String> {
@@ -1067,8 +1067,8 @@ mod tests {
 
     fn clear_provider_env() -> env_lock::EnvGuard<'static> {
         env_lock::lock_env([
-            ("GOOSE_PROVIDER", None::<&str>),
-            ("GOOSE_MODEL", None::<&str>),
+            ("WARMACHINE_PROVIDER", None::<&str>),
+            ("WARMACHINE_MODEL", None::<&str>),
         ])
     }
 
@@ -1091,7 +1091,7 @@ mod tests {
             extensions: vec!["echo test".to_string()],
             streamable_http_extensions: vec![StreamableHttpOptions {
                 url: "http://localhost:8080/mcp".to_string(),
-                timeout: goose::config::DEFAULT_EXTENSION_TIMEOUT,
+                timeout: warmachine::config::DEFAULT_EXTENSION_TIMEOUT,
             }],
             builtins: vec!["developer".to_string()],
             no_profile: false,
@@ -1183,8 +1183,8 @@ mod tests {
         let _guard = clear_provider_env();
         let temp_dir = TempDir::new().unwrap();
         let config = test_config(&temp_dir);
-        config.set_param("GOOSE_PROVIDER", "openai").unwrap();
-        config.set_param("GOOSE_MODEL", "my-custom-model").unwrap();
+        config.set_param("WARMACHINE_PROVIDER", "openai").unwrap();
+        config.set_param("WARMACHINE_MODEL", "my-custom-model").unwrap();
 
         let resolved = resolve_provider_and_model(
             &SessionBuilderConfig {
@@ -1205,8 +1205,8 @@ mod tests {
     #[tokio::test]
     async fn matching_environment_model_overrides_saved_model() {
         let _guard = env_lock::lock_env([
-            ("GOOSE_PROVIDER", Some("openai")),
-            ("GOOSE_MODEL", Some("environment-model")),
+            ("WARMACHINE_PROVIDER", Some("openai")),
+            ("WARMACHINE_MODEL", Some("environment-model")),
         ]);
         let temp_dir = TempDir::new().unwrap();
         let config = test_config(&temp_dir);
@@ -1277,8 +1277,8 @@ mod tests {
         let _guard = clear_provider_env();
         let temp_dir = TempDir::new().unwrap();
         let config = test_config(&temp_dir);
-        config.set_param("GOOSE_PROVIDER", "openai").unwrap();
-        config.set_param("GOOSE_MODEL", "configured-model").unwrap();
+        config.set_param("WARMACHINE_PROVIDER", "openai").unwrap();
+        config.set_param("WARMACHINE_MODEL", "configured-model").unwrap();
         let recipe = serde_json::from_value(serde_json::json!({
             "version": "1.0.0",
             "title": "test recipe",
@@ -1356,11 +1356,11 @@ mod tests {
         let _guard = clear_provider_env();
         let temp_dir = TempDir::new().unwrap();
         let config = test_config(&temp_dir);
-        config.set_param("GOOSE_PROVIDER", "anthropic").unwrap();
+        config.set_param("WARMACHINE_PROVIDER", "anthropic").unwrap();
         config
-            .set_param("GOOSE_MODEL", "claude-sonnet-4-6")
+            .set_param("WARMACHINE_MODEL", "claude-sonnet-4-6")
             .unwrap();
-        let expected_model = goose::providers::get_from_registry("openai")
+        let expected_model = warmachine::providers::get_from_registry("openai")
             .await
             .unwrap()
             .metadata()
@@ -1441,9 +1441,9 @@ mod tests {
     #[tokio::test]
     async fn resume_rederives_cache_ttl_from_config_not_session() {
         let _guard = env_lock::lock_env([
-            ("GOOSE_PROVIDER", None::<&str>),
-            ("GOOSE_MODEL", None::<&str>),
-            ("GOOSE_CACHE_TTL", Some("1h")),
+            ("WARMACHINE_PROVIDER", None::<&str>),
+            ("WARMACHINE_MODEL", None::<&str>),
+            ("WARMACHINE_CACHE_TTL", Some("1h")),
         ]);
         let temp_dir = TempDir::new().unwrap();
         let config = test_config(&temp_dir);
@@ -1468,9 +1468,9 @@ mod tests {
     #[tokio::test]
     async fn resume_drops_saved_cache_ttl_when_config_absent() {
         let _guard = env_lock::lock_env([
-            ("GOOSE_PROVIDER", None::<&str>),
-            ("GOOSE_MODEL", None::<&str>),
-            ("GOOSE_CACHE_TTL", None::<&str>),
+            ("WARMACHINE_PROVIDER", None::<&str>),
+            ("WARMACHINE_MODEL", None::<&str>),
+            ("WARMACHINE_CACHE_TTL", None::<&str>),
         ]);
         let temp_dir = TempDir::new().unwrap();
         let config = test_config(&temp_dir);
@@ -1495,9 +1495,9 @@ mod tests {
     #[tokio::test]
     async fn headless_resume_clamps_rederived_cache_ttl() {
         let _guard = env_lock::lock_env([
-            ("GOOSE_PROVIDER", None::<&str>),
-            ("GOOSE_MODEL", None::<&str>),
-            ("GOOSE_CACHE_TTL", Some("1h")),
+            ("WARMACHINE_PROVIDER", None::<&str>),
+            ("WARMACHINE_MODEL", None::<&str>),
+            ("WARMACHINE_CACHE_TTL", Some("1h")),
         ]);
         let temp_dir = TempDir::new().unwrap();
         let config = test_config(&temp_dir);

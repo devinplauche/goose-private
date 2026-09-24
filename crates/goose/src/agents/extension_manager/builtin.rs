@@ -26,7 +26,7 @@ pub(super) async fn connect(
         let command = stdio::docker_exec(
             container,
             HashMap::new(),
-            "goose",
+            "warmachine",
             &["mcp".to_string(), key],
         );
         return Ok(Box::new(stdio::spawn(command, ctx).await?));

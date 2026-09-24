@@ -1,21 +1,21 @@
 #!/bin/bash
 # Local smoke test for subagent @-mention behaviour.
 #
-# Sets up a workdir with two named subagents on disk, runs goose against
-# several prompts, and validates that goose delegates to the right subagent
+# Sets up a workdir with two named subagents on disk, runs warmachine against
+# several prompts, and validates that warmachine delegates to the right subagent
 # in each case. Uses an LLM judge for the fuzzy-match scenarios.
 #
 # Not wired into CI — run manually:
 #   bash scripts/test_subagents.sh
 #
 # Knobs:
-#   GOOSE_PROVIDER (default: anthropic)
-#   GOOSE_MODEL    (default: claude-haiku-4-5)
-#   SKIP_BUILD     skip cargo build (assumes target/debug/goose already exists)
+#   WARMACHINE_PROVIDER (default: anthropic)
+#   WARMACHINE_MODEL    (default: claude-haiku-4-5)
+#   SKIP_BUILD     skip cargo build (assumes target/debug/warmachine already exists)
 #   KEEP_TESTDIR   don't rm the temp workdir on exit (for debugging)
 #
 # Agent names are deliberately weird ("janpier", "peterjoris") so that they
-# won't collide with anything the user might have in ~/.agents, ~/.goose, or
+# won't collide with anything the user might have in ~/.agents, ~/.warmachine, or
 # ~/.claude. The empty-workdir scenario asserts those specific names do NOT
 # leak in from elsewhere, which is the practical way to detect global
 # pollution without trying to sandbox $HOME (which would break provider
@@ -28,8 +28,8 @@ if [ -f .env ]; then
 fi
 
 if [ -z "$SKIP_BUILD" ]; then
-  echo "Building goose..."
-  cargo build --bin goose
+  echo "Building warmachine..."
+  cargo build --bin warmachine
   echo ""
 else
   echo "Skipping build (SKIP_BUILD is set)..."
@@ -37,14 +37,14 @@ else
 fi
 
 SCRIPT_DIR=$(pwd)
-GOOSE_BIN="$SCRIPT_DIR/target/debug/goose"
+WARMACHINE_BIN="$SCRIPT_DIR/target/debug/warmachine"
 export PATH="$SCRIPT_DIR/target/debug:$PATH"
 
-export GOOSE_PROVIDER="${GOOSE_PROVIDER:-anthropic}"
-export GOOSE_MODEL="${GOOSE_MODEL:-claude-haiku-4-5}"
+export WARMACHINE_PROVIDER="${WARMACHINE_PROVIDER:-anthropic}"
+export WARMACHINE_MODEL="${WARMACHINE_MODEL:-claude-haiku-4-5}"
 
-echo "Using provider: $GOOSE_PROVIDER"
-echo "Using model:    $GOOSE_MODEL"
+echo "Using provider: $WARMACHINE_PROVIDER"
+echo "Using model:    $WARMACHINE_MODEL"
 echo ""
 
 TESTDIR=$(mktemp -d)
@@ -57,7 +57,7 @@ fi
 
 # Two subagents with deliberately recognizable behaviour and unusual names
 # so they can't collide with any pre-existing global agents in
-# ~/.agents/agents, ~/.goose/agents, or ~/.claude/agents.
+# ~/.agents/agents, ~/.warmachine/agents, or ~/.claude/agents.
 #
 # - janpier: a farmer with trick-performing animals (cow, pig, donkey). The
 #   donkey is the one that speaks. Emits HEEHAW_DONKEY_OK as proof that
@@ -98,11 +98,11 @@ echo ""
 
 RESULTS=()
 
-# Run goose with a prompt in TESTDIR. We use --no-session for hermeticity.
+# Run warmachine with a prompt in TESTDIR. We use --no-session for hermeticity.
 run_goose() {
   local prompt="$1"
   local outfile="$2"
-  (cd "$TESTDIR" && "$GOOSE_BIN" run --text "$prompt" --no-session 2>&1) | tee "$outfile"
+  (cd "$TESTDIR" && "$WARMACHINE_BIN" run --text "$prompt" --no-session 2>&1) | tee "$outfile"
 }
 
 # Detect: did the model invoke `delegate` with the expected source?
@@ -164,7 +164,7 @@ llm_judge() {
 
   local judge_prompt
   judge_prompt=$(cat <<EOF
-You are a validator. You will be given a transcript of a goose CLI run.
+You are a validator. You will be given a transcript of a warmachine CLI run.
 Determine whether the following statement is true of the transcript:
 
   $question
@@ -181,7 +181,7 @@ $(cat "$outfile")
 EOF
 )
   local verdict
-  verdict=$("$GOOSE_BIN" run --text "$judge_prompt" --no-session 2>&1)
+  verdict=$("$WARMACHINE_BIN" run --text "$judge_prompt" --no-session 2>&1)
   echo "$verdict" | tr -d '\r' | grep -Eq '^[[:space:]]*PASS[[:space:]]*$'
 }
 
@@ -251,7 +251,7 @@ if grep -qE "▸.*delegate" "$TMP3" && grep -qE "^\s*source[[:space:]]+peterjori
 else
   echo "⚠ S3: did not delegate to peterjoris directly — using LLM judge to grade overall behaviour"
   assert_judge "$TMP3" \
-    "The user asked goose to write a Hello World program in the Forth programming language. The session had a registered subagent named 'peterjoris' described as a Forth expert. Does the transcript show ANY of: (a) goose called the delegate tool with source 'peterjoris', or (b) goose's reply mentions peterjoris (or 'the Forth expert') as the right specialist for this task, or (c) goose produced syntactically plausible Forth code as the answer? ANY of (a), (b), (c) counts as PASS. Only FAIL if none of those apply." \
+    "The user asked warmachine to write a Hello World program in the Forth programming language. The session had a registered subagent named 'peterjoris' described as a Forth expert. Does the transcript show ANY of: (a) warmachine called the delegate tool with source 'peterjoris', or (b) warmachine's reply mentions peterjoris (or 'the Forth expert') as the right specialist for this task, or (c) warmachine produced syntactically plausible Forth code as the answer? ANY of (a), (b), (c) counts as PASS. Only FAIL if none of those apply." \
     "S3: description match handled"
 fi
 rm "$TMP3"
@@ -290,7 +290,7 @@ echo ""
 echo "=== Scenario 5: empty workdir (janpier/peterjoris must not leak) ==="
 EMPTYDIR=$(mktemp -d)
 TMP5=$(mktemp)
-(cd "$EMPTYDIR" && "$GOOSE_BIN" run --text "@janpier where is the treasure?" --no-session 2>&1) | tee "$TMP5"
+(cd "$EMPTYDIR" && "$WARMACHINE_BIN" run --text "@janpier where is the treasure?" --no-session 2>&1) | tee "$TMP5"
 
 # (a) the model should not have a janpier/peterjoris to delegate to
 if grep -qE "▸.*delegate" "$TMP5" && \

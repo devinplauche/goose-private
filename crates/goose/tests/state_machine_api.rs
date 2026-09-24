@@ -2,17 +2,17 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use goose::agents::state_machine::{
+use warmachine::agents::state_machine::{
     yielded_with, Emitter, GooseEffect, Inference, InferenceInput, Operation, OperationResult,
     StateMachine, Step,
 };
-use goose::agents::AgentEvent;
-use goose::config::GooseMode;
-use goose::conversation::message::Message;
-use goose::conversation::Conversation;
-use goose::providers::base::ProviderUsage;
-use goose::session::session_manager::token_state_from_session_and_totals;
-use goose::session::{Session, SessionManager, SessionType};
+use warmachine::agents::AgentEvent;
+use warmachine::config::GooseMode;
+use warmachine::conversation::message::Message;
+use warmachine::conversation::Conversation;
+use warmachine::providers::base::ProviderUsage;
+use warmachine::session::session_manager::token_state_from_session_and_totals;
+use warmachine::session::{Session, SessionManager, SessionType};
 use goose_providers::conversation::token_usage::Usage;
 use goose_providers::model::ModelConfig;
 use tokio::sync::mpsc;
@@ -122,7 +122,7 @@ async fn custom_pipeline_supports_step_apply_run_and_usage() -> Result<()> {
     assert!(matches!(
         result.effects.first(),
         Some(GooseEffect::Conversation(
-            goose::agents::state_machine::ConversationEffect::AppendMessage(message)
+            warmachine::agents::state_machine::ConversationEffect::AppendMessage(message)
         )) if message.id.is_some()
     ));
     machine

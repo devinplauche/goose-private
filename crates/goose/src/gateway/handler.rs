@@ -23,14 +23,14 @@ use super::{Gateway, GatewayConfig, IncomingMessage, OutgoingMessage, PairingSta
 /// Conservative default cap on tool-calling loops for gateway sessions.
 ///
 /// Chat platforms like Telegram favor short, snappy replies, so the gateway
-/// keeps a stricter default than the global `GOOSE_MAX_TURNS` ceiling.  Users
-/// can override this through `GOOSE_GATEWAY_MAX_TURNS` (gateway-specific) or
-/// `GOOSE_MAX_TURNS` (applies globally).
+/// keeps a stricter default than the global `WARMACHINE_MAX_TURNS` ceiling.  Users
+/// can override this through `WARMACHINE_GATEWAY_MAX_TURNS` (gateway-specific) or
+/// `WARMACHINE_MAX_TURNS` (applies globally).
 const DEFAULT_GATEWAY_MAX_TURNS: u32 = 5;
 
 /// Resolve the max turns to use for a gateway session.
 ///
-/// Precedence: `GOOSE_GATEWAY_MAX_TURNS` -> `GOOSE_MAX_TURNS` ->
+/// Precedence: `WARMACHINE_GATEWAY_MAX_TURNS` -> `WARMACHINE_MAX_TURNS` ->
 /// `DEFAULT_GATEWAY_MAX_TURNS`.  Extracted as a pure function so the
 /// precedence rules can be unit-tested without touching the global config.
 fn resolve_gateway_max_turns(gateway_override: Option<u32>, global_max_turns: Option<u32>) -> u32 {
@@ -156,7 +156,7 @@ impl GatewayHandler {
                         .send_message(
                             &message.user,
                             OutgoingMessage::Text {
-                                body: "Welcome! Enter your pairing code to connect to goose."
+                                body: "Welcome! Enter your pairing code to connect to warmachine."
                                     .into(),
                             },
                         )
@@ -370,7 +370,7 @@ impl GatewayHandler {
             .send_message(
                 user,
                 OutgoingMessage::Text {
-                    body: "Paired! You can now chat with goose.".into(),
+                    body: "Paired! You can now chat with warmachine.".into(),
                 },
             )
             .await?;
@@ -530,13 +530,13 @@ impl GatewayHandler {
         // LLM→tool round-trips the agent will stop and reply with
         // whatever it has.
         //
-        // Honors `GOOSE_GATEWAY_MAX_TURNS` (gateway-specific override) and
-        // `GOOSE_MAX_TURNS` (global), falling back to a conservative default
+        // Honors `WARMACHINE_GATEWAY_MAX_TURNS` (gateway-specific override) and
+        // `WARMACHINE_MAX_TURNS` (global), falling back to a conservative default
         // so the limit is configurable without editing the source.
         let config = Config::global();
         let max_turns = resolve_gateway_max_turns(
-            config.get_param::<u32>("GOOSE_GATEWAY_MAX_TURNS").ok(),
-            config.get_param::<u32>("GOOSE_MAX_TURNS").ok(),
+            config.get_param::<u32>("WARMACHINE_GATEWAY_MAX_TURNS").ok(),
+            config.get_param::<u32>("WARMACHINE_MAX_TURNS").ok(),
         );
 
         let session_config = SessionConfig {

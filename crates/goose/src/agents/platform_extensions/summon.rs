@@ -373,11 +373,11 @@ pub fn discover_filesystem_sources(working_dir: &Path) -> Vec<SourceEntry> {
     let config = Paths::config_dir();
 
     let local_recipe_dirs: Vec<PathBuf> = vec![
-        working_dir.join(".goose/recipes"),
+        working_dir.join(".warmachine/recipes"),
         working_dir.join(".agents/recipes"),
     ];
 
-    let global_recipe_dirs: Vec<PathBuf> = std::env::var("GOOSE_RECIPE_PATH")
+    let global_recipe_dirs: Vec<PathBuf> = std::env::var("WARMACHINE_RECIPE_PATH")
         .ok()
         .into_iter()
         .flat_map(|p| {
@@ -386,7 +386,7 @@ pub fn discover_filesystem_sources(working_dir: &Path) -> Vec<SourceEntry> {
         })
         .chain(
             [
-                home.as_ref().map(|h| h.join(".goose/recipes")),
+                home.as_ref().map(|h| h.join(".warmachine/recipes")),
                 Some(config.join("recipes")),
                 home.as_ref().map(|h| h.join(".agents/recipes")),
             ]
@@ -396,13 +396,13 @@ pub fn discover_filesystem_sources(working_dir: &Path) -> Vec<SourceEntry> {
         .collect();
 
     let local_agent_dirs: Vec<PathBuf> = vec![
-        working_dir.join(".goose/agents"),
+        working_dir.join(".warmachine/agents"),
         working_dir.join(".claude/agents"),
         working_dir.join(".agents/agents"),
     ];
 
     let global_agent_dirs: Vec<PathBuf> = [
-        home.as_ref().map(|h| h.join(".goose/agents")),
+        home.as_ref().map(|h| h.join(".warmachine/agents")),
         home.as_ref().map(|h| h.join(".agents/agents")),
         Some(config.join("agents")),
         home.as_ref().map(|h| h.join(".claude/agents")),
@@ -558,13 +558,13 @@ fn current_epoch_millis() -> u64 {
 /// Get maximum number of concurrent background tasks
 fn max_background_tasks() -> usize {
     Config::global()
-        .get_param::<usize>("GOOSE_MAX_BACKGROUND_TASKS")
+        .get_param::<usize>("WARMACHINE_MAX_BACKGROUND_TASKS")
         .unwrap_or(5)
 }
 
 fn completed_task_ttl() -> Duration {
     let secs = Config::global()
-        .get_param::<u64>("GOOSE_COMPLETED_TASK_TTL_SECS")
+        .get_param::<u64>("WARMACHINE_COMPLETED_TASK_TTL_SECS")
         .unwrap_or(600);
     Duration::from_secs(secs)
 }
@@ -758,7 +758,7 @@ impl SummonClient {
                 "max_turns": {
                     "type": "integer",
                     "minimum": 1,
-                    "description": "Maximum turns for this delegate. Overrides recipe settings.max_turns and GOOSE_SUBAGENT_MAX_TURNS."
+                    "description": "Maximum turns for this delegate. Overrides recipe settings.max_turns and WARMACHINE_SUBAGENT_MAX_TURNS."
                 },
                 "context": {
                     "type": "string",
@@ -1244,7 +1244,7 @@ impl SummonClient {
                  • Current recipe's sub_recipes\n\
                  • .agents/recipes/, .agents/agents/ (project-level)\n\
                  • ~/.agents/agents/ (global)\n\
-                 • GOOSE_RECIPE_PATH directories",
+                 • WARMACHINE_RECIPE_PATH directories",
             )]);
         }
 
@@ -1723,17 +1723,17 @@ impl SummonClient {
         provider_name: &str,
         provider_default_model: Option<&str>,
     ) -> Result<goose_providers::model::ModelConfig, anyhow::Error> {
-        let env_model = std::env::var("GOOSE_SUBAGENT_MODEL").ok();
-        let env_provider = std::env::var("GOOSE_SUBAGENT_PROVIDER").ok();
+        let env_model = std::env::var("WARMACHINE_SUBAGENT_MODEL").ok();
+        let env_provider = std::env::var("WARMACHINE_SUBAGENT_PROVIDER").ok();
         let recipe_settings = recipe.settings.as_ref();
         let configured = Config::global().all_values().ok();
         let configured_provider = configured
             .as_ref()
-            .and_then(|values| values.get("GOOSE_SUBAGENT_PROVIDER"))
+            .and_then(|values| values.get("WARMACHINE_SUBAGENT_PROVIDER"))
             .and_then(serde_json::Value::as_str);
         let configured_model = configured
             .as_ref()
-            .and_then(|values| values.get("GOOSE_SUBAGENT_MODEL"))
+            .and_then(|values| values.get("WARMACHINE_SUBAGENT_MODEL"))
             .and_then(serde_json::Value::as_str);
         let matches_provider =
             |candidate: Option<&str>| candidate.is_none() || candidate == Some(provider_name);
@@ -1774,7 +1774,7 @@ impl SummonClient {
             })
             .ok_or_else(|| {
                 anyhow::anyhow!(
-                    "No model configured for provider '{}'; set GOOSE_SUBAGENT_MODEL",
+                    "No model configured for provider '{}'; set WARMACHINE_SUBAGENT_MODEL",
                     provider_name
                 )
             })?;
@@ -1822,7 +1822,7 @@ impl SummonClient {
         ),
         anyhow::Error,
     > {
-        let env_provider = std::env::var("GOOSE_SUBAGENT_PROVIDER").ok();
+        let env_provider = std::env::var("WARMACHINE_SUBAGENT_PROVIDER").ok();
         let provider_name = recipe
             .settings
             .as_ref()
@@ -1831,7 +1831,7 @@ impl SummonClient {
             .or_else(|| params.provider.clone())
             .or_else(|| {
                 Config::global()
-                    .get_param::<String>("GOOSE_SUBAGENT_PROVIDER")
+                    .get_param::<String>("WARMACHINE_SUBAGENT_PROVIDER")
                     .ok()
             })
             .or_else(|| session.provider_name.clone())
@@ -1884,13 +1884,13 @@ impl SummonClient {
             .and_then(|r| r.settings.as_ref())
             .and_then(|s| s.max_turns)
             .or_else(|| {
-                std::env::var("GOOSE_SUBAGENT_MAX_TURNS")
+                std::env::var("WARMACHINE_SUBAGENT_MAX_TURNS")
                     .ok()
                     .and_then(|v| v.parse().ok())
             })
             .or_else(|| {
                 Config::global()
-                    .get_param::<usize>("GOOSE_SUBAGENT_MAX_TURNS")
+                    .get_param::<usize>("WARMACHINE_SUBAGENT_MAX_TURNS")
                     .ok()
             })
             .unwrap_or(DEFAULT_SUBAGENT_MAX_TURNS)
@@ -2579,7 +2579,7 @@ You review code."#;
     async fn test_discover_recipes_and_agents() {
         let temp_dir = TempDir::new().unwrap();
 
-        let recipes = temp_dir.path().join(".goose/recipes");
+        let recipes = temp_dir.path().join(".warmachine/recipes");
         fs::create_dir_all(&recipes).unwrap();
         fs::write(
             recipes.join("deploy.yaml"),
@@ -2587,7 +2587,7 @@ You review code."#;
         )
         .unwrap();
 
-        let agents = temp_dir.path().join(".goose/agents");
+        let agents = temp_dir.path().join(".warmachine/agents");
         fs::create_dir_all(&agents).unwrap();
         fs::write(
             agents.join("reviewer.md"),
@@ -2617,7 +2617,7 @@ You review code."#;
     async fn test_recipe_deduplication_local_wins() {
         let temp_dir = TempDir::new().unwrap();
 
-        let local = temp_dir.path().join(".goose/recipes");
+        let local = temp_dir.path().join(".warmachine/recipes");
         fs::create_dir_all(&local).unwrap();
         fs::write(
             local.join("deploy.yaml"),
@@ -2644,7 +2644,7 @@ You review code."#;
     async fn test_load_recipe_source() {
         let temp_dir = TempDir::new().unwrap();
 
-        let recipes = temp_dir.path().join(".goose/recipes");
+        let recipes = temp_dir.path().join(".warmachine/recipes");
         fs::create_dir_all(&recipes).unwrap();
         fs::write(
             recipes.join("deploy.yaml"),
@@ -2699,7 +2699,7 @@ You review code."#;
     async fn test_load_agent_source() {
         let temp_dir = TempDir::new().unwrap();
 
-        let agents = temp_dir.path().join(".goose/agents");
+        let agents = temp_dir.path().join(".warmachine/agents");
         fs::create_dir_all(&agents).unwrap();
         fs::write(
             agents.join("reviewer.md"),
@@ -2723,7 +2723,7 @@ You review code."#;
     async fn test_load_nonexistent_source_suggests_similar() {
         let temp_dir = TempDir::new().unwrap();
 
-        let recipes = temp_dir.path().join(".goose/recipes");
+        let recipes = temp_dir.path().join(".warmachine/recipes");
         fs::create_dir_all(&recipes).unwrap();
         fs::write(
             recipes.join("deploy.yaml"),
@@ -2930,9 +2930,9 @@ You review code."#;
         };
 
         // Set env var to a different value — recipe should still win
-        std::env::set_var("GOOSE_SUBAGENT_MAX_TURNS", "99");
+        std::env::set_var("WARMACHINE_SUBAGENT_MAX_TURNS", "99");
         let result = client.resolve_max_turns(&session);
-        std::env::remove_var("GOOSE_SUBAGENT_MAX_TURNS");
+        std::env::remove_var("WARMACHINE_SUBAGENT_MAX_TURNS");
 
         assert_eq!(
             result, 10,
@@ -2948,13 +2948,13 @@ You review code."#;
 
         let session = crate::session::Session::default(); // no recipe
 
-        std::env::set_var("GOOSE_SUBAGENT_MAX_TURNS", "7");
+        std::env::set_var("WARMACHINE_SUBAGENT_MAX_TURNS", "7");
         let result = client.resolve_max_turns(&session);
-        std::env::remove_var("GOOSE_SUBAGENT_MAX_TURNS");
+        std::env::remove_var("WARMACHINE_SUBAGENT_MAX_TURNS");
 
         assert_eq!(
             result, 7,
-            "should fall back to GOOSE_SUBAGENT_MAX_TURNS env var"
+            "should fall back to WARMACHINE_SUBAGENT_MAX_TURNS env var"
         );
     }
 
@@ -2966,7 +2966,7 @@ You review code."#;
 
         let session = crate::session::Session::default(); // no recipe
 
-        std::env::remove_var("GOOSE_SUBAGENT_MAX_TURNS");
+        std::env::remove_var("WARMACHINE_SUBAGENT_MAX_TURNS");
         let result = client.resolve_max_turns(&session);
 
         assert_eq!(
@@ -3107,9 +3107,9 @@ You review code."#;
     #[serial]
     async fn test_resolve_model_config_applies_canonical_limits_to_overridden_model() {
         let _env = env_lock::lock_env([
-            ("GOOSE_CONTEXT_LIMIT", None::<&str>),
-            ("GOOSE_MAX_TOKENS", None::<&str>),
-            ("GOOSE_SUBAGENT_MODEL", None::<&str>),
+            ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
+            ("WARMACHINE_MAX_TOKENS", None::<&str>),
+            ("WARMACHINE_SUBAGENT_MODEL", None::<&str>),
         ]);
 
         let parent = parent_config();
@@ -3128,9 +3128,9 @@ You review code."#;
     #[serial]
     async fn test_resolve_model_config_does_not_inherit_provider_specific_request_params() {
         let _env = env_lock::lock_env([
-            ("GOOSE_CONTEXT_LIMIT", None::<&str>),
-            ("GOOSE_MAX_TOKENS", None::<&str>),
-            ("GOOSE_SUBAGENT_MODEL", None::<&str>),
+            ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
+            ("WARMACHINE_MAX_TOKENS", None::<&str>),
+            ("WARMACHINE_SUBAGENT_MODEL", None::<&str>),
         ]);
 
         // Parent session is a Claude model with anthropic_beta in request_params.
@@ -3159,9 +3159,9 @@ You review code."#;
     #[serial]
     async fn test_resolve_model_config_inherits_thinking_effort_on_override() {
         let _env = env_lock::lock_env([
-            ("GOOSE_CONTEXT_LIMIT", None::<&str>),
-            ("GOOSE_MAX_TOKENS", None::<&str>),
-            ("GOOSE_SUBAGENT_MODEL", None::<&str>),
+            ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
+            ("WARMACHINE_MAX_TOKENS", None::<&str>),
+            ("WARMACHINE_SUBAGENT_MODEL", None::<&str>),
         ]);
 
         // Reasoning controls are model-family-agnostic and should be inherited,
@@ -3216,9 +3216,9 @@ You review code."#;
     #[serial]
     async fn test_resolve_model_config_env_var_overrides_params_model() {
         let _env = env_lock::lock_env([
-            ("GOOSE_CONTEXT_LIMIT", None::<&str>),
-            ("GOOSE_MAX_TOKENS", None::<&str>),
-            ("GOOSE_SUBAGENT_MODEL", Some(OVERRIDE_MODEL)),
+            ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
+            ("WARMACHINE_MAX_TOKENS", None::<&str>),
+            ("WARMACHINE_SUBAGENT_MODEL", Some(OVERRIDE_MODEL)),
         ]);
 
         let client = SummonClient::new(create_test_context()).unwrap();
@@ -3237,7 +3237,7 @@ You review code."#;
             .expect("resolve_model_config");
         assert_eq!(
             result.model_name, OVERRIDE_MODEL,
-            "GOOSE_SUBAGENT_MODEL must take priority over params.model"
+            "WARMACHINE_SUBAGENT_MODEL must take priority over params.model"
         );
     }
 
@@ -3245,9 +3245,9 @@ You review code."#;
     #[serial]
     async fn test_resolve_model_config_recipe_overrides_env_var() {
         let _env = env_lock::lock_env([
-            ("GOOSE_CONTEXT_LIMIT", None::<&str>),
-            ("GOOSE_MAX_TOKENS", None::<&str>),
-            ("GOOSE_SUBAGENT_MODEL", Some(OVERRIDE_MODEL)),
+            ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
+            ("WARMACHINE_MAX_TOKENS", None::<&str>),
+            ("WARMACHINE_SUBAGENT_MODEL", Some(OVERRIDE_MODEL)),
         ]);
 
         let client = SummonClient::new(create_test_context()).unwrap();
@@ -3269,7 +3269,7 @@ You review code."#;
             .expect("resolve_model_config");
         assert_eq!(
             result.model_name, "recipe-model",
-            "recipe settings.goose_model must take priority over GOOSE_SUBAGENT_MODEL"
+            "recipe settings.goose_model must take priority over WARMACHINE_SUBAGENT_MODEL"
         );
     }
 
@@ -3277,10 +3277,10 @@ You review code."#;
     #[serial]
     async fn test_resolve_provider_recipe_overrides_env_var() {
         let _env = env_lock::lock_env([
-            ("GOOSE_CONTEXT_LIMIT", None::<&str>),
-            ("GOOSE_MAX_TOKENS", None::<&str>),
-            ("GOOSE_SUBAGENT_PROVIDER", Some("openai")),
-            ("GOOSE_SUBAGENT_MODEL", None::<&str>),
+            ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
+            ("WARMACHINE_MAX_TOKENS", None::<&str>),
+            ("WARMACHINE_SUBAGENT_PROVIDER", Some("openai")),
+            ("WARMACHINE_SUBAGENT_MODEL", None::<&str>),
             ("ANTHROPIC_API_KEY", Some("test-key")),
         ]);
 
@@ -3304,7 +3304,7 @@ You review code."#;
         assert_eq!(
             resolved_provider.get_name(),
             PROVIDER,
-            "recipe settings.goose_provider must take priority over GOOSE_SUBAGENT_PROVIDER"
+            "recipe settings.goose_provider must take priority over WARMACHINE_SUBAGENT_PROVIDER"
         );
     }
 
@@ -3312,10 +3312,10 @@ You review code."#;
     #[serial]
     async fn test_resolve_model_config_recipe_provider_rejects_env_model_of_other_provider() {
         let _env = env_lock::lock_env([
-            ("GOOSE_CONTEXT_LIMIT", None::<&str>),
-            ("GOOSE_MAX_TOKENS", None::<&str>),
-            ("GOOSE_SUBAGENT_PROVIDER", Some("openai")),
-            ("GOOSE_SUBAGENT_MODEL", Some("gpt-5.2")),
+            ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
+            ("WARMACHINE_MAX_TOKENS", None::<&str>),
+            ("WARMACHINE_SUBAGENT_PROVIDER", Some("openai")),
+            ("WARMACHINE_SUBAGENT_MODEL", Some("gpt-5.2")),
             ("ANTHROPIC_API_KEY", Some("test-key")),
         ]);
 
@@ -3343,10 +3343,10 @@ You review code."#;
     #[serial]
     async fn test_resolve_model_config_env_provider_uses_provider_default_model() {
         let _env = env_lock::lock_env([
-            ("GOOSE_CONTEXT_LIMIT", None::<&str>),
-            ("GOOSE_MAX_TOKENS", None::<&str>),
-            ("GOOSE_SUBAGENT_PROVIDER", Some(PROVIDER)),
-            ("GOOSE_SUBAGENT_MODEL", None::<&str>),
+            ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
+            ("WARMACHINE_MAX_TOKENS", None::<&str>),
+            ("WARMACHINE_SUBAGENT_PROVIDER", Some(PROVIDER)),
+            ("WARMACHINE_SUBAGENT_MODEL", None::<&str>),
             ("ANTHROPIC_API_KEY", Some("test-key")),
         ]);
 
@@ -3371,10 +3371,10 @@ You review code."#;
     #[serial]
     async fn test_resolve_model_config_env_provider_keeps_matching_params_model() {
         let _env = env_lock::lock_env([
-            ("GOOSE_CONTEXT_LIMIT", None::<&str>),
-            ("GOOSE_MAX_TOKENS", None::<&str>),
-            ("GOOSE_SUBAGENT_PROVIDER", Some(PROVIDER)),
-            ("GOOSE_SUBAGENT_MODEL", None::<&str>),
+            ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
+            ("WARMACHINE_MAX_TOKENS", None::<&str>),
+            ("WARMACHINE_SUBAGENT_PROVIDER", Some(PROVIDER)),
+            ("WARMACHINE_SUBAGENT_MODEL", None::<&str>),
             ("ANTHROPIC_API_KEY", Some("test-key")),
         ]);
 
@@ -3401,9 +3401,9 @@ You review code."#;
     #[serial]
     async fn test_resolve_model_config_dynamic_provider_requires_model() {
         let _env = env_lock::lock_env([
-            ("GOOSE_CONTEXT_LIMIT", None::<&str>),
-            ("GOOSE_MAX_TOKENS", None::<&str>),
-            ("GOOSE_SUBAGENT_MODEL", None::<&str>),
+            ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
+            ("WARMACHINE_MAX_TOKENS", None::<&str>),
+            ("WARMACHINE_SUBAGENT_MODEL", None::<&str>),
         ]);
 
         let default_model = providers::get_from_registry("lmstudio")

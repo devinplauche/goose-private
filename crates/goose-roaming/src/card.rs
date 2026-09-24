@@ -26,7 +26,7 @@ use sha2::{Digest, Sha256};
 use crate::error::RoamingError;
 
 const CARD_VERSION: u32 = 1;
-const CARD_SCHEME: &str = "goose+roam://";
+const CARD_SCHEME: &str = "warmachine+roam://";
 
 /// Decode bounds, shared by the native and wasm decoders. A card is a tiny
 /// identity+relay-list blob; anything near these limits is garbage or an
@@ -70,7 +70,7 @@ impl ConnectionCard {
             .join("-")
     }
 
-    /// Encode to a compact, URL-safe string with the `goose+roam://` scheme.
+    /// Encode to a compact, URL-safe string with the `warmachine+roam://` scheme.
     pub fn encode(&self) -> Result<String, RoamingError> {
         let json = serde_json::to_vec(self)
             .map_err(|e| RoamingError::Card(format!("encode card: {e}")))?;

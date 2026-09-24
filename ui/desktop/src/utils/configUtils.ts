@@ -1,14 +1,14 @@
 export const configLabels: Record<string, string> = {
-  // goose settings
-  GOOSE_PROVIDER: 'Provider',
-  GOOSE_MODEL: 'Model',
-  GOOSE_TEMPERATURE: 'Temperature',
-  GOOSE_MODE: 'Mode',
-  GOOSE_TOOLSHIM: 'Tool Shim',
-  GOOSE_TOOLSHIM_OLLAMA_MODEL: 'Tool Shim Ollama Model',
-  GOOSE_CLI_MIN_PRIORITY: 'CLI Min Priority',
-  GOOSE_ALLOWLIST: 'Allow List',
-  GOOSE_RECIPE_GITHUB_REPO: 'Recipe GitHub Repo',
+  // warmachine settings
+  WARMACHINE_PROVIDER: 'Provider',
+  WARMACHINE_MODEL: 'Model',
+  WARMACHINE_TEMPERATURE: 'Temperature',
+  WARMACHINE_MODE: 'Mode',
+  WARMACHINE_TOOLSHIM: 'Tool Shim',
+  WARMACHINE_TOOLSHIM_OLLAMA_MODEL: 'Tool Shim Ollama Model',
+  WARMACHINE_CLI_MIN_PRIORITY: 'CLI Min Priority',
+  WARMACHINE_ALLOWLIST: 'Allow List',
+  WARMACHINE_RECIPE_GITHUB_REPO: 'Recipe GitHub Repo',
 
   // security settings
   SECURITY_PROMPT_ENABLED: 'Prompt Injection Detection Enabled',

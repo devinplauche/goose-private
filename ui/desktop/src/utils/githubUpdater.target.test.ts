@@ -23,7 +23,7 @@ async function makeInstallDir(root: string, name: string): Promise<string> {
   await fs.mkdir(path.join(installDir, 'locales'), { recursive: true });
   await fs.writeFile(path.join(installDir, 'resources', 'app.asar'), 'asar');
   await fs.writeFile(path.join(installDir, 'locales', 'en-US.pak'), 'pak');
-  const exePath = path.join(installDir, originalPlatform === 'win32' ? 'Goose.exe' : 'goose');
+  const exePath = path.join(installDir, originalPlatform === 'win32' ? 'WarMachine.exe' : 'warmachine');
   await fs.writeFile(exePath, 'binary');
   return exePath;
 }
@@ -39,20 +39,20 @@ describe('resolveInstallTarget', () => {
     // The mocked platform does not change `path`, which stays the host
     // implementation, so build the expectation the same way the code under test
     // does instead of hardcoding POSIX separators.
-    const bundlePath = path.resolve('/Applications/Goose.app');
-    const exePath = path.join(bundlePath, 'Contents', 'MacOS', 'Goose');
+    const bundlePath = path.resolve('/Applications/WarMachine.app');
+    const exePath = path.join(bundlePath, 'Contents', 'MacOS', 'WarMachine');
 
     await expect(resolveInstallTarget(exePath)).resolves.toEqual({
       targetPath: bundlePath,
       relaunchPath: bundlePath,
-      executableRelativePath: path.join('Contents', 'MacOS', 'Goose'),
+      executableRelativePath: path.join('Contents', 'MacOS', 'WarMachine'),
     });
   });
 
   it('rejects a macOS executable that is not inside a bundle', async () => {
     setPlatform('darwin');
 
-    await expect(resolveInstallTarget('/usr/local/bin/goose')).rejects.toThrow(
+    await expect(resolveInstallTarget('/usr/local/bin/warmachine')).rejects.toThrow(
       /Could not locate running .app bundle/
     );
   });
@@ -72,7 +72,7 @@ describe('resolveInstallTarget', () => {
   it('refuses to update when the executable parent is not a packaged app directory', async () => {
     setPlatform('linux');
     const root = await makeTempDir();
-    const exePath = path.join(root, 'goose');
+    const exePath = path.join(root, 'warmachine');
     await fs.writeFile(exePath, 'binary');
     await fs.writeFile(path.join(root, 'tax-return.pdf'), 'important');
 
@@ -104,7 +104,7 @@ describe('resolveInstallTarget', () => {
     const installDir = path.join(root, 'goose-linux-x64');
     await fs.mkdir(path.join(installDir, 'resources'), { recursive: true });
     await fs.writeFile(path.join(installDir, 'resources', 'app.asar'), 'asar');
-    const exePath = path.join(installDir, 'goose');
+    const exePath = path.join(installDir, 'warmachine');
     await fs.writeFile(exePath, 'binary');
 
     await expect(resolveInstallTarget(exePath)).rejects.toThrow(
@@ -116,7 +116,7 @@ describe('resolveInstallTarget', () => {
     setPlatform('linux');
     const home = path.resolve(os.homedir());
 
-    await expect(resolveInstallTarget(path.join(home, 'goose'))).rejects.toThrow(
+    await expect(resolveInstallTarget(path.join(home, 'warmachine'))).rejects.toThrow(
       /Refusing to auto-update/
     );
   });

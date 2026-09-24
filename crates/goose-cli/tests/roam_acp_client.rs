@@ -2,7 +2,7 @@
 //! transport.
 //!
 //! Roaming is just an authenticated p2p ACP transport, so a stub ACP *agent*
-//! stands in for goose's real `serve` and implements the session surface the
+//! stands in for warmachine's real `serve` and implements the session surface the
 //! client exercises: `session/list`, `session/new`, `session/load`,
 //! `session/prompt`. This proves `roam_client::list_sessions` and the
 //! session-aware `roam_client::delegate` drive plain ACP correctly across a

@@ -225,7 +225,7 @@ impl GooseAcpAgent {
             )
             .is_err()
         {
-            return Err("Goose is already working on a task.".into());
+            return Err("WarMachine is already working on a task.".into());
         }
         let run_guard = ActiveRunDropGuard {
             registry: self.active_runs.clone(),
@@ -270,7 +270,7 @@ impl GooseAcpAgent {
             Err(_) => {
                 self.clear_active_run(&session_id, &run_id).await;
                 let _ = Self::send_active_run_update(&cx, &acp_session_id, None);
-                return "Goose couldn't start the task.".into();
+                return "WarMachine couldn't start the task.".into();
             }
         };
 
@@ -393,7 +393,7 @@ impl GooseAcpAgent {
     async fn prepare_live_agent(&self, session_id: &str) -> Result<Arc<Agent>, String> {
         self.get_session_agent(session_id)
             .await
-            .map_err(|_| "Goose could not activate the coding agent.".to_string())
+            .map_err(|_| "WarMachine could not activate the coding agent.".to_string())
     }
 }
 

@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
-use goose::config::Config;
-use goose::conversation::message::Message;
-use goose::conversation::Conversation;
+use warmachine::config::Config;
+use warmachine::conversation::message::Message;
+use warmachine::conversation::Conversation;
 use std::fs;
 use std::io::Read;
 use std::io::Write;
@@ -11,7 +11,7 @@ use tempfile::Builder;
 use tempfile::NamedTempFile;
 
 /// Resolve the editor command from config and environment variables.
-/// Checks GOOSE_PROMPT_EDITOR, then $VISUAL, then $EDITOR.
+/// Checks WARMACHINE_PROMPT_EDITOR, then $VISUAL, then $EDITOR.
 pub fn resolve_editor_command() -> Option<String> {
     let config = Config::global();
     let config_editor = config.get_goose_prompt_editor().ok().flatten();
@@ -90,7 +90,7 @@ pub fn edit_conversation(conversation: &Conversation) -> Result<Conversation> {
 
 /// Build the markdown template content for the editor prompt.
 fn build_template(messages: &[&str], prefill: Option<&str>) -> String {
-    let mut content = String::from("# Goose Prompt Editor\n\n");
+    let mut content = String::from("# WarMachine Prompt Editor\n\n");
 
     content.push_str("# Your prompt:\n\n");
     if let Some(text) = prefill {
@@ -235,7 +235,7 @@ mod tests {
 
     #[test]
     fn test_extract_user_input_with_editor_output() {
-        let content = r#"# Goose Prompt Editor
+        let content = r#"# WarMachine Prompt Editor
 
 # Your prompt:
 This is the hardcoded prompt response
@@ -259,7 +259,7 @@ This is the hardcoded prompt response
 
     #[test]
     fn test_extract_user_input_conversation_history_heading() {
-        let content = r#"# Goose Prompt Editor
+        let content = r#"# WarMachine Prompt Editor
 
 # Your prompt:
 This is the user's input
@@ -286,7 +286,7 @@ This is the user's input
         assert!(path.to_str().unwrap().ends_with(".md"));
 
         let content = fs::read_to_string(path).unwrap();
-        assert!(content.contains("# Goose Prompt Editor"));
+        assert!(content.contains("# WarMachine Prompt Editor"));
         assert!(content.contains("## User: Hello"));
         assert!(content.contains("## Assistant: Hi there!"));
         assert!(content.contains("# Your prompt:"));
@@ -335,7 +335,7 @@ This is the user's input
 
     #[test]
     fn test_extract_user_input() {
-        let content = r#"# Goose Prompt Editor
+        let content = r#"# WarMachine Prompt Editor
 
 # Recent conversation for context:
 
@@ -482,7 +482,7 @@ with multiple lines.
     #[test]
     fn test_build_template_no_prefill_no_messages() {
         let content = build_template(&[], None);
-        assert_eq!(content, "# Goose Prompt Editor\n\n# Your prompt:\n\n");
+        assert_eq!(content, "# WarMachine Prompt Editor\n\n# Your prompt:\n\n");
     }
 
     #[test]
@@ -574,7 +574,7 @@ with multiple lines.
             script.path(),
             r#"printf '%s' "$4" > "$1"
 pwd > "$2"
-printf '# Goose Prompt Editor\n\n# Your prompt:\n\nupdated prompt\n' > "$4"
+printf '# WarMachine Prompt Editor\n\n# Your prompt:\n\nupdated prompt\n' > "$4"
 ln -sf "$3" .goose_prompt_temp.md
 "#,
         )

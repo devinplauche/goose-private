@@ -1,6 +1,6 @@
 # goose-providers
 
-Provider implementations for goose. The trait they implement and the conversation
+Provider implementations for warmachine. The trait they implement and the conversation
 types they exchange live in [`goose-provider-types`](../goose-provider-types),
 which this crate re-exports — depend on this crate when you want working
 providers, and on the types crate when you only need the contract.

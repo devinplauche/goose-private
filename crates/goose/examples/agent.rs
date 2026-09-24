@@ -1,10 +1,10 @@
 use dotenvy::dotenv;
 use futures::StreamExt;
-use goose::agents::{Agent, AgentEvent, ExtensionConfig, SessionConfig};
-use goose::config::{GooseMode, DEFAULT_EXTENSION_DESCRIPTION, DEFAULT_EXTENSION_TIMEOUT};
-use goose::conversation::message::Message;
-use goose::providers::create_with_named_model;
-use goose::session::session_manager::SessionType;
+use warmachine::agents::{Agent, AgentEvent, ExtensionConfig, SessionConfig};
+use warmachine::config::{GooseMode, DEFAULT_EXTENSION_DESCRIPTION, DEFAULT_EXTENSION_TIMEOUT};
+use warmachine::conversation::message::Message;
+use warmachine::providers::create_with_named_model;
+use warmachine::session::session_manager::SessionType;
 use goose_providers::databricks::DATABRICKS_DEFAULT_MODEL;
 use std::path::PathBuf;
 
@@ -14,7 +14,7 @@ async fn main() -> anyhow::Result<()> {
 
     let provider = create_with_named_model("databricks", Vec::new()).await?;
     let model_config =
-        goose::model_config::model_config_from_user_config("databricks", DATABRICKS_DEFAULT_MODEL)?;
+        warmachine::model_config::model_config_from_user_config("databricks", DATABRICKS_DEFAULT_MODEL)?;
 
     let agent = Agent::new();
 
@@ -35,7 +35,7 @@ async fn main() -> anyhow::Result<()> {
 
     let config = ExtensionConfig::stdio(
         "developer",
-        "./target/debug/goose",
+        "./target/debug/warmachine",
         DEFAULT_EXTENSION_DESCRIPTION,
         DEFAULT_EXTENSION_TIMEOUT,
     )
@@ -61,7 +61,7 @@ async fn main() -> anyhow::Result<()> {
         .reply(
             user_message,
             session_config,
-            goose::agents::state_machine::enabled(),
+            warmachine::agents::state_machine::enabled(),
             None,
         )
         .await?;

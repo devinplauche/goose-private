@@ -7,7 +7,7 @@ use anyhow::Result;
 use futures::future::BoxFuture;
 use std::collections::HashMap;
 
-const LOCAL_MODEL_SETTINGS_KEY: &str = "GOOSE_LOCAL_MODEL_SETTINGS";
+const LOCAL_MODEL_SETTINGS_KEY: &str = "WARMACHINE_LOCAL_MODEL_SETTINGS";
 
 fn resolve_huggingface_token() -> BoxFuture<'static, Result<Option<String>>> {
     Box::pin(crate::providers::huggingface_auth::resolve_token_async())

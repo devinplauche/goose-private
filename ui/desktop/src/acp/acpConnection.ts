@@ -1,8 +1,8 @@
-import { DEFAULT_GOOSE_MCP_HOST_CAPABILITIES } from '@aaif/goose-acp-client';
+import { DEFAULT_WARMACHINE_MCP_HOST_CAPABILITIES } from '@aaif/goose-acp-client';
 import { methods, PROTOCOL_VERSION, type InitializeResponse } from '@agentclientprotocol/sdk';
 import { createWebSocketStream } from '@agentclientprotocol/sdk/experimental/ws-client';
 import packageJson from '../../package.json';
-import { GOOSE_SERVE_EXITED_USER_MESSAGE } from '../gooseServeLeaseRegistry';
+import { WARMACHINE_SERVE_EXITED_USER_MESSAGE } from '../gooseServeLeaseRegistry';
 import {
   handleAcpGooseSessionNotification,
   handleAcpProviderDeviceCodeNotification,
@@ -143,13 +143,13 @@ async function openConnection(generation: number): Promise<AcpConnection> {
       client.connection.agent.request(methods.agent.initialize, {
         protocolVersion: ACP_V1_PROTOCOL_VERSION,
         _meta: {
-          'goose/useLoginShellPath': true,
+          'warmachine/useLoginShellPath': true,
         },
         clientCapabilities: {
           elicitation: { form: {} },
           _meta: {
-            goose: {
-              mcpHostCapabilities: DEFAULT_GOOSE_MCP_HOST_CAPABILITIES,
+            warmachine: {
+              mcpHostCapabilities: DEFAULT_WARMACHINE_MCP_HOST_CAPABILITIES,
               customNotifications: true,
               recipeParameterRequests: true,
             },
@@ -208,7 +208,7 @@ async function retryWithBackoff(generation: number): Promise<AcpConnection> {
 }
 
 function isGooseServeExitedError(error: unknown): boolean {
-  return error instanceof Error && error.message.includes(GOOSE_SERVE_EXITED_USER_MESSAGE);
+  return error instanceof Error && error.message.includes(WARMACHINE_SERVE_EXITED_USER_MESSAGE);
 }
 
 function delay(delayMs: number): Promise<void> {

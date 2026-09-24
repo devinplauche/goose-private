@@ -6,8 +6,8 @@ import {
   type Stream,
 } from '@agentclientprotocol/sdk';
 import {
-  GOOSE_EXT_AGENT_REQUESTS,
-  GOOSE_EXT_NOTIFICATIONS,
+  WARMACHINE_EXT_AGENT_REQUESTS,
+  WARMACHINE_EXT_NOTIFICATIONS,
   GooseExtClient,
   type GooseSessionNotification_unstable,
   type ProviderDeviceCodeNotification_unstable,
@@ -18,8 +18,8 @@ import {
   zRequestRecipeParams_unstable,
 } from '@aaif/goose-acp-client';
 
-const [gooseSessionUpdate, providerDeviceCode] = GOOSE_EXT_NOTIFICATIONS;
-const [gooseRecipeParamsRequest] = GOOSE_EXT_AGENT_REQUESTS;
+const [gooseSessionUpdate, providerDeviceCode] = WARMACHINE_EXT_NOTIFICATIONS;
+const [gooseRecipeParamsRequest] = WARMACHINE_EXT_AGENT_REQUESTS;
 
 export type GooseAcpCallbacks = Required<
   Pick<Client, 'requestPermission' | 'sessionUpdate' | 'createElicitation'>
@@ -35,14 +35,14 @@ export type GooseAcpCallbacks = Required<
 
 export type GooseAcpClient = {
   connection: ClientConnection;
-  goose: GooseExtClient;
+  warmachine: GooseExtClient;
 };
 
 export function connectGooseAcpClient(
   stream: Stream,
   callbacks: GooseAcpCallbacks
 ): GooseAcpClient {
-  const app = client({ name: 'goose' })
+  const app = client({ name: 'warmachine' })
     .onRequest(methods.client.session.requestPermission, (context) =>
       callbacks.requestPermission(context.params)
     )
@@ -65,7 +65,7 @@ export function connectGooseAcpClient(
     );
 
   const connection = app.connect(stream);
-  const goose = new GooseExtClient(connection.agent);
+  const warmachine = new GooseExtClient(connection.agent);
 
-  return { connection, goose };
+  return { connection, warmachine };
 }

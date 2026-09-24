@@ -3,7 +3,7 @@
 //!
 //! This validates the whole seam: bind -> swap identities -> accept key -> dial
 //! -> handshake -> authorize -> stream hand-off. It uses a trivial echo "ACP
-//! server" in place of goose's real ACP protocol, since this crate has no
+//! server" in place of warmachine's real ACP protocol, since this crate has no
 //! dependency on the agent machinery.
 
 use std::sync::Arc;

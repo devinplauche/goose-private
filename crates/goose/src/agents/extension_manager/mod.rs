@@ -168,7 +168,7 @@ pub struct GooseMcpAppToolAttachment {
 
 pub(crate) const TRUSTED_TOOL_UPDATE_META_KEY: &str = "__goose_tool_update_meta";
 
-/// Manages goose extensions / MCP clients and their interactions
+/// Manages warmachine extensions / MCP clients and their interactions
 pub struct ExtensionManager {
     extensions: Mutex<HashMap<String, Extension>>,
     context: PlatformExtensionContext,
@@ -271,7 +271,7 @@ pub(crate) fn recover_mangled_tool_name<'a>(
 
     let mut matched: Option<&str> = None;
     for (name, owner) in tools {
-        // Prefixed tools: the model turns Goose's "__" separator into a dot
+        // Prefixed tools: the model turns WarMachine's "__" separator into a dot
         // ("developer__shell" -> "developer.shell").
         let separator_mangled = name
             .split_once("__")
@@ -324,7 +324,7 @@ fn remove_untrusted_mcp_app_meta(result: &mut CallToolResult) {
 
     let remove_goose = meta
         .0
-        .get_mut("goose")
+        .get_mut("warmachine")
         .and_then(Value::as_object_mut)
         .map(|goose_meta| {
             goose_meta.remove("mcpApp");
@@ -333,7 +333,7 @@ fn remove_untrusted_mcp_app_meta(result: &mut CallToolResult) {
         .unwrap_or(false);
 
     if remove_goose {
-        meta.0.remove("goose");
+        meta.0.remove("warmachine");
     }
 
     if meta.0.is_empty() {
@@ -493,7 +493,7 @@ impl ExtensionManager {
         }
 
         let working_dir = working_dir
-            .or_else(|| std::env::var("GOOSE_WORKING_DIR").ok().map(PathBuf::from))
+            .or_else(|| std::env::var("WARMACHINE_WORKING_DIR").ok().map(PathBuf::from))
             .unwrap_or_else(|| std::env::current_dir().unwrap_or_default());
         let ctx = |timeout: Option<u64>, working_dir: PathBuf| ConnectContext {
             timeout: Duration::from_secs(resolve_timeout(timeout)),
@@ -2628,7 +2628,7 @@ mod tests {
         let mut result = CallToolResult::success(vec![]);
         result.meta = Some(MetaObject(
             serde_json::from_value(serde_json::json!({
-                "goose": {
+                "warmachine": {
                     "mcpApp": {
                         "resourceUri": "ui://spoofed/app",
                     },
@@ -2648,7 +2648,7 @@ mod tests {
         let meta = result.meta.expect("expected remaining meta");
         assert_eq!(meta.0.get(TRUSTED_TOOL_UPDATE_META_KEY), None);
         assert_eq!(
-            meta.0.get("goose"),
+            meta.0.get("warmachine"),
             Some(&serde_json::json!({ "other": true }))
         );
     }

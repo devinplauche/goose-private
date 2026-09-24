@@ -1,7 +1,7 @@
-# Native Binary Packages for goose
+# Native Binary Packages for warmachine
 
 This directory contains the npm package scaffolding for distributing the
-`goose` Rust binary as platform-specific npm packages.
+`warmachine` Rust binary as platform-specific npm packages.
 
 ## Packages
 
@@ -17,15 +17,15 @@ This directory contains the npm package scaffolding for distributing the
 
 These are platform-specific implementation dependencies and are not intended
 to be installed directly. Install `@aaif/goose-acp` instead. It installs the
-appropriate package automatically and provides the `goose` command. Each
+appropriate package automatically and provides the `warmachine` command. Each
 binary package contains its native executable. Its platform-specific internal
 command preserves executable permissions during npm packing;
-`@aaif/goose-acp` remains the sole owner of the supported `goose` command.
+`@aaif/goose-acp` remains the sole owner of the supported `warmachine` command.
 
 ## Release preparation
 
 The `.github/workflows/publish-npm.yml` workflow downloads the binaries from an
-exact versioned Goose release and prepares the platform package tarballs.
+exact versioned WarMachine release and prepares the platform package tarballs.
 By default it only uploads the verified tarballs as a workflow artifact. Set
 the manual `publish` input to publish them through the protected npm production
 environment.

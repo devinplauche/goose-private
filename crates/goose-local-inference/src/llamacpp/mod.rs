@@ -202,7 +202,7 @@ fn missing_chat_template_error(
 
     ProviderError::ExecutionError(format!(
         "Model {model_id} does not contain GGUF tokenizer.chat_template metadata required for {context}.{architecture}{tool_use_note} \
-         Goose cannot safely infer the correct prompt format from architecture alone. Select a \
+         WarMachine cannot safely infer the correct prompt format from architecture alone. Select a \
          llama.cpp built-in chat template name, configure a custom inline chat template containing \
          the full Jinja template source, or use a GGUF that includes tokenizer.chat_template metadata."
     ))

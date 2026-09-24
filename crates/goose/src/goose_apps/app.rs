@@ -33,8 +33,8 @@ pub struct GooseApp {
 impl GooseApp {
     const METADATA_SCRIPT_TYPE: &'static str = "application/ld+json";
     const PRD_SCRIPT_TYPE: &'static str = "application/x-goose-prd";
-    const GOOSE_APP_TYPE: &'static str = "GooseApp";
-    const GOOSE_SCHEMA_CONTEXT: &'static str = "urn:goose.ai:schema";
+    const WARMACHINE_APP_TYPE: &'static str = "GooseApp";
+    const WARMACHINE_SCHEMA_CONTEXT: &'static str = "urn:warmachine.ai:schema";
 
     pub fn from_html(html: &str) -> Result<Self, String> {
         use regex::Regex;
@@ -134,8 +134,8 @@ impl GooseApp {
             .ok_or("App has no HTML content")?;
 
         let mut metadata = serde_json::json!({
-            "@context": Self::GOOSE_SCHEMA_CONTEXT,
-            "@type": Self::GOOSE_APP_TYPE,
+            "@context": Self::WARMACHINE_SCHEMA_CONTEXT,
+            "@type": Self::WARMACHINE_APP_TYPE,
             "name": self.resource.name,
         });
 

@@ -11,19 +11,19 @@ use agent_client_protocol::schema::v1::{
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use fs_err as fs;
-use goose::acp::server::{serve, AcpProviderFactory, GooseAcpAgent, GooseAcpAgentOptions};
-pub use goose::acp::{map_permission_response, PermissionDecision};
-use goose::agents::GoosePlatform;
-use goose::builtin_extension::register_builtin_extensions;
-use goose::config::paths::Paths;
-use goose::config::{GooseMode, PermissionManager};
-use goose::providers::api_client::{ApiClient, AuthMethod as ApiAuthMethod};
-use goose::providers::base::Provider;
-use goose::providers::openai::OpenAiProvider;
-use goose::scheduler::{ScheduledJob, SchedulerError, ValidatedScheduleRecipe};
-use goose::scheduler_trait::SchedulerTrait;
-use goose::session::Session as GooseSession;
-use goose::session_context::SESSION_ID_HEADER;
+use warmachine::acp::server::{serve, AcpProviderFactory, GooseAcpAgent, GooseAcpAgentOptions};
+pub use warmachine::acp::{map_permission_response, PermissionDecision};
+use warmachine::agents::GoosePlatform;
+use warmachine::builtin_extension::register_builtin_extensions;
+use warmachine::config::paths::Paths;
+use warmachine::config::{GooseMode, PermissionManager};
+use warmachine::providers::api_client::{ApiClient, AuthMethod as ApiAuthMethod};
+use warmachine::providers::base::Provider;
+use warmachine::providers::openai::OpenAiProvider;
+use warmachine::scheduler::{ScheduledJob, SchedulerError, ValidatedScheduleRecipe};
+use warmachine::scheduler_trait::SchedulerTrait;
+use warmachine::session::Session as GooseSession;
+use warmachine::session_context::SESSION_ID_HEADER;
 use goose_test_support::{ExpectedSessionId, TEST_MODEL};
 use std::collections::VecDeque;
 use std::future::Future;
@@ -204,7 +204,7 @@ fn write_global_test_config(config_path: &Path, openai_base_url: &str) {
 
     let global_config_dir = Paths::config_dir();
     fs::create_dir_all(&global_config_dir).unwrap();
-    let global_config_path = global_config_dir.join(goose::config::base::CONFIG_YAML_NAME);
+    let global_config_path = global_config_dir.join(warmachine::config::base::CONFIG_YAML_NAME);
     fs::write(&global_config_path, serde_yaml::to_string(&config).unwrap()).unwrap();
 }
 
@@ -358,12 +358,12 @@ pub async fn spawn_acp_server_in_process(
     fs::create_dir_all(data_root).unwrap();
     // TODO: Paths::in_state_dir is global, ignoring per-test data_root
     fs::create_dir_all(Paths::in_state_dir("logs")).unwrap();
-    let config_path = data_root.join(goose::config::base::CONFIG_YAML_NAME);
+    let config_path = data_root.join(warmachine::config::base::CONFIG_YAML_NAME);
     if !config_path.exists() {
         fs::write(
             &config_path,
             format!(
-                "GOOSE_MODEL: {current_model}\nGOOSE_PROVIDER: openai\nGOOSE_MODE: {}\nGOOSE_TOOL_PAIR_SUMMARIZATION: false\n",
+                "WARMACHINE_MODEL: {current_model}\nGOOSE_PROVIDER: openai\nGOOSE_MODE: {}\nGOOSE_TOOL_PAIR_SUMMARIZATION: false\n",
                 goose_mode
             ),
         )
@@ -389,13 +389,13 @@ pub async fn spawn_acp_server_in_process(
         )
     });
 
-    let active_runs = Arc::new(goose::acp::server::ActiveRunRegistry::default());
-    let live_voice = Arc::new(goose::acp::server::LiveVoiceService::from_config(
+    let active_runs = Arc::new(warmachine::acp::server::ActiveRunRegistry::default());
+    let live_voice = Arc::new(warmachine::acp::server::LiveVoiceService::from_config(
         active_runs.clone(),
     ));
     let agent = GooseAcpAgent::new(GooseAcpAgentOptions {
         provider_factory,
-        builtin_selection: goose::acp::server::AcpBuiltinSelection {
+        builtin_selection: warmachine::acp::server::AcpBuiltinSelection {
             explicit: builtins.to_vec(),
             ..Default::default()
         },
@@ -490,7 +490,7 @@ pub fn to_notifications(updates: &[SessionUpdate]) -> Vec<Notification> {
             SessionUpdate::SessionInfoUpdate(update) => {
                 let meta = update.meta.as_ref();
                 let is_active_run_update = meta
-                    .and_then(|m| m.get("goose"))
+                    .and_then(|m| m.get("warmachine"))
                     .and_then(|g| g.get("activeRunId"))
                     .is_some();
                 if is_active_run_update {
@@ -803,8 +803,8 @@ where
     F: Future<Output = ()> + Send + 'static,
 {
     let _guard = ACP_TEST_LOCK.lock().unwrap_or_else(|err| err.into_inner());
-    if std::env::var_os("GOOSE_PATH_ROOT").is_none() {
-        std::env::set_var("GOOSE_PATH_ROOT", ACP_CONFIG_ROOT.path());
+    if std::env::var_os("WARMACHINE_PATH_ROOT").is_none() {
+        std::env::set_var("WARMACHINE_PATH_ROOT", ACP_CONFIG_ROOT.path());
     }
     register_builtin_extensions(goose_mcp::BUILTIN_EXTENSIONS.clone());
 

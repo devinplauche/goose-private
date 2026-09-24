@@ -31,14 +31,14 @@ use common_tests::{
     run_shell_terminal_false, run_shell_terminal_true, GENERATED_SESSION_TITLE,
     OPENAI_SESSION_NAME_RESPONSE, TURN_CONTEXT_OPEN,
 };
-use goose::config::GooseMode;
-use goose::conversation::message::{Message, MessageMetadata};
-use goose::custom_requests::{
+use warmachine::config::GooseMode;
+use warmachine::conversation::message::{Message, MessageMetadata};
+use warmachine::custom_requests::{
     GetSessionInfoRequest, GetSessionInfoResponse, UpdateSessionProjectRequest,
 };
-use goose::recipe::{Recipe, Settings};
-use goose::recipe_deeplink;
-use goose::session::{SessionManager, SessionType};
+use warmachine::recipe::{Recipe, Settings};
+use warmachine::recipe_deeplink;
+use warmachine::session::{SessionManager, SessionType};
 use goose_test_support::{McpFixture, FAKE_CODE};
 use std::path::Path;
 
@@ -178,11 +178,11 @@ async fn session_title(conn: &AcpServerConnection, session_id: &str) -> (String,
 fn include_last_message_snippet_meta(
     value: serde_json::Value,
 ) -> serde_json::Map<String, serde_json::Value> {
-    let mut goose = serde_json::Map::new();
-    goose.insert("includeLastMessageSnippet".to_string(), value);
+    let mut warmachine = serde_json::Map::new();
+    warmachine.insert("includeLastMessageSnippet".to_string(), value);
 
     let mut meta = serde_json::Map::new();
-    meta.insert("goose".to_string(), serde_json::Value::Object(goose));
+    meta.insert("warmachine".to_string(), serde_json::Value::Object(warmachine));
     meta
 }
 
@@ -585,8 +585,8 @@ fn test_update_session_project_rejects_unknown_persisted_session_type() {
             .unwrap();
         let db_path = data_root
             .path()
-            .join(goose::session::session_manager::SESSIONS_FOLDER)
-            .join(goose::session::session_manager::DB_NAME);
+            .join(warmachine::session::session_manager::SESSIONS_FOLDER)
+            .join(warmachine::session::session_manager::DB_NAME);
         let pool = sqlx::sqlite::SqlitePoolOptions::new()
             .connect_with(sqlx::sqlite::SqliteConnectOptions::new().filename(db_path))
             .await
@@ -1018,7 +1018,7 @@ fn test_new_session_prefers_recipe_title_over_meta_session_title() {
             .unwrap();
 
         // The recipe title wins, and the session is not marked user-set so
-        // goose's own recipe-title naming path still applies.
+        // warmachine's own recipe-title naming path still applies.
         assert_eq!(
             session_title(&conn, &session_id).await,
             ("Recipe title".to_string(), false)
@@ -1218,8 +1218,8 @@ struct AgentLoopOverride(Option<std::ffi::OsString>);
 
 impl AgentLoopOverride {
     fn new(state_machine: bool) -> Self {
-        let previous = std::env::var_os("GOOSE_STATE_MACHINE");
-        std::env::set_var("GOOSE_STATE_MACHINE", if state_machine { "1" } else { "0" });
+        let previous = std::env::var_os("WARMACHINE_STATE_MACHINE");
+        std::env::set_var("WARMACHINE_STATE_MACHINE", if state_machine { "1" } else { "0" });
         Self(previous)
     }
 }
@@ -1227,8 +1227,8 @@ impl AgentLoopOverride {
 impl Drop for AgentLoopOverride {
     fn drop(&mut self) {
         match self.0.take() {
-            Some(previous) => std::env::set_var("GOOSE_STATE_MACHINE", previous),
-            None => std::env::remove_var("GOOSE_STATE_MACHINE"),
+            Some(previous) => std::env::set_var("WARMACHINE_STATE_MACHINE", previous),
+            None => std::env::remove_var("WARMACHINE_STATE_MACHINE"),
         }
     }
 }

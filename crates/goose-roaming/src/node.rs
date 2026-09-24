@@ -21,7 +21,7 @@ use crate::identity::RoamingIdentity;
 use crate::relay::RelaySettings;
 use crate::trust::TrustBook;
 
-/// ALPN identifying the goose ACP-over-iroh protocol.
+/// ALPN identifying the warmachine ACP-over-iroh protocol.
 pub const ROAMING_ACP_ALPN: &[u8] = b"goose-acp/1";
 
 /// Cap on the handshake phase (open bi-stream + read the client hello). A peer

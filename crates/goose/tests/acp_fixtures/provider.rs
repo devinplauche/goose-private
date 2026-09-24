@@ -8,12 +8,12 @@ use agent_client_protocol::schema::v1::{
 use agent_client_protocol::{Client, DynConnectTo};
 use async_trait::async_trait;
 use futures::StreamExt;
-use goose::acp::{AcpProvider, AcpProviderConfig};
-use goose::config::{GooseMode, PermissionManager};
-use goose::conversation::message::{ActionRequiredData, Message, MessageContent};
-use goose::permission::permission_confirmation::PrincipalType;
-use goose::permission::{Permission, PermissionConfirmation};
-use goose::providers::base::Provider;
+use warmachine::acp::{AcpProvider, AcpProviderConfig};
+use warmachine::config::{GooseMode, PermissionManager};
+use warmachine::conversation::message::{ActionRequiredData, Message, MessageContent};
+use warmachine::permission::permission_confirmation::PrincipalType;
+use warmachine::permission::{Permission, PermissionConfirmation};
+use warmachine::providers::base::Provider;
 use goose_providers::model::ModelConfig;
 use goose_test_support::{ExpectedSessionId, IgnoreSessionId, TEST_MODEL};
 use std::collections::HashMap;
@@ -75,7 +75,7 @@ impl AcpProviderSession {
             .get(session_id.as_ref())
             .cloned()
             .unwrap_or_else(|| ModelConfig::new(TEST_MODEL));
-        let mut stream = goose::session_context::with_session_id(
+        let mut stream = warmachine::session_context::with_session_id(
             Some(session_id.to_string()),
             provider.stream(&model_config, "", &[message], &[]),
         )

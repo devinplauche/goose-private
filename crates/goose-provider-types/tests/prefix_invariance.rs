@@ -37,7 +37,7 @@ fn turn_block(turn: usize) -> String {
     format!(
         "<turn-context>\n\
          <current-time>2026-08-06 12:0{turn}:00 +02:00</current-time>\n\
-         <working-directory>/Users/me/code/goose</working-directory>\n\
+         <working-directory>/Users/me/code/warmachine</working-directory>\n\
          <todo>step {turn} of the plan</todo>\n\
          </turn-context>"
     )

@@ -12,7 +12,7 @@ mod thinking;
 use crate::session::task_execution_display::{
     format_task_execution_notification, TASK_EXECUTION_NOTIFICATION_TYPE,
 };
-use goose::conversation::Conversation;
+use warmachine::conversation::Conversation;
 use std::io::Write;
 use std::str::FromStr;
 use tokio::signal::ctrl_c;
@@ -21,37 +21,37 @@ use tokio_util::task::AbortOnDropHandle;
 pub use builder::{build_session, ExtensionFailure, SessionBuilderConfig};
 use console::Color;
 
-use goose::agents::platform_extensions::developer::shell::{
+use warmachine::agents::platform_extensions::developer::shell::{
     parse_shell_output_notification, ShellOutputNotificationParams, ShellOutputStream,
 };
-use goose::agents::AgentEvent;
-use goose::agents::SUBAGENT_TOOL_REQUEST_TYPE;
-use goose::permission::Permission;
-use goose::providers::base::ProviderUsage;
-use goose::utils::safe_truncate;
+use warmachine::agents::AgentEvent;
+use warmachine::agents::SUBAGENT_TOOL_REQUEST_TYPE;
+use warmachine::permission::Permission;
+use warmachine::providers::base::ProviderUsage;
+use warmachine::utils::safe_truncate;
 
 use anyhow::Result;
 use completion::GooseCompleter;
-use goose::agents::extension::{Envs, ExtensionConfig, PLATFORM_EXTENSIONS};
-use goose::agents::types::RetryConfig;
-use goose::agents::{
+use warmachine::agents::extension::{Envs, ExtensionConfig, PLATFORM_EXTENSIONS};
+use warmachine::agents::types::RetryConfig;
+use warmachine::agents::{
     context_management_unsupported_message, Agent, SessionConfig, COMPACT_TRIGGERS,
 };
-use goose::config::extensions::name_to_key;
-use goose::config::{Config, GooseMode};
+use warmachine::config::extensions::name_to_key;
+use warmachine::config::{Config, GooseMode};
 use input::InputResult;
 use rmcp::model::ServerNotification;
 use rmcp::model::{ElicitationAction, PromptMessage};
 use rmcp::model::{ErrorCode, ErrorData};
 use strum::VariantNames;
 
-use goose::config::paths::Paths;
-use goose::config::providers;
-use goose::conversation::message::{
+use warmachine::config::paths::Paths;
+use warmachine::config::providers;
+use warmachine::conversation::message::{
     ActionRequiredData, Message, MessageContent, ToolConfirmationRequest,
 };
-use goose::providers::inventory::ProviderInventoryService;
-use goose::session::SessionManager;
+use warmachine::providers::inventory::ProviderInventoryService;
+use warmachine::session::SessionManager;
 use rustyline::EditMode;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -350,7 +350,7 @@ impl CliSession {
     /// whenever one is used (`npx`, `python -m ...`, `uvx`, ...).
     pub fn parse_stdio_extension(extension_command: &str) -> Result<ExtensionConfig> {
         let (explicit_name, command) = split_extension_name_prefix(extension_command);
-        let mut parts = goose::utils::split_command_args(command)?;
+        let mut parts = warmachine::utils::split_command_args(command)?;
         let mut envs = HashMap::new();
 
         while let Some(part) = parts.first() {
@@ -381,8 +381,8 @@ impl CliSession {
             args: parts,
             envs: Envs::new(envs),
             env_keys: Vec::new(),
-            description: goose::config::DEFAULT_EXTENSION_DESCRIPTION.to_string(),
-            timeout: Some(goose::config::DEFAULT_EXTENSION_TIMEOUT),
+            description: warmachine::config::DEFAULT_EXTENSION_DESCRIPTION.to_string(),
+            timeout: Some(warmachine::config::DEFAULT_EXTENSION_TIMEOUT),
             cwd: None,
             bundled: None,
             available_tools: Vec::new(),
@@ -417,7 +417,7 @@ impl CliSession {
             envs: Envs::new(HashMap::new()),
             env_keys: Vec::new(),
             headers: HashMap::new(),
-            description: goose::config::DEFAULT_EXTENSION_DESCRIPTION.to_string(),
+            description: warmachine::config::DEFAULT_EXTENSION_DESCRIPTION.to_string(),
             timeout: Some(timeout),
             socket: None,
             client_id: None,
@@ -479,7 +479,7 @@ impl CliSession {
     pub async fn add_streamable_http_extension(&mut self, extension_url: String) -> Result<()> {
         let config = Self::parse_streamable_http_extension(
             &extension_url,
-            goose::config::DEFAULT_EXTENSION_TIMEOUT,
+            warmachine::config::DEFAULT_EXTENSION_TIMEOUT,
         );
         self.add_and_persist_extensions(vec![config]).await
     }
@@ -561,7 +561,7 @@ impl CliSession {
     pub async fn interactive(&mut self, prompt: Option<String>) -> Result<()> {
         let banners = self
             .agent
-            .emit_hook_with_banners(goose::hooks::HookEvent::SessionStart, &self.session_id)
+            .emit_hook_with_banners(warmachine::hooks::HookEvent::SessionStart, &self.session_id)
             .await;
         if !banners.is_empty() {
             output::display_banner(&banners);
@@ -570,7 +570,7 @@ impl CliSession {
         let result = self.run_interactive(prompt).await;
 
         self.agent
-            .emit_hook(goose::hooks::HookEvent::SessionEnd, &self.session_id)
+            .emit_hook(warmachine::hooks::HookEvent::SessionEnd, &self.session_id)
             .await;
 
         if result.is_ok() {
@@ -759,7 +759,7 @@ impl CliSession {
                     None => {
                         output::render_error(
                             "No editor found. Set one with:\n  \
-                                 goose configure set goose_prompt_editor \"vim\"\n  \
+                                 warmachine configure set goose_prompt_editor \"vim\"\n  \
                                  or set $VISUAL or $EDITOR in your shell.",
                         );
                     }
@@ -875,7 +875,7 @@ impl CliSession {
         };
         self.agent.update_goose_mode(mode, &self.session_id).await?;
         config.set_goose_mode(mode)?;
-        output::goose_mode_message(&format!("Goose mode set to '{mode}'"));
+        output::goose_mode_message(&format!("WarMachine mode set to '{mode}'"));
         Ok(())
     }
 
@@ -909,7 +909,7 @@ impl CliSession {
             return Ok(());
         }
 
-        let target_entry = match goose::providers::get_from_registry(target_provider_name).await {
+        let target_entry = match warmachine::providers::get_from_registry(target_provider_name).await {
             Ok(entry) => entry,
             Err(_) => {
                 output::render_error(&format!(
@@ -986,19 +986,19 @@ impl CliSession {
             return Ok(());
         }
 
-        let current_context_limit = goose::context_limit::get_context_limit(
+        let current_context_limit = warmachine::context_limit::get_context_limit(
             provider.as_ref(),
             &current_model_config.model_name,
         )
         .await?;
 
         let extensions = self.agent.get_extension_configs().await;
-        let new_provider = match goose::providers::create(target_provider_name, extensions).await {
+        let new_provider = match warmachine::providers::create(target_provider_name, extensions).await {
             Ok(p) => p,
             Err(e) => {
                 output::render_error(&format!(
                     "Cannot switch to provider '{}': {}\n\
-                         Set credentials via `goose configure` or the appropriate environment variable.\n\
+                         Set credentials via `warmachine configure` or the appropriate environment variable.\n\
                          Session continues with current provider '{}'.",
                     target_provider_name, e, current_provider_name
                 ));
@@ -1014,7 +1014,7 @@ impl CliSession {
             return Ok(());
         }
 
-        let new_context_limit = goose::context_limit::get_context_limit(
+        let new_context_limit = warmachine::context_limit::get_context_limit(
             new_provider.as_ref(),
             &new_model_config.model_name,
         )
@@ -1126,7 +1126,7 @@ impl CliSession {
         let extension_configs = self.agent.get_extension_configs().await;
 
         self.agent
-            .emit_hook(goose::hooks::HookEvent::SessionEnd, &self.session_id)
+            .emit_hook(warmachine::hooks::HookEvent::SessionEnd, &self.session_id)
             .await;
 
         self.agent.discard_pending_steers(&self.session_id).await;
@@ -1214,8 +1214,8 @@ impl CliSession {
 
     async fn handle_list_skills(&mut self) -> Result<()> {
         use comfy_table::{presets, Cell, ContentArrangement, Table};
-        use goose::custom_requests::SourceType;
-        use goose::skills::list_installed_skills;
+        use warmachine::custom_requests::SourceType;
+        use warmachine::skills::list_installed_skills;
         let cwd = std::env::current_dir().unwrap_or_default();
         let skills = list_installed_skills(Some(&cwd));
 
@@ -1292,7 +1292,7 @@ impl CliSession {
             .process_message(message, CancellationToken::default(), false)
             .await;
         self.agent
-            .emit_hook(goose::hooks::HookEvent::SessionEnd, &self.session_id)
+            .emit_hook(warmachine::hooks::HookEvent::SessionEnd, &self.session_id)
             .await;
         result?;
         Ok(())
@@ -1329,7 +1329,7 @@ impl CliSession {
             .reply(
                 user_message.clone(),
                 session_config.clone(),
-                goose::agents::state_machine::enabled(),
+                warmachine::agents::state_machine::enabled(),
                 Some(cancel_token.clone()),
             )
             .await?;
@@ -1453,7 +1453,7 @@ impl CliSession {
                                         self.messages.push(response_message.clone());
                                         // Elicitation responses return an empty stream - the response
                                         // unblocks the waiting tool call via ActionRequiredManager
-                                        let _ = self.agent.reply(response_message, session_config.clone(), goose::agents::state_machine::enabled(), Some(cancel_token.clone())).await?;
+                                        let _ = self.agent.reply(response_message, session_config.clone(), warmachine::agents::state_machine::enabled(), Some(cancel_token.clone())).await?;
                                         if should_cancel {
                                             cancel_token_clone.cancel();
                                             drop(stream);
@@ -1759,7 +1759,7 @@ impl CliSession {
         completion_cache: &Arc<std::sync::RwLock<CompletionCache>>,
     ) -> Result<()> {
         let prompts = agent.list_extension_prompts(session_id).await;
-        let all_providers = goose::providers::providers().await;
+        let all_providers = warmachine::providers::providers().await;
         let session_provider = agent.provider().await?.get_name().to_string();
 
         let provider_ids: Vec<String> = all_providers.iter().map(|(m, _)| m.name.clone()).collect();
@@ -1875,7 +1875,7 @@ impl CliSession {
         println!();
     }
 
-    pub async fn get_session(&self) -> Result<goose::session::Session> {
+    pub async fn get_session(&self) -> Result<warmachine::session::Session> {
         self.agent
             .config
             .session_manager
@@ -1896,12 +1896,12 @@ impl CliSession {
             .model_config_for_session(&self.session_id)
             .await?;
         let context_limit =
-            goose::context_limit::get_context_limit(provider.as_ref(), &model_config.model_name)
+            warmachine::context_limit::get_context_limit(provider.as_ref(), &model_config.model_name)
                 .await?;
 
         let config = Config::global();
         let show_cost = config
-            .get_param::<bool>("GOOSE_CLI_SHOW_COST")
+            .get_param::<bool>("WARMACHINE_CLI_SHOW_COST")
             .unwrap_or(false);
 
         let provider_name = config
@@ -2011,7 +2011,7 @@ impl CliSession {
 
 async fn create_successor_session(
     session_manager: &SessionManager,
-    old_session: &goose::session::Session,
+    old_session: &warmachine::session::Session,
     goose_mode: GooseMode,
 ) -> Result<String> {
     let new_session = session_manager
@@ -2174,7 +2174,7 @@ fn prompt_tool_confirmation(request: &ToolConfirmationRequest) -> Result<Permiss
     let prompt = if request.prompt.is_some() {
         "Do you allow this tool call?".to_string()
     } else {
-        "Goose would like to call the above tool, do you allow?".to_string()
+        "WarMachine would like to call the above tool, do you allow?".to_string()
     };
 
     let permission_result = if request.prompt.is_none() {
@@ -2442,7 +2442,7 @@ fn format_logging_notification(
                     Some("response_generated") => {
                         let config = Config::global();
                         let min_priority = config
-                            .get_param::<f32>("GOOSE_CLI_MIN_PRIORITY")
+                            .get_param::<f32>("WARMACHINE_CLI_MIN_PRIORITY")
                             .ok()
                             .unwrap_or(output::DEFAULT_MIN_PRIORITY);
 
@@ -2508,7 +2508,7 @@ fn display_log_notification(
         } else if ntype == "shell_output" {
             let config = Config::global();
             let min_priority = config
-                .get_param::<f32>("GOOSE_CLI_MIN_PRIORITY")
+                .get_param::<f32>("WARMACHINE_CLI_MIN_PRIORITY")
                 .ok()
                 .unwrap_or(output::DEFAULT_MIN_PRIORITY);
 
@@ -2534,7 +2534,7 @@ fn log_tool_metrics(message: &Message, messages: &Conversation) {
         if let MessageContent::ToolRequest(tool_request) = content {
             if let Ok(tool_call) = &tool_request.tool_call {
                 tracing::info!(
-                    monotonic_counter.goose.tool_calls = 1,
+                    monotonic_counter.warmachine.tool_calls = 1,
                     tool_name = %tool_call.name,
                     "Tool call started"
                 );
@@ -2565,7 +2565,7 @@ fn log_tool_metrics(message: &Message, messages: &Conversation) {
                 "error"
             };
             tracing::info!(
-                monotonic_counter.goose.tool_completions = 1,
+                monotonic_counter.warmachine.tool_completions = 1,
                 tool_name = %tool_name,
                 result = %result_status,
                 "Tool call completed"
@@ -2646,7 +2646,7 @@ fn build_switched_model_config(
     model_name: &str,
     current_model_config: &goose_providers::model::ModelConfig,
 ) -> Result<goose_providers::model::ModelConfig> {
-    goose::model_config::model_config_from_user_config(provider_name, model_name)
+    warmachine::model_config::model_config_from_user_config(provider_name, model_name)
         .map(|config| {
             config
                 .with_temperature(current_model_config.temperature)
@@ -2659,10 +2659,10 @@ fn build_switched_model_config(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use goose::agents::extension::Envs;
-    use goose::config::ExtensionConfig;
-    use goose::conversation::message::MessageErrorKind;
-    use goose::providers::base::Provider;
+    use warmachine::agents::extension::Envs;
+    use warmachine::config::ExtensionConfig;
+    use warmachine::conversation::message::MessageErrorKind;
+    use warmachine::providers::base::Provider;
     use serde_json::json;
     use std::collections::HashMap;
     use std::time::Duration;
@@ -2801,8 +2801,8 @@ mod tests {
             args: vec![],
             envs: Envs::default(),
             env_keys: vec![],
-            description: goose::config::DEFAULT_EXTENSION_DESCRIPTION.to_string(),
-            timeout: Some(goose::config::DEFAULT_EXTENSION_TIMEOUT),
+            description: warmachine::config::DEFAULT_EXTENSION_DESCRIPTION.to_string(),
+            timeout: Some(warmachine::config::DEFAULT_EXTENSION_TIMEOUT),
             cwd: None,
             bundled: None,
             available_tools: vec![],
@@ -2817,8 +2817,8 @@ mod tests {
             args: vec!["-y".into(), "@modelcontextprotocol/server-everything".into()],
             envs: Envs::new([("MY_SECRET".into(), "s3cret".into())].into()),
             env_keys: vec![],
-            description: goose::config::DEFAULT_EXTENSION_DESCRIPTION.to_string(),
-            timeout: Some(goose::config::DEFAULT_EXTENSION_TIMEOUT),
+            description: warmachine::config::DEFAULT_EXTENSION_DESCRIPTION.to_string(),
+            timeout: Some(warmachine::config::DEFAULT_EXTENSION_TIMEOUT),
             cwd: None,
             bundled: None,
             available_tools: vec![],
@@ -2833,8 +2833,8 @@ mod tests {
             args: vec!["-classpath".into(), "/path/with spaces/lib.jar".into(), "Main".into()],
             envs: Envs::default(),
             env_keys: vec![],
-            description: goose::config::DEFAULT_EXTENSION_DESCRIPTION.to_string(),
-            timeout: Some(goose::config::DEFAULT_EXTENSION_TIMEOUT),
+            description: warmachine::config::DEFAULT_EXTENSION_DESCRIPTION.to_string(),
+            timeout: Some(warmachine::config::DEFAULT_EXTENSION_TIMEOUT),
             cwd: None,
             bundled: None,
             available_tools: vec![],
@@ -2916,11 +2916,11 @@ mod tests {
     #[test]
     fn test_build_switched_model_config_rebuilds_target_model_settings() {
         let _guard = env_lock::lock_env([
-            ("GOOSE_MAX_TOKENS", None::<&str>),
-            ("GOOSE_TEMPERATURE", None::<&str>),
-            ("GOOSE_CONTEXT_LIMIT", None::<&str>),
-            ("GOOSE_TOOLSHIM", None::<&str>),
-            ("GOOSE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
+            ("WARMACHINE_MAX_TOKENS", None::<&str>),
+            ("WARMACHINE_TEMPERATURE", None::<&str>),
+            ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
+            ("WARMACHINE_TOOLSHIM", None::<&str>),
+            ("WARMACHINE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
         ]);
 
         let current_model_config = goose_providers::model::ModelConfig {
@@ -2960,12 +2960,12 @@ mod tests {
     #[test]
     fn test_build_switched_model_config_detects_effort_suffix_change() {
         let _guard = env_lock::lock_env([
-            ("GOOSE_MAX_TOKENS", None::<&str>),
-            ("GOOSE_TEMPERATURE", None::<&str>),
-            ("GOOSE_CONTEXT_LIMIT", None::<&str>),
-            ("GOOSE_TOOLSHIM", None::<&str>),
-            ("GOOSE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
-            ("GOOSE_THINKING_EFFORT", None::<&str>),
+            ("WARMACHINE_MAX_TOKENS", None::<&str>),
+            ("WARMACHINE_TEMPERATURE", None::<&str>),
+            ("WARMACHINE_CONTEXT_LIMIT", None::<&str>),
+            ("WARMACHINE_TOOLSHIM", None::<&str>),
+            ("WARMACHINE_TOOLSHIM_OLLAMA_MODEL", None::<&str>),
+            ("WARMACHINE_THINKING_EFFORT", None::<&str>),
         ]);
 
         let current = goose_providers::model::ModelConfig::new("gpt-5.4-high")
@@ -2985,18 +2985,18 @@ mod tests {
     #[test]
     fn test_split_command_args_windows_paths() {
         assert_eq!(
-            goose::utils::split_command_args(r"C:\tools\mcp.exe --arg value").unwrap(),
+            warmachine::utils::split_command_args(r"C:\tools\mcp.exe --arg value").unwrap(),
             vec![r"C:\tools\mcp.exe", "--arg", "value"]
         );
         assert_eq!(
-            goose::utils::split_command_args(r#""C:\Program Files\server\mcp.exe" --arg"#).unwrap(),
+            warmachine::utils::split_command_args(r#""C:\Program Files\server\mcp.exe" --arg"#).unwrap(),
             vec![r"C:\Program Files\server\mcp.exe", "--arg"]
         );
     }
 
     #[test]
     fn test_split_command_args_unmatched_quote() {
-        assert!(goose::utils::split_command_args(r#""unmatched"#).is_err());
+        assert!(warmachine::utils::split_command_args(r#""unmatched"#).is_err());
     }
 
     #[test_case(
@@ -3007,7 +3007,7 @@ mod tests {
             envs: Envs::default(),
             env_keys: vec![],
             headers: HashMap::new(),
-            description: goose::config::DEFAULT_EXTENSION_DESCRIPTION.to_string(),
+            description: warmachine::config::DEFAULT_EXTENSION_DESCRIPTION.to_string(),
             timeout: Some(300),
             socket: None,
             client_id: None,
@@ -3026,7 +3026,7 @@ mod tests {
             envs: Envs::default(),
             env_keys: vec![],
             headers: HashMap::new(),
-            description: goose::config::DEFAULT_EXTENSION_DESCRIPTION.to_string(),
+            description: warmachine::config::DEFAULT_EXTENSION_DESCRIPTION.to_string(),
             timeout: Some(300),
             socket: None,
             client_id: None,
@@ -3045,7 +3045,7 @@ mod tests {
             envs: Envs::default(),
             env_keys: vec![],
             headers: HashMap::new(),
-            description: goose::config::DEFAULT_EXTENSION_DESCRIPTION.to_string(),
+            description: warmachine::config::DEFAULT_EXTENSION_DESCRIPTION.to_string(),
             timeout: Some(300),
             socket: None,
             client_id: None,
@@ -3072,7 +3072,7 @@ mod tests {
             .create_session(
                 temp_dir.path().to_path_buf(),
                 "CLI Session".to_string(),
-                goose::session::SessionType::User,
+                warmachine::session::SessionType::User,
                 GooseMode::Auto,
             )
             .await
@@ -3094,7 +3094,7 @@ mod tests {
             .await
             .unwrap();
 
-        let mut extension_data = goose::session::ExtensionData::new();
+        let mut extension_data = warmachine::session::ExtensionData::new();
         extension_data.set_extension_state("test", "v0", serde_json::json!("marker"));
         sm.update(&old.id)
             .extension_data(extension_data)
@@ -3151,10 +3151,10 @@ mod tests {
             _messages: &[Message],
             _tools: &[rmcp::model::Tool],
         ) -> std::result::Result<
-            goose::providers::base::MessageStream,
+            warmachine::providers::base::MessageStream,
             goose_providers::errors::ProviderError,
         > {
-            Ok(goose::providers::base::stream_from_single_message(
+            Ok(warmachine::providers::base::stream_from_single_message(
                 Message::assistant().with_text("stub reply"),
                 ProviderUsage::new(
                     "stub".to_string(),
@@ -3174,15 +3174,15 @@ mod tests {
             .create_session(
                 temp_dir.path().to_path_buf(),
                 "Loading gate test".to_string(),
-                goose::session::SessionType::User,
+                warmachine::session::SessionType::User,
                 GooseMode::default(),
             )
             .await
             .unwrap();
 
-        let agent = goose::agents::Agent::with_config(goose::agents::AgentConfig::new(
+        let agent = warmachine::agents::Agent::with_config(warmachine::agents::AgentConfig::new(
             Arc::new(session_manager),
-            Arc::new(goose::config::PermissionManager::new(
+            Arc::new(warmachine::config::PermissionManager::new(
                 temp_dir.path().to_path_buf(),
             )),
             None,
@@ -3190,7 +3190,7 @@ mod tests {
             // Disable background session naming so the test agent starts no
             // provider-dependent tasks.
             true,
-            goose::agents::GoosePlatform::GooseCli,
+            warmachine::agents::GoosePlatform::GooseCli,
         ));
         agent
             .update_provider(

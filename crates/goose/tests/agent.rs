@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use futures::StreamExt;
-use goose::agents::{Agent, AgentEvent, GoosePlatform};
-use goose::config::extensions::{set_extension, ExtensionEntry};
+use warmachine::agents::{Agent, AgentEvent, GoosePlatform};
+use warmachine::config::extensions::{set_extension, ExtensionEntry};
 
 #[cfg(test)]
 mod tests {
@@ -14,16 +14,16 @@ mod tests {
         use super::*;
         use async_trait::async_trait;
         use chrono::{DateTime, Utc};
-        use goose::agents::platform_extensions::scheduler::{
+        use warmachine::agents::platform_extensions::scheduler::{
             EXTENSION_NAME as SCHEDULER_EXTENSION_NAME, MANAGE_SCHEDULE_TOOL_NAME_COMPLETE,
         };
-        use goose::agents::ExtensionConfig;
-        use goose::agents::{AgentConfig, ScheduleTool};
-        use goose::config::permission::PermissionManager;
-        use goose::config::GooseMode;
-        use goose::scheduler::{ScheduledJob, SchedulerError, ValidatedScheduleRecipe};
-        use goose::scheduler_trait::SchedulerTrait;
-        use goose::session::{Session, SessionManager};
+        use warmachine::agents::ExtensionConfig;
+        use warmachine::agents::{AgentConfig, ScheduleTool};
+        use warmachine::config::permission::PermissionManager;
+        use warmachine::config::GooseMode;
+        use warmachine::scheduler::{ScheduledJob, SchedulerError, ValidatedScheduleRecipe};
+        use warmachine::scheduler_trait::SchedulerTrait;
+        use warmachine::session::{Session, SessionManager};
         use std::path::PathBuf;
         use std::sync::Arc;
         use tempfile::TempDir;
@@ -265,7 +265,7 @@ mod tests {
                 .description
                 .clone()
                 .unwrap_or_default()
-                .contains("Manage goose's internal scheduled recipe execution"));
+                .contains("Manage warmachine's internal scheduled recipe execution"));
         }
 
         #[tokio::test]
@@ -315,7 +315,7 @@ mod tests {
                 .description
                 .clone()
                 .unwrap_or_default()
-                .contains("Manage goose's internal scheduled recipe execution"));
+                .contains("Manage warmachine's internal scheduled recipe execution"));
 
             // Verify the tool has the expected actions in its schema
             if let Some(properties) = tool.input_schema.get("properties") {
@@ -428,11 +428,11 @@ mod tests {
     #[cfg(test)]
     mod retry_tests {
         use super::*;
-        use goose::agents::types::{RetryConfig, SuccessCheck};
+        use warmachine::agents::types::{RetryConfig, SuccessCheck};
 
         #[tokio::test]
         async fn test_retry_success_check_execution() -> Result<()> {
-            use goose::agents::retry::execute_success_checks;
+            use warmachine::agents::retry::execute_success_checks;
 
             let retry_config = RetryConfig {
                 max_retries: 3,
@@ -506,13 +506,13 @@ mod tests {
     mod max_turns_tests {
         use super::*;
         use async_trait::async_trait;
-        use goose::agents::SessionConfig;
-        use goose::config::GooseMode;
-        use goose::conversation::message::{Message, MessageContent};
-        use goose::providers::base::{
+        use warmachine::agents::SessionConfig;
+        use warmachine::config::GooseMode;
+        use warmachine::conversation::message::{Message, MessageContent};
+        use warmachine::providers::base::{
             stream_from_single_message, MessageStream, Provider, ProviderDef, ProviderMetadata,
         };
-        use goose::session::session_manager::SessionType;
+        use warmachine::session::session_manager::SessionType;
         use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
         use goose_providers::errors::ProviderError;
         use goose_providers::model::ModelConfig;
@@ -528,7 +528,7 @@ mod tests {
             }
         }
 
-        impl goose::providers::base::ProviderDescriptor for MockToolProvider {
+        impl warmachine::providers::base::ProviderDescriptor for MockToolProvider {
             fn metadata() -> ProviderMetadata {
                 ProviderMetadata {
                     name: "mock".to_string(),
@@ -549,8 +549,8 @@ mod tests {
             type Provider = Self;
 
             fn from_env(
-                _extensions: Vec<goose::config::ExtensionConfig>,
-                _tls_config: Option<goose::providers::api_client::TlsConfig>,
+                _extensions: Vec<warmachine::config::ExtensionConfig>,
+                _tls_config: Option<warmachine::providers::api_client::TlsConfig>,
             ) -> futures::future::BoxFuture<'static, anyhow::Result<Self>> {
                 Box::pin(async { Ok(Self::new()) })
             }
@@ -615,7 +615,7 @@ mod tests {
                 .reply(
                     user_message,
                     session_config,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -628,12 +628,12 @@ mod tests {
                         if let Some(MessageContent::ActionRequired(action)) =
                             response.content.first()
                         {
-                            if let goose::conversation::message::ActionRequiredData::ToolConfirmation { id, .. } = &action.data {
+                            if let warmachine::conversation::message::ActionRequiredData::ToolConfirmation { id, .. } = &action.data {
                                 agent
                                     .submit_tool_confirmation(
                                         &session_id,
                                         id,
-                                        goose::permission::Permission::AllowOnce,
+                                        warmachine::permission::Permission::AllowOnce,
                                     )
                                     .await?;
                             }
@@ -676,15 +676,15 @@ mod tests {
     mod unparseable_tool_call_tests {
         use super::*;
         use async_trait::async_trait;
-        use goose::agents::{AgentConfig, SessionConfig};
-        use goose::config::permission::PermissionManager;
-        use goose::config::GooseMode;
-        use goose::conversation::message::{Message, MessageContent};
-        use goose::providers::base::{
+        use warmachine::agents::{AgentConfig, SessionConfig};
+        use warmachine::config::permission::PermissionManager;
+        use warmachine::config::GooseMode;
+        use warmachine::conversation::message::{Message, MessageContent};
+        use warmachine::providers::base::{
             stream_from_single_message, MessageStream, Provider, ProviderDef, ProviderMetadata,
         };
-        use goose::session::session_manager::SessionType;
-        use goose::session::SessionManager;
+        use warmachine::session::session_manager::SessionType;
+        use warmachine::session::SessionManager;
         use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
         use goose_providers::errors::ProviderError;
         use goose_providers::model::ModelConfig;
@@ -708,7 +708,7 @@ mod tests {
             }
         }
 
-        impl goose::providers::base::ProviderDescriptor for UnparseableToolProvider {
+        impl warmachine::providers::base::ProviderDescriptor for UnparseableToolProvider {
             fn metadata() -> ProviderMetadata {
                 ProviderMetadata {
                     name: "mock-unparseable".to_string(),
@@ -729,8 +729,8 @@ mod tests {
             type Provider = Self;
 
             fn from_env(
-                _extensions: Vec<goose::config::ExtensionConfig>,
-                _tls_config: Option<goose::providers::api_client::TlsConfig>,
+                _extensions: Vec<warmachine::config::ExtensionConfig>,
+                _tls_config: Option<warmachine::providers::api_client::TlsConfig>,
             ) -> futures::future::BoxFuture<'static, anyhow::Result<Self>> {
                 Box::pin(async { Ok(Self::new()) })
             }
@@ -814,7 +814,7 @@ mod tests {
                 .reply(
                     Message::user().with_text("Hello"),
                     session_config,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -862,14 +862,14 @@ mod tests {
     mod tool_pair_summarization_tests {
         use super::*;
         use async_trait::async_trait;
-        use goose::agents::{AgentConfig, SessionConfig};
-        use goose::config::permission::PermissionManager;
-        use goose::config::GooseMode;
-        use goose::conversation::message::Message;
-        use goose::providers::base::{
+        use warmachine::agents::{AgentConfig, SessionConfig};
+        use warmachine::config::permission::PermissionManager;
+        use warmachine::config::GooseMode;
+        use warmachine::conversation::message::Message;
+        use warmachine::providers::base::{
             stream_from_single_message, MessageStream, Provider, ProviderDef, ProviderMetadata,
         };
-        use goose::session::{SessionManager, SessionType};
+        use warmachine::session::{SessionManager, SessionType};
         use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
         use goose_providers::errors::ProviderError;
         use goose_providers::model::ModelConfig;
@@ -893,7 +893,7 @@ mod tests {
             }
         }
 
-        impl goose::providers::base::ProviderDescriptor for SummarizationTestProvider {
+        impl warmachine::providers::base::ProviderDescriptor for SummarizationTestProvider {
             fn metadata() -> ProviderMetadata {
                 ProviderMetadata {
                     name: "mock-summarization".to_string(),
@@ -914,8 +914,8 @@ mod tests {
             type Provider = Self;
 
             fn from_env(
-                _extensions: Vec<goose::config::ExtensionConfig>,
-                _tls_config: Option<goose::providers::api_client::TlsConfig>,
+                _extensions: Vec<warmachine::config::ExtensionConfig>,
+                _tls_config: Option<warmachine::providers::api_client::TlsConfig>,
             ) -> futures::future::BoxFuture<'static, anyhow::Result<Self>> {
                 Box::pin(async { Ok(Self::new()) })
             }
@@ -960,8 +960,8 @@ mod tests {
         #[tokio::test]
         async fn test_batch_summarization_preserves_all_summaries() -> Result<()> {
             let _guard = env_lock::lock_env([
-                ("GOOSE_TOOL_PAIR_SUMMARIZATION", Some("true")),
-                ("GOOSE_TOOL_CALL_CUTOFF", Some("2")),
+                ("WARMACHINE_TOOL_PAIR_SUMMARIZATION", Some("true")),
+                ("WARMACHINE_TOOL_CALL_CUTOFF", Some("2")),
             ]);
 
             let temp_dir = tempfile::tempdir()?;
@@ -1034,7 +1034,7 @@ mod tests {
                 .reply(
                     user_message,
                     session_config,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -1127,17 +1127,17 @@ mod tests {
     #[cfg(test)]
     mod extension_manager_tests {
         use super::*;
-        use goose::agents::extension::ExtensionConfig;
-        use goose::agents::platform_extensions::{
+        use warmachine::agents::extension::ExtensionConfig;
+        use warmachine::agents::platform_extensions::{
             MANAGE_EXTENSIONS_TOOL_NAME, SEARCH_AVAILABLE_EXTENSIONS_TOOL_NAME,
         };
-        use goose::agents::AgentConfig;
-        use goose::config::permission::PermissionManager;
-        use goose::config::GooseMode;
-        use goose::session::SessionManager;
+        use warmachine::agents::AgentConfig;
+        use warmachine::config::permission::PermissionManager;
+        use warmachine::config::GooseMode;
+        use warmachine::session::SessionManager;
 
         async fn setup_agent_with_extension_manager() -> (Agent, String, tempfile::TempDir) {
-            use goose::session::session_manager::SessionType;
+            use warmachine::session::session_manager::SessionType;
 
             // Add the TODO extension to the config so it can be discovered by search_available_extensions
             // Set it as disabled initially so tests can enable it
@@ -1146,7 +1146,7 @@ mod tests {
                 config: ExtensionConfig::Platform {
                     name: "todo".to_string(),
                     description:
-                        "Enable a todo list for goose so it can keep track of what it is doing"
+                        "Enable a todo list for warmachine so it can keep track of what it is doing"
                             .to_string(),
                     display_name: Some("Todo".to_string()),
                     bundled: Some(true),
@@ -1225,13 +1225,13 @@ mod tests {
     mod streaming_persistence_tests {
         use super::*;
         use async_trait::async_trait;
-        use goose::agents::{AgentConfig, SessionConfig};
-        use goose::config::permission::PermissionManager;
-        use goose::config::GooseMode;
-        use goose::conversation::message::Message;
-        use goose::providers::base::{MessageStream, Provider, ProviderDef, ProviderMetadata};
-        use goose::session::session_manager::SessionType;
-        use goose::session::SessionManager;
+        use warmachine::agents::{AgentConfig, SessionConfig};
+        use warmachine::config::permission::PermissionManager;
+        use warmachine::config::GooseMode;
+        use warmachine::conversation::message::Message;
+        use warmachine::providers::base::{MessageStream, Provider, ProviderDef, ProviderMetadata};
+        use warmachine::session::session_manager::SessionType;
+        use warmachine::session::SessionManager;
         use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
         use goose_providers::errors::ProviderError;
         use goose_providers::model::ModelConfig;
@@ -1255,7 +1255,7 @@ mod tests {
             }
         }
 
-        impl goose::providers::base::ProviderDescriptor for MultiStepProvider {
+        impl warmachine::providers::base::ProviderDescriptor for MultiStepProvider {
             fn metadata() -> ProviderMetadata {
                 ProviderMetadata {
                     name: "multi-step-mock".to_string(),
@@ -1276,8 +1276,8 @@ mod tests {
             type Provider = Self;
 
             fn from_env(
-                _extensions: Vec<goose::config::ExtensionConfig>,
-                _tls_config: Option<goose::providers::api_client::TlsConfig>,
+                _extensions: Vec<warmachine::config::ExtensionConfig>,
+                _tls_config: Option<warmachine::providers::api_client::TlsConfig>,
             ) -> futures::future::BoxFuture<'static, anyhow::Result<Self>> {
                 unimplemented!()
             }
@@ -1398,7 +1398,7 @@ mod tests {
                 .reply(
                     Message::user().with_text("Do something then say hello"),
                     session_config,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -1453,7 +1453,7 @@ mod tests {
                 .reply(
                     Message::user().with_text("Tell me more"),
                     session_config2,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     Some(cancel_token),
                 )
                 .await?;
@@ -1504,13 +1504,13 @@ mod tests {
     mod thinking_preservation_tests {
         use super::*;
         use async_trait::async_trait;
-        use goose::agents::{AgentConfig, SessionConfig};
-        use goose::config::permission::PermissionManager;
-        use goose::config::GooseMode;
-        use goose::conversation::message::{Message, MessageContent};
-        use goose::providers::base::{MessageStream, Provider, ProviderDef, ProviderMetadata};
-        use goose::session::session_manager::SessionType;
-        use goose::session::SessionManager;
+        use warmachine::agents::{AgentConfig, SessionConfig};
+        use warmachine::config::permission::PermissionManager;
+        use warmachine::config::GooseMode;
+        use warmachine::conversation::message::{Message, MessageContent};
+        use warmachine::providers::base::{MessageStream, Provider, ProviderDef, ProviderMetadata};
+        use warmachine::session::session_manager::SessionType;
+        use warmachine::session::SessionManager;
         use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
         use goose_providers::errors::ProviderError;
         use goose_providers::model::ModelConfig;
@@ -1535,7 +1535,7 @@ mod tests {
             }
         }
 
-        impl goose::providers::base::ProviderDescriptor for ThinkingStreamProvider {
+        impl warmachine::providers::base::ProviderDescriptor for ThinkingStreamProvider {
             fn metadata() -> ProviderMetadata {
                 ProviderMetadata {
                     name: "thinking-stream-mock".to_string(),
@@ -1556,8 +1556,8 @@ mod tests {
             type Provider = Self;
 
             fn from_env(
-                _extensions: Vec<goose::config::ExtensionConfig>,
-                _tls_config: Option<goose::providers::api_client::TlsConfig>,
+                _extensions: Vec<warmachine::config::ExtensionConfig>,
+                _tls_config: Option<warmachine::providers::api_client::TlsConfig>,
             ) -> futures::future::BoxFuture<'static, anyhow::Result<Self>> {
                 unimplemented!()
             }
@@ -1646,7 +1646,7 @@ mod tests {
                 .reply(
                     Message::user().with_text("Use the test tool"),
                     session_config,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -1737,7 +1737,7 @@ mod tests {
             }
         }
 
-        impl goose::providers::base::ProviderDescriptor for CombinedThinkingToolProvider {
+        impl warmachine::providers::base::ProviderDescriptor for CombinedThinkingToolProvider {
             fn metadata() -> ProviderMetadata {
                 ProviderMetadata {
                     name: "combined-thinking-tool-mock".to_string(),
@@ -1758,8 +1758,8 @@ mod tests {
             type Provider = Self;
 
             fn from_env(
-                _extensions: Vec<goose::config::ExtensionConfig>,
-                _tls_config: Option<goose::providers::api_client::TlsConfig>,
+                _extensions: Vec<warmachine::config::ExtensionConfig>,
+                _tls_config: Option<warmachine::providers::api_client::TlsConfig>,
             ) -> futures::future::BoxFuture<'static, anyhow::Result<Self>> {
                 unimplemented!()
             }
@@ -1848,7 +1848,7 @@ mod tests {
                 .reply(
                     Message::user().with_text("Use the test tool"),
                     session_config,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -1889,7 +1889,7 @@ mod tests {
             }
         }
 
-        impl goose::providers::base::ProviderDescriptor for MultiToolThinkingProvider {
+        impl warmachine::providers::base::ProviderDescriptor for MultiToolThinkingProvider {
             fn metadata() -> ProviderMetadata {
                 ProviderMetadata {
                     name: "multi-tool-thinking-mock".to_string(),
@@ -1910,8 +1910,8 @@ mod tests {
             type Provider = Self;
 
             fn from_env(
-                _extensions: Vec<goose::config::ExtensionConfig>,
-                _tls_config: Option<goose::providers::api_client::TlsConfig>,
+                _extensions: Vec<warmachine::config::ExtensionConfig>,
+                _tls_config: Option<warmachine::providers::api_client::TlsConfig>,
             ) -> futures::future::BoxFuture<'static, anyhow::Result<Self>> {
                 unimplemented!()
             }
@@ -2014,7 +2014,7 @@ mod tests {
                 .reply(
                     Message::user().with_text("Use both tools"),
                     session_config,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -2121,7 +2121,7 @@ mod tests {
 
         #[tokio::test]
         async fn test_signed_thinking_leads_text_and_tool_calls_for_anthropic() -> Result<()> {
-            use goose::conversation::{
+            use warmachine::conversation::{
                 fix_conversation, merge_consecutive_messages_for_request, Conversation,
             };
             use goose_providers::formats::anthropic::format_messages as anthropic_format;
@@ -2164,7 +2164,7 @@ mod tests {
                 .reply(
                     Message::user().with_text("Use both tools"),
                     session_config,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -2232,16 +2232,16 @@ mod tests {
     mod goal_checking_tests {
         use super::*;
         use async_trait::async_trait;
-        use goose::agents::AgentConfig;
-        use goose::agents::SessionConfig;
-        use goose::config::permission::PermissionManager;
-        use goose::config::GooseMode;
-        use goose::conversation::message::Message;
-        use goose::providers::base::{
+        use warmachine::agents::AgentConfig;
+        use warmachine::agents::SessionConfig;
+        use warmachine::config::permission::PermissionManager;
+        use warmachine::config::GooseMode;
+        use warmachine::conversation::message::Message;
+        use warmachine::providers::base::{
             stream_from_single_message, MessageStream, Provider, ProviderDef, ProviderMetadata,
         };
-        use goose::session::session_manager::SessionType;
-        use goose::session::SessionManager;
+        use warmachine::session::session_manager::SessionType;
+        use warmachine::session::SessionManager;
         use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
         use goose_providers::errors::ProviderError;
         use goose_providers::model::ModelConfig;
@@ -2262,7 +2262,7 @@ mod tests {
             }
         }
 
-        impl goose::providers::base::ProviderDescriptor for GoalTextProvider {
+        impl warmachine::providers::base::ProviderDescriptor for GoalTextProvider {
             fn metadata() -> ProviderMetadata {
                 ProviderMetadata {
                     name: "goal-mock".to_string(),
@@ -2283,8 +2283,8 @@ mod tests {
             type Provider = Self;
 
             fn from_env(
-                _extensions: Vec<goose::config::ExtensionConfig>,
-                _tls_config: Option<goose::providers::api_client::TlsConfig>,
+                _extensions: Vec<warmachine::config::ExtensionConfig>,
+                _tls_config: Option<warmachine::providers::api_client::TlsConfig>,
             ) -> futures::future::BoxFuture<'static, anyhow::Result<Self>> {
                 Box::pin(async { Ok(Self::new()) })
             }
@@ -2366,7 +2366,7 @@ mod tests {
                 .reply(
                     Message::user().with_text("Hello"),
                     session_config,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -2450,7 +2450,7 @@ mod tests {
                 .reply(
                     Message::user().with_text("Hello"),
                     session_config,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -2551,7 +2551,7 @@ mod tests {
                 .reply(
                     Message::user().with_text("/goal make all tests pass"),
                     session_config,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -2616,7 +2616,7 @@ mod tests {
                 .reply(
                     Message::user().with_text("/goal"),
                     session_config,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -2687,13 +2687,13 @@ mod tests {
     mod cumulative_token_tests {
         use super::*;
         use async_trait::async_trait;
-        use goose::agents::{AgentConfig, SessionConfig};
-        use goose::config::permission::PermissionManager;
-        use goose::config::GooseMode;
-        use goose::conversation::message::Message;
-        use goose::providers::base::{stream_from_single_message, MessageStream, Provider};
-        use goose::session::session_manager::SessionType;
-        use goose::session::SessionManager;
+        use warmachine::agents::{AgentConfig, SessionConfig};
+        use warmachine::config::permission::PermissionManager;
+        use warmachine::config::GooseMode;
+        use warmachine::conversation::message::Message;
+        use warmachine::providers::base::{stream_from_single_message, MessageStream, Provider};
+        use warmachine::session::session_manager::SessionType;
+        use warmachine::session::SessionManager;
         use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
         use goose_providers::errors::ProviderError;
         use goose_providers::model::ModelConfig;
@@ -2744,7 +2744,7 @@ mod tests {
                 .reply(
                     Message::user().with_text(text),
                     session_config,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -2806,12 +2806,12 @@ mod tests {
 
     mod add_extensions_bulk_tests {
         use super::*;
-        use goose::agents::extension::Envs;
-        use goose::agents::{AgentConfig, ExtensionConfig};
-        use goose::config::permission::PermissionManager;
-        use goose::config::GooseMode;
-        use goose::session::session_manager::SessionType;
-        use goose::session::{
+        use warmachine::agents::extension::Envs;
+        use warmachine::agents::{AgentConfig, ExtensionConfig};
+        use warmachine::config::permission::PermissionManager;
+        use warmachine::config::GooseMode;
+        use warmachine::session::session_manager::SessionType;
+        use warmachine::session::{
             EnabledExtensionsState, ExtensionData, ExtensionState, SessionManager,
         };
         use tempfile::TempDir;
@@ -3034,11 +3034,11 @@ mod tests {
     mod audience_tool_result_tests {
         use super::*;
         use async_trait::async_trait;
-        use goose::agents::{AgentConfig, SessionConfig};
-        use goose::config::{ExtensionConfig, GooseMode, PermissionManager};
-        use goose::conversation::message::{Message, MessageContent};
-        use goose::providers::base::{stream_from_single_message, MessageStream, Provider};
-        use goose::session::{SessionManager, SessionType};
+        use warmachine::agents::{AgentConfig, SessionConfig};
+        use warmachine::config::{ExtensionConfig, GooseMode, PermissionManager};
+        use warmachine::conversation::message::{Message, MessageContent};
+        use warmachine::providers::base::{stream_from_single_message, MessageStream, Provider};
+        use warmachine::session::{SessionManager, SessionType};
         use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
         use goose_providers::errors::ProviderError;
         use goose_providers::model::ModelConfig;
@@ -3156,7 +3156,7 @@ mod tests {
                         max_turns: Some(3),
                         retry_config: None,
                     },
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -3192,16 +3192,16 @@ mod tests {
     mod empty_turn_tests {
         use super::*;
         use async_trait::async_trait;
-        use goose::agents::final_output_tool::FINAL_OUTPUT_TOOL_NAME;
-        use goose::agents::{AgentConfig, AgentEvent, GoosePlatform, SessionConfig};
-        use goose::config::permission::PermissionManager;
-        use goose::config::GooseMode;
-        use goose::conversation::message::{Message, MessageContent};
-        use goose::conversation::Conversation;
-        use goose::providers::base::{
+        use warmachine::agents::final_output_tool::FINAL_OUTPUT_TOOL_NAME;
+        use warmachine::agents::{AgentConfig, AgentEvent, GoosePlatform, SessionConfig};
+        use warmachine::config::permission::PermissionManager;
+        use warmachine::config::GooseMode;
+        use warmachine::conversation::message::{Message, MessageContent};
+        use warmachine::conversation::Conversation;
+        use warmachine::providers::base::{
             stream_from_single_message, MessageStream, Provider, ProviderDef, ProviderMetadata,
         };
-        use goose::session::session_manager::SessionType;
+        use warmachine::session::session_manager::SessionType;
         use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
         use goose_providers::errors::ProviderError;
         use goose_providers::model::ModelConfig;
@@ -3233,7 +3233,7 @@ mod tests {
             call_count: AtomicUsize,
         }
 
-        impl goose::providers::base::ProviderDescriptor for AssistantOnlyProvider {
+        impl warmachine::providers::base::ProviderDescriptor for AssistantOnlyProvider {
             fn metadata() -> ProviderMetadata {
                 ProviderMetadata {
                     name: "assistant-only-mock".to_string(),
@@ -3254,8 +3254,8 @@ mod tests {
             type Provider = Self;
 
             fn from_env(
-                _extensions: Vec<goose::config::ExtensionConfig>,
-                _tls_config: Option<goose::providers::api_client::TlsConfig>,
+                _extensions: Vec<warmachine::config::ExtensionConfig>,
+                _tls_config: Option<warmachine::providers::api_client::TlsConfig>,
             ) -> futures::future::BoxFuture<'static, anyhow::Result<Self>> {
                 unimplemented!()
             }
@@ -3320,7 +3320,7 @@ mod tests {
             }
         }
 
-        impl goose::providers::base::ProviderDescriptor for EmptyThenTextProvider {
+        impl warmachine::providers::base::ProviderDescriptor for EmptyThenTextProvider {
             fn metadata() -> ProviderMetadata {
                 ProviderMetadata {
                     name: "empty-then-text-mock".to_string(),
@@ -3341,8 +3341,8 @@ mod tests {
             type Provider = Self;
 
             fn from_env(
-                _extensions: Vec<goose::config::ExtensionConfig>,
-                _tls_config: Option<goose::providers::api_client::TlsConfig>,
+                _extensions: Vec<warmachine::config::ExtensionConfig>,
+                _tls_config: Option<warmachine::providers::api_client::TlsConfig>,
             ) -> futures::future::BoxFuture<'static, anyhow::Result<Self>> {
                 unimplemented!()
             }
@@ -3443,7 +3443,7 @@ mod tests {
                 .reply(
                     Message::user().with_text("Hi"),
                     session_config,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -3632,7 +3632,7 @@ mod tests {
                 .reply(
                     Message::user().with_text("Hi"),
                     session_config,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -3680,9 +3680,9 @@ mod tests {
 
         #[tokio::test]
         async fn legacy_structured_output_fails_before_provider_inference() -> Result<()> {
-            use goose::recipe::Response;
+            use warmachine::recipe::Response;
 
-            let _guard = env_lock::lock_env([("GOOSE_STATE_MACHINE", None::<&str>)]);
+            let _guard = env_lock::lock_env([("WARMACHINE_STATE_MACHINE", None::<&str>)]);
             let agent = Agent::new();
             let session = agent
                 .config
@@ -3720,7 +3720,7 @@ mod tests {
                         max_turns: Some(3),
                         retry_config: None,
                     },
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -3749,8 +3749,8 @@ mod tests {
         /// recipes are not abandoned without producing a result.
         #[tokio::test]
         async fn test_empty_turn_with_final_output_tool_nudges() -> Result<()> {
-            use goose::agents::final_output_tool::FINAL_OUTPUT_CONTINUATION_MESSAGE;
-            use goose::recipe::Response;
+            use warmachine::agents::final_output_tool::FINAL_OUTPUT_CONTINUATION_MESSAGE;
+            use warmachine::recipe::Response;
 
             let agent = Agent::new();
             let session = agent
@@ -3790,7 +3790,7 @@ mod tests {
                 .reply(
                     Message::user().with_text("Hi"),
                     session_config,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -3860,8 +3860,8 @@ mod tests {
 
         #[tokio::test]
         async fn test_final_output_result_id_matches_persisted_message() -> Result<()> {
-            use goose::recipe::Response;
-            use goose::session::SessionManager;
+            use warmachine::recipe::Response;
+            use warmachine::session::SessionManager;
             use tempfile::TempDir;
 
             let temp_dir = TempDir::new()?;
@@ -3913,7 +3913,7 @@ mod tests {
                 .reply(
                     Message::user().with_text("Hi"),
                     session_config,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -3967,7 +3967,7 @@ mod tests {
         /// recipe, not a generic empty-response error.
         #[tokio::test]
         async fn test_empty_turn_defers_to_recipe_retry() -> Result<()> {
-            use goose::agents::types::{RetryConfig, SuccessCheck};
+            use warmachine::agents::types::{RetryConfig, SuccessCheck};
 
             let agent = Agent::new();
             let session = agent
@@ -4007,7 +4007,7 @@ mod tests {
                 .reply(
                     Message::user().with_text("Hi"),
                     session_config,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;
@@ -4033,7 +4033,7 @@ mod tests {
         /// silent stop.
         #[tokio::test]
         async fn test_recipe_max_retries_surfaces_failure() -> Result<()> {
-            use goose::agents::types::{RetryConfig, SuccessCheck};
+            use warmachine::agents::types::{RetryConfig, SuccessCheck};
 
             let agent = Agent::new();
             let session = agent
@@ -4074,7 +4074,7 @@ mod tests {
                 .reply(
                     Message::user().with_text("Hi"),
                     session_config,
-                    goose::agents::state_machine::enabled(),
+                    warmachine::agents::state_machine::enabled(),
                     None,
                 )
                 .await?;

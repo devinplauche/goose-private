@@ -17,7 +17,7 @@ use agent_client_protocol::{Agent, Client, ConnectionTo};
 use async_trait::async_trait;
 use futures::io::BufReader;
 use futures::{AsyncBufReadExt, AsyncWriteExt, StreamExt};
-use goose::config::PermissionManager;
+use warmachine::config::PermissionManager;
 use goose_test_support::{ExpectedSessionId, IgnoreSessionId};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -363,7 +363,7 @@ impl Connection for AcpServerConnection {
                             );
                             assert_eq!(
                                 resp.agent_info.as_ref().map(|info| info.name.as_str()),
-                                Some("goose"),
+                                Some("warmachine"),
                                 "initialize response must identify the agent"
                             );
                             assert!(

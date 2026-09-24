@@ -1,5 +1,5 @@
 //! This module contains tests for the scenario runner and various scenarios.
-//! You can set the GOOSE_TEST_PROVIDER to just run a specific provider.
+//! You can set the WARMACHINE_TEST_PROVIDER to just run a specific provider.
 
 #[cfg(test)]
 mod tests {
@@ -17,8 +17,8 @@ mod tests {
             |result| {
                 assert!(result.error.is_none());
                 assert!(
-                    result.last_message()?.to_lowercase().contains("goose"),
-                    "Response should contain 'goose': {}",
+                    result.last_message()?.to_lowercase().contains("warmachine"),
+                    "Response should contain 'warmachine': {}",
                     result.last_message()?
                 );
                 Ok(())

@@ -7,7 +7,7 @@
   "base_url": "https://api.eurouter.ai/api/v1",
   "headers": {
     "http-referer": "https://goose-docs.ai",
-    "x-eurouter-title": "goose"
+    "x-eurouter-title": "warmachine"
   },
   "models": [
     { "name": "mistral-large-3", "context_limit": 262144 },

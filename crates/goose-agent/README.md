@@ -52,5 +52,5 @@ Cancellation is cooperative. Once the token fires, remaining steps are treated a
 not-applicable and each step's `cancel` hook gets a chance to rewrite its result;
 anything applied while cancelled yields to the client.
 
-The reference assembly of these pieces is `goose::agents::state_machine` in the
-[`goose`](../goose) crate.
+The reference assembly of these pieces is `warmachine::agents::state_machine` in the
+[`warmachine`](../warmachine) crate.

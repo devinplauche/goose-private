@@ -24,7 +24,7 @@ use tracing::warn;
 const CALLBACK_TEMPLATE: &str = include_str!("oauth_callback.html");
 const CLIENT_METADATA_URL: &str = "https://goose-docs.ai/oauth/client-metadata.json";
 const DEFAULT_OAUTH_CALLBACK_TIMEOUT_SECS: u64 = 300;
-const OAUTH_CALLBACK_TIMEOUT_ENV: &str = "GOOSE_OAUTH_CALLBACK_TIMEOUT_SECONDS";
+const OAUTH_CALLBACK_TIMEOUT_ENV: &str = "WARMACHINE_OAUTH_CALLBACK_TIMEOUT_SECONDS";
 
 /// Pre-registered OAuth client supplied by a probe script, for servers whose
 /// authorization server supports neither Dynamic Client Registration nor
@@ -87,7 +87,7 @@ async fn complete_automatic_authorization(
     authorization_url: &str,
     redirect_uri: &str,
 ) -> Result<Option<String>, anyhow::Error> {
-    if std::env::var_os("GOOSE_OAUTH_AUTOMATIC_CALLBACK").is_none() {
+    if std::env::var_os("WARMACHINE_OAUTH_AUTOMATIC_CALLBACK").is_none() {
         return Ok(None);
     }
 
@@ -154,18 +154,18 @@ pub struct StaticOAuthClientConfig {
 }
 
 /// Pre-registered client supplied through the environment, used by tools that
-/// drive the flow without an extension config (`goose mcp-probe`, conformance
+/// drive the flow without an extension config (`warmachine mcp-probe`, conformance
 /// driver).
 fn env_static_oauth_client() -> Option<StaticOAuthClientConfig> {
     Some(StaticOAuthClientConfig {
-        client_id: std::env::var("GOOSE_MCP_OAUTH_CLIENT_ID").ok()?,
-        client_secret: std::env::var("GOOSE_MCP_OAUTH_CLIENT_SECRET").ok(),
+        client_id: std::env::var("WARMACHINE_MCP_OAUTH_CLIENT_ID").ok()?,
+        client_secret: std::env::var("WARMACHINE_MCP_OAUTH_CLIENT_SECRET").ok(),
         scopes: Vec::new(),
     })
 }
 
 fn client_metadata_url() -> String {
-    std::env::var("GOOSE_MCP_OAUTH_CLIENT_METADATA_URL")
+    std::env::var("WARMACHINE_MCP_OAUTH_CLIENT_METADATA_URL")
         .unwrap_or_else(|_| CLIENT_METADATA_URL.to_string())
 }
 
@@ -259,7 +259,7 @@ fn build_authorization_request(
     mcp_server_url: &str,
     previously_granted_scopes: &[String],
 ) -> AuthorizationRequest {
-    let mut request = AuthorizationRequest::new(redirect_uri).with_client_name("goose");
+    let mut request = AuthorizationRequest::new(redirect_uri).with_client_name("warmachine");
     match static_client {
         Some(client) => {
             request = request.with_preregistered_client(client.client_id.clone());
@@ -437,7 +437,7 @@ pub async fn oauth_flow_with_challenge(
         .route("/oauth_callback", get(handler))
         .with_state(app_state);
 
-    let port = std::env::var("GOOSE_OAUTH_CALLBACK_PORT")
+    let port = std::env::var("WARMACHINE_OAUTH_CALLBACK_PORT")
         .ok()
         .and_then(|p| p.parse().ok())
         .unwrap_or(0);

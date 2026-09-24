@@ -1,11 +1,11 @@
 use anyhow::Result;
 use console::style;
-use goose::recipe::validate_recipe::validate_recipe_template_from_file;
+use warmachine::recipe::validate_recipe::validate_recipe_template_from_file;
 use std::collections::HashMap;
 
 use crate::recipes::github_recipe::RecipeSource;
 use crate::recipes::search_recipe::{list_available_recipes, load_recipe_file};
-use goose::recipe_deeplink;
+use warmachine::recipe_deeplink;
 
 pub fn handle_validate(recipe_name: &str) -> Result<()> {
     // Load and validate the recipe file
@@ -69,7 +69,7 @@ where
             Ok(_) => {
                 writeln!(
                     out,
-                    "{} Opened recipe '{}' in Goose Desktop",
+                    "{} Opened recipe '{}' in WarMachine Desktop",
                     style("✓").green().bold(),
                     recipe.title
                 )?;
@@ -78,12 +78,12 @@ where
             Err(err) => {
                 writeln!(
                     out,
-                    "{} Failed to open recipe in Goose Desktop: {}",
+                    "{} Failed to open recipe in WarMachine Desktop: {}",
                     style("✗").red().bold(),
                     err
                 )?;
                 writeln!(out, "Generated deeplink: {}", deeplink_url)?;
-                writeln!(out, "You can manually copy and open the URL above, or ensure Goose Desktop is installed.")?;
+                writeln!(out, "You can manually copy and open the URL above, or ensure WarMachine Desktop is installed.")?;
                 Err(anyhow::anyhow!("Failed to open recipe: {}", err))
             }
         },
@@ -168,13 +168,13 @@ fn parse_params(params: &[String]) -> Result<HashMap<String, String>> {
 fn generate_deeplink(
     recipe_name: &str,
     params: HashMap<String, String>,
-) -> Result<(String, goose::recipe::Recipe)> {
+) -> Result<(String, warmachine::recipe::Recipe)> {
     let recipe_file = load_recipe_file(recipe_name)?;
     // Load the recipe file first to validate it
     let recipe = validate_recipe_template_from_file(&recipe_file)?;
     match recipe_deeplink::encode(&recipe) {
         Ok(encoded) => {
-            let mut full_url = format!("goose://recipe?config={}", encoded);
+            let mut full_url = format!("warmachine://recipe?config={}", encoded);
 
             // Append parameters as additional query parameters
             for (key, value) in params {
@@ -237,8 +237,8 @@ instructions: "Test instructions"
         let result = handle_deeplink(&recipe_path, &[]);
         assert!(result.is_ok());
         let url = result.unwrap();
-        assert!(url.starts_with("goose://recipe?config="));
-        let encoded_part = url.strip_prefix("goose://recipe?config=").unwrap();
+        assert!(url.starts_with("warmachine://recipe?config="));
+        let encoded_part = url.strip_prefix("warmachine://recipe?config=").unwrap();
         assert!(!encoded_part.is_empty());
     }
 
@@ -252,7 +252,7 @@ instructions: "Test instructions"
         let result = handle_deeplink(&recipe_path, &params);
         assert!(result.is_ok());
         let url = result.unwrap();
-        assert!(url.starts_with("goose://recipe?config="));
+        assert!(url.starts_with("warmachine://recipe?config="));
         assert!(url.contains("&name=John"));
         assert!(url.contains("&age=30"));
     }
@@ -327,7 +327,7 @@ instructions: "Test instructions"
         let (result, _, output) = run_handle_open(&recipe_path, &[], Err(opener_err));
 
         assert!(result.is_err());
-        assert!(output.contains("Failed to open recipe in Goose Desktop"));
+        assert!(output.contains("Failed to open recipe in WarMachine Desktop"));
         assert!(output.contains("desktop not found"));
         assert!(output.contains(&expected_url));
     }
@@ -372,10 +372,10 @@ instructions: "Test instructions"
         let result = generate_deeplink(&recipe_path, HashMap::new());
         assert!(result.is_ok());
         let (url, recipe) = result.unwrap();
-        assert!(url.starts_with("goose://recipe?config="));
+        assert!(url.starts_with("warmachine://recipe?config="));
         assert_eq!(recipe.title, "Test Recipe with Valid JSON Schema");
         assert_eq!(recipe.description, "A test recipe with valid JSON schema");
-        let encoded_part = url.strip_prefix("goose://recipe?config=").unwrap();
+        let encoded_part = url.strip_prefix("warmachine://recipe?config=").unwrap();
         assert!(!encoded_part.is_empty());
     }
 
@@ -392,7 +392,7 @@ instructions: "Test instructions"
         let result = generate_deeplink(&recipe_path, params);
         assert!(result.is_ok());
         let (url, recipe) = result.unwrap();
-        assert!(url.starts_with("goose://recipe?config="));
+        assert!(url.starts_with("warmachine://recipe?config="));
         assert!(url.contains("&name=Alice"));
         assert!(url.contains("&role=developer"));
         assert_eq!(recipe.title, "Test Recipe with Valid JSON Schema");

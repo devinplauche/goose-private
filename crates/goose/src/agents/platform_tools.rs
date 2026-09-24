@@ -7,18 +7,18 @@ pub fn manage_schedule_tool() -> Tool {
     Tool::new(
         MANAGE_SCHEDULE_TOOL_NAME.to_string(),
         indoc! {r#"
-            Manage goose's internal scheduled recipe execution.
+            Manage warmachine's internal scheduled recipe execution.
 
             Actions:
-            - "list": List all goose scheduled jobs
-            - "create": Create a new goose scheduled job from a recipe file
-            - "run_now": Execute a goose scheduled job immediately
-            - "pause": Pause a goose scheduled job
-            - "unpause": Resume a paused goose scheduled job
-            - "delete": Remove a goose scheduled job
-            - "kill": Terminate a currently running goose scheduled job
-            - "inspect": Get details about a running goose scheduled job
-            - "sessions": List execution history for a goose scheduled job
+            - "list": List all warmachine scheduled jobs
+            - "create": Create a new warmachine scheduled job from a recipe file
+            - "run_now": Execute a warmachine scheduled job immediately
+            - "pause": Pause a warmachine scheduled job
+            - "unpause": Resume a paused warmachine scheduled job
+            - "delete": Remove a warmachine scheduled job
+            - "kill": Terminate a currently running warmachine scheduled job
+            - "inspect": Get details about a running warmachine scheduled job
+            - "sessions": List execution history for a warmachine scheduled job
             - "session_content": Get the full content (messages) of a specific session
         "#}
         .to_string(),

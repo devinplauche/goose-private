@@ -1,7 +1,7 @@
 /**
  * Provider smoke tests — normal mode (direct tool calls).
  *
- * Each available provider/model pair gets its own test that spawns `goose run`
+ * Each available provider/model pair gets its own test that spawns `warmachine run`
  * with the developer builtin, asks the model to read files via the shell tool,
  * and validates the output.
  */
@@ -42,7 +42,7 @@ testNonAgentic('reads files via shell tool', async (tc, { expect }) => {
       testdir,
       'Use the shell tool to cat ./part-a.txt and ./part-b.txt, then reply with ONLY the contents of both files, one per line, nothing else.',
       BUILTINS,
-      { GOOSE_PROVIDER: tc.provider, GOOSE_MODEL: tc.model },
+      { WARMACHINE_PROVIDER: tc.provider, WARMACHINE_MODEL: tc.model },
       55_000,
       (output) => {
         const shellToolPattern = /(shell \| developer)|(▸.*shell)/;
@@ -78,7 +78,7 @@ testAgentic('reads file contents', async (tc, { expect }) => {
       testdir,
       'read ./test-content.txt and output its contents exactly',
       BUILTINS,
-      { GOOSE_PROVIDER: tc.provider, GOOSE_MODEL: tc.model }
+      { WARMACHINE_PROVIDER: tc.provider, WARMACHINE_MODEL: tc.model }
     );
 
     expect(

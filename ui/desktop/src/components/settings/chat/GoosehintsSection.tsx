@@ -7,12 +7,12 @@ import { defineMessages, useIntl } from '../../../i18n';
 const i18n = defineMessages({
   title: {
     id: 'goosehintsSection.title',
-    defaultMessage: 'Project Hints (.goosehints)',
+    defaultMessage: 'Project Hints (.warmachinehints)',
   },
   description: {
     id: 'goosehintsSection.description',
     defaultMessage:
-      "Configure your project's .goosehints file to provide additional context to Goose",
+      "Configure your project's .warmachinehints file to provide additional context to WarMachine",
   },
   configure: {
     id: 'goosehintsSection.configure',
@@ -23,7 +23,7 @@ const i18n = defineMessages({
 export const GoosehintsSection = () => {
   const intl = useIntl();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const directory = window.appConfig?.get('GOOSE_WORKING_DIR') as string;
+  const directory = window.appConfig?.get('WARMACHINE_WORKING_DIR') as string;
 
   return (
     <>

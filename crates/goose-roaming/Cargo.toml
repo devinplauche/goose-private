@@ -6,7 +6,7 @@ version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Peer-to-peer roaming transport for goose agents (iroh-based)"
+description = "Peer-to-peer roaming transport for warmachine agents (iroh-based)"
 
 [dependencies]
 anyhow = { workspace = true }

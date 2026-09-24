@@ -33,7 +33,7 @@ impl goose_providers::base::ProviderDescriptor for CodexAcpProvider {
         ProviderMetadata::new(
             CODEX_ACP_PROVIDER_NAME,
             "Codex ACP",
-            "Use goose with ChatGPT Plus/Pro or OpenAI API credits via the codex-acp adapter.",
+            "Use warmachine with ChatGPT Plus/Pro or OpenAI API credits via the codex-acp adapter.",
             ACP_CURRENT_MODEL,
             vec![],
             CODEX_ACP_DOC_URL,
@@ -116,9 +116,9 @@ mod tests {
     use std::process::Command;
 
     #[cfg(unix)]
-    const CHILD_ENV: &str = "GOOSE_CODEX_ACP_MODE_TEST_CHILD";
+    const CHILD_ENV: &str = "WARMACHINE_CODEX_ACP_MODE_TEST_CHILD";
     #[cfg(unix)]
-    const EXPECT_CONFIG_ERROR_ENV: &str = "GOOSE_CODEX_ACP_EXPECT_CONFIG_ERROR";
+    const EXPECT_CONFIG_ERROR_ENV: &str = "WARMACHINE_CODEX_ACP_EXPECT_CONFIG_ERROR";
 
     #[cfg(unix)]
     #[derive(Clone, Copy)]
@@ -133,7 +133,7 @@ mod tests {
     #[test]
     fn missing_goose_mode_defaults_to_auto() {
         assert_eq!(
-            resolve_goose_mode(Err(ConfigError::NotFound("GOOSE_MODE".to_string()))).unwrap(),
+            resolve_goose_mode(Err(ConfigError::NotFound("WARMACHINE_MODE".to_string()))).unwrap(),
             GooseMode::Auto
         );
     }
@@ -187,7 +187,7 @@ mod tests {
         let executable = fixture.path().join(CODEX_ACP_PROVIDER_NAME);
         fs::write(
             &executable,
-            "#!/bin/sh\n: > \"$GOOSE_CODEX_ACP_MARKER\"\nexit 1\n",
+            "#!/bin/sh\n: > \"$WARMACHINE_CODEX_ACP_MARKER\"\nexit 1\n",
         )
         .unwrap();
         fs::set_permissions(&executable, fs::Permissions::from_mode(0o700)).unwrap();
@@ -208,13 +208,13 @@ mod tests {
             (
                 "configured_file",
                 None,
-                ConfigFixture::File("GOOSE_MODE: approve\n"),
+                ConfigFixture::File("WARMACHINE_MODE: approve\n"),
                 true,
             ),
             (
                 "malformed_file",
                 None,
-                ConfigFixture::File("GOOSE_MODE: ["),
+                ConfigFixture::File("WARMACHINE_MODE: ["),
                 false,
             ),
             ("unreadable_file", None, ConfigFixture::Directory, false),
@@ -254,15 +254,15 @@ mod tests {
                 .arg("providers::codex_acp::tests::goose_mode_validation_precedes_codex_acp_launch")
                 .arg("--nocapture")
                 .env(CHILD_ENV, "1")
-                .env("GOOSE_SEARCH_PATHS", &search_paths)
-                .env("GOOSE_CODEX_ACP_MARKER", &marker)
-                .env("GOOSE_PATH_ROOT", &path_root)
+                .env("WARMACHINE_SEARCH_PATHS", &search_paths)
+                .env("WARMACHINE_CODEX_ACP_MARKER", &marker)
+                .env("WARMACHINE_PATH_ROOT", &path_root)
                 .env(
                     crate::config::base::TEST_SYSTEM_CONFIG_PATH_ENV,
                     path_root.join("system-config.yaml"),
                 )
-                .env_remove("GOOSE_ADDITIONAL_CONFIG_FILES")
-                .env("GOOSE_DISABLE_KEYRING", "1");
+                .env_remove("WARMACHINE_ADDITIONAL_CONFIG_FILES")
+                .env("WARMACHINE_DISABLE_KEYRING", "1");
             if should_launch {
                 command.env_remove(EXPECT_CONFIG_ERROR_ENV);
             } else {
@@ -270,10 +270,10 @@ mod tests {
             }
             match mode {
                 Some(mode) => {
-                    command.env("GOOSE_MODE", mode);
+                    command.env("WARMACHINE_MODE", mode);
                 }
                 None => {
-                    command.env_remove("GOOSE_MODE");
+                    command.env_remove("WARMACHINE_MODE");
                 }
             }
             let output = command.output().unwrap();
@@ -287,7 +287,7 @@ mod tests {
             assert_eq!(
                 marker.exists(),
                 should_launch,
-                "unexpected codex-acp launch result for {name} GOOSE_MODE"
+                "unexpected codex-acp launch result for {name} WARMACHINE_MODE"
             );
         }
     }

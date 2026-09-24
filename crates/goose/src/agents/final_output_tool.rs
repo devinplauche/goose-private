@@ -15,7 +15,7 @@ pub const FINAL_OUTPUT_CONTINUATION_MESSAGE: &str =
 pub(crate) fn structured_output_unsupported_message(provider_name: &str) -> String {
     format!(
         "This recipe declares a structured `response`, but provider `{provider_name}` can't \
-         support it because it never receives goose's built-in `final_output` tool, so the \
+         support it because it never receives warmachine's built-in `final_output` tool, so the \
          model can never satisfy this recipe. Remove the entire `response` block from the recipe \
          or run it with a different provider."
     )

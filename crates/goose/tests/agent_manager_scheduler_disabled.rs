@@ -1,11 +1,11 @@
-use goose::execution::manager::AgentManager;
+use warmachine::execution::manager::AgentManager;
 
 #[tokio::test]
 async fn global_agent_manager_does_not_construct_scheduler() {
     let root = tempfile::tempdir().unwrap();
     let _guard = env_lock::lock_env([
-        ("GOOSE_DISABLE_KEYRING", Some("true")),
-        ("GOOSE_PATH_ROOT", root.path().to_str()),
+        ("WARMACHINE_DISABLE_KEYRING", Some("true")),
+        ("WARMACHINE_PATH_ROOT", root.path().to_str()),
     ]);
     let data_dir = root.path().join("data");
     std::fs::create_dir_all(&data_dir).unwrap();

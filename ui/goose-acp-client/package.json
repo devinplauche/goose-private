@@ -1,14 +1,14 @@
 {
   "name": "@aaif/goose-acp-client",
   "version": "1.52.0",
-  "description": "TypeScript client library for Goose over Agent Client Protocol (ACP)",
+  "description": "TypeScript client library for WarMachine over Agent Client Protocol (ACP)",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aaif-goose/goose.git"
   },
   "keywords": [
-    "goose",
+    "warmachine",
     "ai",
     "agent",
     "acp",

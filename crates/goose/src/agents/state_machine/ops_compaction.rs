@@ -23,7 +23,7 @@ use crate::providers::base::Provider;
 use crate::session::Session;
 use goose_providers::model::ModelConfig;
 
-const COMPACTION_THINKING_TEXT: &str = "goose is compacting the conversation...";
+const COMPACTION_THINKING_TEXT: &str = "warmachine is compacting the conversation...";
 
 pub(super) const MAX_CONTEXT_ERROR_COMPACTIONS: usize = 2;
 

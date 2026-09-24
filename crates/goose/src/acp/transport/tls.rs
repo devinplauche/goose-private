@@ -60,7 +60,7 @@ pub async fn from_pem_files(cert_path: &Path, key_path: &Path) -> Result<TlsSetu
 
     let der = pem::parse(&cert_pem)?.into_contents();
     let fingerprint = sha256_fingerprint(&der);
-    println!("GOOSED_CERT_FINGERPRINT={fingerprint}");
+    println!("WARMACHINE_CERT_FINGERPRINT={fingerprint}");
 
     #[cfg(feature = "rustls-tls")]
     let config = {
@@ -81,7 +81,7 @@ pub async fn setup_tls(cert_path: Option<&str>, key_path: Option<&str>) -> Resul
     match (cert_path, key_path) {
         (Some(cert), Some(key)) => from_pem_files(Path::new(cert), Path::new(key)).await,
         (None, None) => self_signed_config().await,
-        _ => bail!("Both GOOSE_TLS_CERT_PATH and GOOSE_TLS_KEY_PATH must be set, or neither"),
+        _ => bail!("Both WARMACHINE_TLS_CERT_PATH and WARMACHINE_TLS_KEY_PATH must be set, or neither"),
     }
 }
 
@@ -147,14 +147,14 @@ pub async fn self_signed_config() -> Result<TlsSetup> {
     let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
 
     if let Some(cached) = load_cached_tls().await {
-        println!("GOOSED_CERT_FINGERPRINT={}", cached.fingerprint);
+        println!("WARMACHINE_CERT_FINGERPRINT={}", cached.fingerprint);
         return Ok(cached);
     }
 
     let (cert, key_pair) = generate_self_signed_cert()?;
 
     let fingerprint = sha256_fingerprint(cert.der());
-    println!("GOOSED_CERT_FINGERPRINT={fingerprint}");
+    println!("WARMACHINE_CERT_FINGERPRINT={fingerprint}");
 
     let cert_pem = cert.pem();
     let key_pem = key_pair.serialize_pem();

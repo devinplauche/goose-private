@@ -2,9 +2,9 @@
 //!
 //! It shows the whole surface a consumer touches — identity, bind, share,
 //! accept a peer's key, exchange cards, dial, and exchange bytes over the
-//! authorized stream — without any dependency on goose's agent internals. The
+//! authorized stream — without any dependency on warmachine's agent internals. The
 //! "agent" here is a trivial echo server plugged in via the [`AcpStreamServer`]
-//! trait; a real consumer would call goose's ACP `serve` instead (see
+//! trait; a real consumer would call warmachine's ACP `serve` instead (see
 //! `goose-cli`'s bridge).
 //!
 //! Run it:
@@ -14,7 +14,7 @@
 //! ```
 //!
 //! It runs both ends in one process over loopback (relays disabled), so it
-//! needs no network. For a real two-machine test, use the `goose roam` CLI.
+//! needs no network. For a real two-machine test, use the `warmachine roam` CLI.
 
 use std::sync::Arc;
 

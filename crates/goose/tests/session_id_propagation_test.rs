@@ -1,8 +1,8 @@
-use goose::conversation::message::Message;
-use goose::providers::api_client::{ApiClient, AuthMethod};
-use goose::providers::base::Provider;
-use goose::providers::openai::OpenAiProvider;
-use goose::session_context::{session_id_request_builder, SESSION_ID_HEADER};
+use warmachine::conversation::message::Message;
+use warmachine::providers::api_client::{ApiClient, AuthMethod};
+use warmachine::providers::base::Provider;
+use warmachine::providers::openai::OpenAiProvider;
+use warmachine::session_context::{session_id_request_builder, SESSION_ID_HEADER};
 use goose_providers::model::ModelConfig;
 use serde_json::json;
 use std::sync::Arc;
@@ -145,7 +145,7 @@ async fn setup_mock_server() -> (MockServer, HeaderCapture, Box<dyn Provider>) {
 async fn make_request(provider: &dyn Provider, session_id: &str) {
     let message = Message::user().with_text("test message");
     let model_config = ModelConfig::new("gpt-5-nano");
-    let _ = goose::session_context::with_session_id(
+    let _ = warmachine::session_context::with_session_id(
         Some(session_id.to_string()),
         provider.complete(
             &model_config,

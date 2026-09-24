@@ -228,14 +228,14 @@ fn user_settings_path() -> Option<PathBuf> {
         return Some(
             path_root
                 .join(".config")
-                .join("goose")
+                .join("warmachine")
                 .join("settings.json"),
         );
     }
     Some(
         dirs::home_dir()?
             .join(".config")
-            .join("goose")
+            .join("warmachine")
             .join("settings.json"),
     )
 }
@@ -246,7 +246,7 @@ fn project_settings_path(project_root: &Path, local: bool) -> PathBuf {
     } else {
         "settings.json"
     };
-    project_root.join(".config").join("goose").join(file)
+    project_root.join(".config").join("warmachine").join(file)
 }
 
 fn read_settings(path: &Path) -> anyhow::Result<Option<PluginSettings>> {
@@ -287,7 +287,7 @@ mod tests {
     }
 
     fn discover_with_config(project: &Path, config: &Config) -> Vec<DiscoveredPlugin> {
-        let _guard = env_lock::lock_env([("GOOSE_PATH_ROOT", None::<&str>)]);
+        let _guard = env_lock::lock_env([("WARMACHINE_PATH_ROOT", None::<&str>)]);
         discover_enabled_plugins_with_config(Some(project), config)
     }
 
@@ -317,7 +317,7 @@ mod tests {
         write_plugin_dir(&project.join(".agents").join("plugins"), "demo");
 
         write_settings(
-            &project.join(".config").join("goose"),
+            &project.join(".config").join("warmachine"),
             r#"{"disabledPlugins":["demo"]}"#,
         );
 
@@ -341,7 +341,7 @@ mod tests {
         write_plugin_dir(&project.join(".agents").join("plugins"), "other");
 
         write_settings(
-            &project.join(".config").join("goose"),
+            &project.join(".config").join("warmachine"),
             r#"{"enabledPlugins":["demo"]}"#,
         );
 
@@ -358,11 +358,11 @@ mod tests {
         write_plugin_dir(&project.join(".agents").join("plugins"), "demo");
 
         write_settings(
-            &project.join(".config").join("goose"),
+            &project.join(".config").join("warmachine"),
             r#"{"disabledPlugins":["demo"]}"#,
         );
         write_local_settings(
-            &project.join(".config").join("goose"),
+            &project.join(".config").join("warmachine"),
             r#"{"enabledPlugins":["demo"]}"#,
         );
 
@@ -382,19 +382,19 @@ mod tests {
 
         let fake_home = tempfile::tempdir().unwrap();
         write_settings(
-            &fake_home.path().join(".config").join("goose"),
+            &fake_home.path().join(".config").join("warmachine"),
             r#"{"disabledPlugins":["demo"]}"#,
         );
 
         write_settings(
-            &project.join(".config").join("goose"),
+            &project.join(".config").join("warmachine"),
             r#"{"enabledPlugins":["demo"]}"#,
         );
 
         let cfg_dir = tempfile::tempdir().unwrap();
         let found = {
             let _guard =
-                env_lock::lock_env([("GOOSE_PATH_ROOT", Some(fake_home.path().to_str().unwrap()))]);
+                env_lock::lock_env([("WARMACHINE_PATH_ROOT", Some(fake_home.path().to_str().unwrap()))]);
             discover_enabled_plugins_with_config(Some(project), &test_config(cfg_dir.path()))
         };
 
@@ -432,7 +432,7 @@ mod tests {
             )
             .unwrap();
         let _guard = env_lock::lock_env([
-            ("GOOSE_PATH_ROOT", path_root.path().to_str()),
+            ("WARMACHINE_PATH_ROOT", path_root.path().to_str()),
             ("PLUGINS", None),
         ]);
 
@@ -535,7 +535,7 @@ mod tests {
         let config_dir = tempfile::tempdir().unwrap();
         let config = test_config(config_dir.path());
         let _guard = env_lock::lock_env([
-            ("GOOSE_PATH_ROOT", path_root.path().to_str()),
+            ("WARMACHINE_PATH_ROOT", path_root.path().to_str()),
             ("PLUGINS", None),
         ]);
 

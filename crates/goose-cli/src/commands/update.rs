@@ -66,11 +66,11 @@ fn asset_name() -> &'static str {
 fn binary_name() -> &'static str {
     #[cfg(target_os = "windows")]
     {
-        "goose.exe"
+        "warmachine.exe"
     }
     #[cfg(not(target_os = "windows"))]
     {
-        "goose"
+        "warmachine"
     }
 }
 
@@ -82,7 +82,7 @@ fn binary_name() -> &'static str {
 fn sha256_hex(data: &[u8]) -> String {
     let mut hasher = Sha256::new();
     hasher.update(data);
-    goose::utils::bytes_to_hex(hasher.finalize())
+    warmachine::utils::bytes_to_hex(hasher.finalize())
 }
 
 #[derive(serde::Deserialize)]
@@ -300,7 +300,7 @@ async fn verify_provenance(archive_data: &[u8], tag: &str) -> Result<()> {
     ))
 }
 
-/// Update the goose binary to the latest release.
+/// Update the warmachine binary to the latest release.
 ///
 /// Downloads the platform-appropriate archive from GitHub releases, verifies
 /// its SLSA provenance via Sigstore, extracts it with path-traversal
@@ -374,17 +374,17 @@ pub async fn update(canary: bool, reconfigure: bool) -> Result<()> {
         #[cfg(target_os = "windows")]
         copy_dlls(&extracted_binary, &current_exe)?;
 
-        println!("goose updated successfully (verified with Sigstore SLSA provenance).");
+        println!("warmachine updated successfully (verified with Sigstore SLSA provenance).");
 
         // --- Reconfigure if requested -------------------------------------------
         if reconfigure {
-            println!("Running goose configure...");
+            println!("Running warmachine configure...");
             let status = Command::new(current_exe)
                 .arg("configure")
                 .status()
-                .context("Failed to run goose configure")?;
+                .context("Failed to run warmachine configure")?;
             if !status.success() {
-                eprintln!("Warning: goose configure exited with {status}");
+                eprintln!("Warning: warmachine configure exited with {status}");
             }
         }
 
@@ -547,7 +547,7 @@ fn replace_binary(new_binary: &Path, current_exe: &Path) -> Result<()> {
         if old_exe.exists() {
             fs::remove_file(&old_exe).with_context(|| {
                 format!(
-                    "Failed to remove old backup {}. Is another goose process running?",
+                    "Failed to remove old backup {}. Is another warmachine process running?",
                     old_exe.display()
                 )
             })?;
@@ -556,7 +556,7 @@ fn replace_binary(new_binary: &Path, current_exe: &Path) -> Result<()> {
         // Rename the running binary out of the way
         fs::rename(current_exe, &old_exe).with_context(|| {
             format!(
-                "Failed to rename running binary to {}. Try closing Goose Desktop if it's open.",
+                "Failed to rename running binary to {}. Try closing WarMachine Desktop if it's open.",
                 old_exe.display()
             )
         })?;
@@ -665,9 +665,9 @@ mod tests {
     fn test_binary_name() {
         let name = binary_name();
         #[cfg(target_os = "windows")]
-        assert_eq!(name, "goose.exe");
+        assert_eq!(name, "warmachine.exe");
         #[cfg(not(target_os = "windows"))]
-        assert_eq!(name, "goose");
+        assert_eq!(name, "warmachine");
     }
 
     #[test]
@@ -729,7 +729,7 @@ mod tests {
     #[test]
     fn test_replace_binary_windows_rename_away() {
         let tmp = tempdir().unwrap();
-        let current = tmp.path().join("goose.exe");
+        let current = tmp.path().join("warmachine.exe");
         let new_bin = tmp.path().join("new_goose.exe");
 
         fs::write(&current, b"old version").unwrap();
@@ -752,7 +752,7 @@ mod tests {
     #[test]
     fn test_replace_binary_windows_cleanup_old() {
         let tmp = tempdir().unwrap();
-        let current = tmp.path().join("goose.exe");
+        let current = tmp.path().join("warmachine.exe");
         let old = current.with_extension("exe.old");
         let new_bin = tmp.path().join("new_goose.exe");
 
@@ -789,9 +789,9 @@ mod tests {
 
             writer.add_directory("goose-package/", options).unwrap();
             writer
-                .start_file("goose-package/goose.exe", options)
+                .start_file("goose-package/warmachine.exe", options)
                 .unwrap();
-            writer.write_all(b"fake goose binary").unwrap();
+            writer.write_all(b"fake warmachine binary").unwrap();
             writer
                 .start_file("goose-package/libtest.dll", options)
                 .unwrap();
@@ -801,11 +801,11 @@ mod tests {
 
         extract_zip(&buf, tmp.path()).unwrap();
 
-        let binary = find_binary(tmp.path(), "goose.exe");
+        let binary = find_binary(tmp.path(), "warmachine.exe");
         assert!(binary.is_some());
 
         let content = fs::read_to_string(binary.unwrap()).unwrap();
-        assert_eq!(content, "fake goose binary");
+        assert_eq!(content, "fake warmachine binary");
 
         // DLL should be in goose-package too
         assert!(tmp.path().join("goose-package/libtest.dll").exists());
@@ -931,8 +931,8 @@ mod tests {
 
     #[test]
     fn test_validate_entry_path_accepts_safe_paths() {
-        assert!(validate_entry_path(Path::new("goose")).is_ok());
-        assert!(validate_entry_path(Path::new("goose-package/goose")).is_ok());
+        assert!(validate_entry_path(Path::new("warmachine")).is_ok());
+        assert!(validate_entry_path(Path::new("goose-package/warmachine")).is_ok());
         assert!(validate_entry_path(Path::new("subdir/nested/file.txt")).is_ok());
     }
 
@@ -970,24 +970,24 @@ mod tests {
             let encoder = BzEncoder::new(&mut builder_buf, Compression::default());
             let mut builder = tar::Builder::new(encoder);
 
-            let data = b"goose binary content";
+            let data = b"warmachine binary content";
             let mut header = tar::Header::new_gnu();
             header.set_size(data.len() as u64);
             header.set_mode(0o755);
             header.set_cksum();
             builder
-                .append_data(&mut header, "goose-package/goose", &data[..])
+                .append_data(&mut header, "goose-package/warmachine", &data[..])
                 .unwrap();
             builder.into_inner().unwrap().finish().unwrap();
         }
 
         extract_tar_bz2(&builder_buf, tmp.path()).unwrap();
 
-        let extracted = tmp.path().join("goose-package/goose");
+        let extracted = tmp.path().join("goose-package/warmachine");
         assert!(extracted.exists());
         assert_eq!(
             fs::read_to_string(extracted).unwrap(),
-            "goose binary content"
+            "warmachine binary content"
         );
     }
 

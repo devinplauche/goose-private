@@ -172,7 +172,7 @@ describe('createAcpSessionNotificationAdapter', () => {
           acpUpdate({
             sessionUpdate: 'agent_message_chunk',
             content: { type: 'text', text: 'Partial response' },
-            _meta: { goose: { messageId: 'msg-1' } },
+            _meta: { warmachine: { messageId: 'msg-1' } },
           } as SessionNotification['update'])
         );
 
@@ -182,7 +182,7 @@ describe('createAcpSessionNotificationAdapter', () => {
               sessionUpdate: 'agent_message_chunk',
               content: { type: 'text', text: OUTPUT_TOKEN_LIMIT_FALLBACK_TEXT },
               _meta: {
-                goose: {
+                warmachine: {
                   messageId: 'msg-1',
                   outputTokenLimitReached: true,
                   fallbackContent: true,
@@ -221,7 +221,7 @@ describe('createAcpSessionNotificationAdapter', () => {
               sessionUpdate: 'user_message_chunk',
               content: { type: 'text', text: 'hel' },
               _meta: {
-                goose: {
+                warmachine: {
                   messageId: 'steer-1',
                   steer: true,
                 },
@@ -245,7 +245,7 @@ describe('createAcpSessionNotificationAdapter', () => {
               sessionUpdate: 'user_message_chunk',
               content: { type: 'text', text: 'lo' },
               _meta: {
-                goose: {
+                warmachine: {
                   messageId: 'steer-1',
                   steer: true,
                 },
@@ -263,7 +263,7 @@ describe('createAcpSessionNotificationAdapter', () => {
               sessionUpdate: 'user_message_chunk',
               content: { type: 'image', data: 'base64-image', mimeType: 'image/png' },
               _meta: {
-                goose: {
+                warmachine: {
                   messageId: 'steer-1',
                   steer: true,
                 },
@@ -296,7 +296,7 @@ describe('createAcpSessionNotificationAdapter', () => {
               sessionUpdate: 'user_message_chunk',
               content: { type: 'text', text: 'ha' },
               _meta: {
-                goose: {
+                warmachine: {
                   messageId: 'steer-1',
                   steer: true,
                 },
@@ -314,7 +314,7 @@ describe('createAcpSessionNotificationAdapter', () => {
               sessionUpdate: 'user_message_chunk',
               content: { type: 'text', text: 'ha' },
               _meta: {
-                goose: {
+                warmachine: {
                   messageId: 'steer-1',
                   steer: true,
                 },
@@ -362,7 +362,7 @@ describe('createAcpSessionNotificationAdapter', () => {
               sessionUpdate: 'agent_thought_chunk',
               content: { type: 'text', text: 'Truncated thinking' },
               _meta: {
-                goose: {
+                warmachine: {
                   messageId: 'thought-1',
                   outputTokenLimitReached: true,
                 },
@@ -382,7 +382,7 @@ describe('createAcpSessionNotificationAdapter', () => {
           acpUpdate({
             sessionUpdate: 'agent_thought_chunk',
             content: { type: 'text', text: 'Truncated ' },
-            _meta: { goose: { messageId: 'thought-1' } },
+            _meta: { warmachine: { messageId: 'thought-1' } },
           } as SessionNotification['update'])
         );
 
@@ -392,7 +392,7 @@ describe('createAcpSessionNotificationAdapter', () => {
               sessionUpdate: 'agent_thought_chunk',
               content: { type: 'text', text: 'thinking' },
               _meta: {
-                goose: {
+                warmachine: {
                   messageId: 'thought-1',
                   outputTokenLimitReached: true,
                 },
@@ -424,7 +424,7 @@ describe('createAcpSessionNotificationAdapter', () => {
             rawInput: { path: 'README.md' },
             locations: [{ path: 'README.md', line: 1 }],
             _meta: {
-              goose: {
+              warmachine: {
                 toolCall: {
                   extensionName: 'developer',
                   toolName: 'read_file',
@@ -469,7 +469,7 @@ describe('createAcpSessionNotificationAdapter', () => {
               },
             ],
             _meta: {
-              goose: {
+              warmachine: {
                 mcpApp: {
                   resourceUri: 'ui://app/resource',
                   extensionName: 'developer',
@@ -942,7 +942,7 @@ describe('createAcpSessionNotificationAdapter', () => {
             },
           ],
           _meta: {
-            goose: {
+            warmachine: {
               toolCall: {
                 toolName: 'edit_file',
               },
@@ -1017,7 +1017,7 @@ describe('createAcpSessionNotificationAdapter', () => {
         acpUpdate({
           sessionUpdate: 'session_info_update',
           _meta: {
-            goose: {
+            warmachine: {
               queuedSteer: { messageId: 'steer-msg-1', runId: 'run-1' },
             },
           },
@@ -1034,7 +1034,7 @@ describe('createAcpSessionNotificationAdapter', () => {
           sessionUpdate: 'session_info_update',
           title: 'New Title',
           _meta: {
-            goose: {
+            warmachine: {
               queuedSteer: { messageId: 'steer-msg-2', runId: 'run-2' },
             },
           },

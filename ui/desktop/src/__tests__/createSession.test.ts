@@ -164,11 +164,11 @@ describe('createSession ACP session extensions', () => {
   });
 
   it('scopes startup parameters to recipe deeplink session creation', async () => {
-    await createSession('/tmp', { recipeDeeplink: 'goose://recipe?url=example' });
+    await createSession('/tmp', { recipeDeeplink: 'warmachine://recipe?url=example' });
 
     expect(mockedBeginConfiguredRecipeParameterScope).toHaveBeenCalledOnce();
     expect(mockedCreateAcpSession).toHaveBeenCalledWith('/tmp', undefined, {
-      recipeDeeplink: 'goose://recipe?url=example',
+      recipeDeeplink: 'warmachine://recipe?url=example',
       recipeId: undefined,
       recipeParameterScopeId: 'scope-1',
     });
@@ -179,7 +179,7 @@ describe('createSession ACP session extensions', () => {
     mockedCreateAcpSession.mockRejectedValueOnce(new Error('session creation failed'));
 
     await expect(
-      createSession('/tmp', { recipeDeeplink: 'goose://recipe?url=example' })
+      createSession('/tmp', { recipeDeeplink: 'warmachine://recipe?url=example' })
     ).rejects.toThrow('session creation failed');
 
     expect(mockedBeginConfiguredRecipeParameterScope).toHaveBeenCalledOnce();
@@ -191,7 +191,7 @@ describe('createSession ACP session extensions', () => {
 
     await expect(
       createSession('/tmp', {
-        recipeDeeplink: 'goose://recipe?url=example',
+        recipeDeeplink: 'warmachine://recipe?url=example',
         extensionConfigs: [extensionConfig('developer')],
       })
     ).rejects.toThrow('extension lookup failed');
@@ -201,16 +201,16 @@ describe('createSession ACP session extensions', () => {
     expect(finishConfiguredRecipeParameterScope).toHaveBeenCalledOnce();
   });
 
-  it('reports incompatible Goose servers before sending scoped parameters', async () => {
+  it('reports incompatible WarMachine servers before sending scoped parameters', async () => {
     mockedGetAcpFeatureCapabilities.mockResolvedValueOnce({
       localInference: false,
       recipeParameterScopes: false,
     });
 
     await expect(
-      createSession('/tmp', { recipeDeeplink: 'goose://recipe?url=example' })
+      createSession('/tmp', { recipeDeeplink: 'warmachine://recipe?url=example' })
     ).rejects.toThrow(
-      'The connected Goose server does not support securely scoped deeplink recipe parameters. Update the server and try again.'
+      'The connected WarMachine server does not support securely scoped deeplink recipe parameters. Update the server and try again.'
     );
 
     expect(mockedCreateAcpSession).not.toHaveBeenCalled();

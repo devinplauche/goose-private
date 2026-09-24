@@ -13,10 +13,10 @@ use fixtures::{
     Session, SessionData, TerminalCall, TerminalFixture, TestConnectionConfig,
 };
 use fs_err as fs;
-use goose::acp::server::AcpProviderFactory;
-use goose::config::base::CONFIG_YAML_NAME;
-use goose::config::GooseMode;
-use goose::session::{EnabledExtensionsState, SessionManager};
+use warmachine::acp::server::AcpProviderFactory;
+use warmachine::config::base::CONFIG_YAML_NAME;
+use warmachine::config::GooseMode;
+use warmachine::session::{EnabledExtensionsState, SessionManager};
 use goose_test_support::{McpFixture, FAKE_CODE, TEST_IMAGE_B64, TEST_MODEL};
 use sqlx::sqlite::SqlitePoolOptions;
 use std::sync::Arc;
@@ -233,7 +233,7 @@ pub async fn run_config_mcp<C: Connection>() {
     let mcp = McpFixture::new().await;
 
     let config_yaml = format!(
-        "GOOSE_MODEL: {TEST_MODEL}\nGOOSE_PROVIDER: openai\nextensions:\n  mcp-fixture:\n    enabled: true\n    type: streamable_http\n    name: mcp-fixture\n    description: MCP fixture\n    uri: \"{}\"\n",
+        "WARMACHINE_MODEL: {TEST_MODEL}\nGOOSE_PROVIDER: openai\nextensions:\n  mcp-fixture:\n    enabled: true\n    type: streamable_http\n    name: mcp-fixture\n    description: MCP fixture\n    uri: \"{}\"\n",
         mcp.url
     );
     fs::write(temp_dir.path().join(CONFIG_YAML_NAME), config_yaml).unwrap();
@@ -283,7 +283,7 @@ pub async fn run_config_mcp<C: Connection>() {
 pub async fn run_fs_read_text_file_true<C: Connection>() {
     let temp_dir = tempfile::tempdir().unwrap();
     let config_yaml = format!(
-        "GOOSE_MODEL: {TEST_MODEL}\nGOOSE_PROVIDER: openai\nextensions:\n  developer:\n    enabled: true\n    type: platform\n    name: developer\n    description: Developer\n    display_name: Developer\n    bundled: true\n    available_tools: []\n"
+        "WARMACHINE_MODEL: {TEST_MODEL}\nGOOSE_PROVIDER: openai\nextensions:\n  developer:\n    enabled: true\n    type: platform\n    name: developer\n    description: Developer\n    display_name: Developer\n    bundled: true\n    available_tools: []\n"
     );
     fs::write(temp_dir.path().join(CONFIG_YAML_NAME), config_yaml).unwrap();
 
@@ -466,7 +466,7 @@ pub async fn run_load_mode<C: Connection>() {
     let mcp = McpFixture::new().await;
 
     let config_yaml = format!(
-        "GOOSE_MODEL: {TEST_MODEL}\nGOOSE_PROVIDER: openai\nextensions:\n  mcp-fixture:\n    enabled: true\n    type: streamable_http\n    name: mcp-fixture\n    description: MCP fixture\n    uri: \"{}\"\n",
+        "WARMACHINE_MODEL: {TEST_MODEL}\nGOOSE_PROVIDER: openai\nextensions:\n  mcp-fixture:\n    enabled: true\n    type: streamable_http\n    name: mcp-fixture\n    description: MCP fixture\n    uri: \"{}\"\n",
         mcp.url
     );
     fs::write(temp_dir.path().join(CONFIG_YAML_NAME), config_yaml).unwrap();
@@ -565,7 +565,7 @@ pub async fn run_load_session_mcp<C: Connection>() {
     fs::write(
         temp_dir.path().join(CONFIG_YAML_NAME),
         format!(
-            "GOOSE_MODEL: {TEST_MODEL}\nGOOSE_PROVIDER: openai\nextensions:\n  developer:\n    enabled: true\n    type: platform\n    name: developer\n    description: Developer\n    display_name: Developer\n    bundled: true\n    available_tools: []\n"
+            "WARMACHINE_MODEL: {TEST_MODEL}\nGOOSE_PROVIDER: openai\nextensions:\n  developer:\n    enabled: true\n    type: platform\n    name: developer\n    description: Developer\n    display_name: Developer\n    bundled: true\n    available_tools: []\n"
         ),
     )
     .unwrap();
@@ -685,7 +685,7 @@ pub async fn run_load_session_replays_image_attachment<C: Connection>() {
         )
         .await
         .unwrap();
-    assert!(output.text.contains("Hello Goose!"));
+    assert!(output.text.contains("Hello WarMachine!"));
     session.session_updates();
 
     let SessionData { session, .. } = conn.load_session(&session_id, vec![]).await.unwrap();
@@ -795,7 +795,7 @@ async fn run_mode_set_impl<C: Connection>(via: SetModeVia) {
     let mcp = McpFixture::new().await;
 
     let config_yaml = format!(
-        "GOOSE_MODEL: {TEST_MODEL}\nGOOSE_PROVIDER: openai\nextensions:\n  mcp-fixture:\n    enabled: true\n    type: streamable_http\n    name: mcp-fixture\n    description: MCP fixture\n    uri: \"{}\"\n",
+        "WARMACHINE_MODEL: {TEST_MODEL}\nGOOSE_PROVIDER: openai\nextensions:\n  mcp-fixture:\n    enabled: true\n    type: streamable_http\n    name: mcp-fixture\n    description: MCP fixture\n    uri: \"{}\"\n",
         mcp.url
     );
     fs::write(temp_dir.path().join(CONFIG_YAML_NAME), config_yaml).unwrap();
@@ -962,10 +962,10 @@ pub async fn run_new_session_returns_initial_config<C: Connection>() {
 
 pub async fn run_new_session_uses_current_config_mode<C: Connection>() {
     let temp_dir = tempfile::tempdir().unwrap();
-    let config_path = temp_dir.path().join(goose::config::base::CONFIG_YAML_NAME);
+    let config_path = temp_dir.path().join(warmachine::config::base::CONFIG_YAML_NAME);
     fs::write(
         &config_path,
-        format!("GOOSE_MODEL: {TEST_MODEL}\nGOOSE_PROVIDER: openai\nGOOSE_MODE: approve\n"),
+        format!("WARMACHINE_MODEL: {TEST_MODEL}\nGOOSE_PROVIDER: openai\nGOOSE_MODE: approve\n"),
     )
     .unwrap();
 
@@ -980,10 +980,10 @@ pub async fn run_new_session_uses_current_config_mode<C: Connection>() {
     let mut conn = C::new(config, openai).await;
 
     let global_config_path =
-        goose::config::paths::Paths::config_dir().join(goose::config::base::CONFIG_YAML_NAME);
+        warmachine::config::paths::Paths::config_dir().join(warmachine::config::base::CONFIG_YAML_NAME);
     fs::write(
         &global_config_path,
-        format!("GOOSE_MODEL: {TEST_MODEL}\nGOOSE_PROVIDER: openai\nGOOSE_MODE: auto\n"),
+        format!("WARMACHINE_MODEL: {TEST_MODEL}\nGOOSE_PROVIDER: openai\nGOOSE_MODE: auto\n"),
     )
     .unwrap();
 
@@ -1215,13 +1215,13 @@ pub async fn run_prompt_basic<C: Connection>() {
             let goose_message_id = chunk
                 .meta
                 .as_ref()?
-                .get("goose")?
+                .get("warmachine")?
                 .get("messageId")?
                 .as_str()?
                 .to_string();
             Some((standard_message_id, goose_message_id))
         })
-        .expect("expected live agent message chunk with standard and goose message IDs");
+        .expect("expected live agent message chunk with standard and warmachine message IDs");
     assert!(!standard_message_id.is_empty());
     assert_eq!(standard_message_id, goose_message_id);
     assert_notifications(
@@ -1315,7 +1315,7 @@ pub async fn run_prompt_image<C: Connection>() {
         )
         .await
         .unwrap();
-    assert_eq!(output.text, "Hello Goose!\nThis is a test image.");
+    assert_eq!(output.text, "Hello WarMachine!\nThis is a test image.");
     assert_notifications(
         &session.notifications(),
         &[
@@ -1352,7 +1352,7 @@ pub async fn run_prompt_image_attachment<C: Connection>() {
         )
         .await
         .unwrap();
-    assert!(output.text.contains("Hello Goose!"));
+    assert!(output.text.contains("Hello WarMachine!"));
     assert_notifications(&session.notifications(), &[Notification::AgentMessage]);
     expected_session_id.assert_matches(&session.session_id().0);
 }

@@ -887,7 +887,7 @@ mod tests {
     #[test]
     fn endpoint_metadata_marks_reasoning_alias_from_external_model() {
         let endpoint = json!({
-            "name": "goose",
+            "name": "warmachine",
             "config": {
                 "served_entities": [{
                     "name": "current",
@@ -902,13 +902,13 @@ mod tests {
 
         let info = DatabricksProvider::endpoint_info_from_value(&endpoint).unwrap();
 
-        assert_eq!(info.name, "goose");
+        assert_eq!(info.name, "warmachine");
         assert_eq!(info.upstream_model_name.as_deref(), Some("claude-opus-4.6"));
         assert_eq!(info.reasoning, Some(true));
         assert!(!info.supports_responses_api);
 
         let model_info = DatabricksProvider::model_info_from_endpoint(info);
-        assert_eq!(model_info.name, "goose");
+        assert_eq!(model_info.name, "warmachine");
         assert_eq!(
             model_info.resolved_model.as_deref(),
             Some("claude-opus-4.6")
@@ -919,7 +919,7 @@ mod tests {
     #[test]
     fn endpoint_metadata_captures_databricks_model_serving_hop() {
         let endpoint = json!({
-            "name": "goose",
+            "name": "warmachine",
             "config": {
                 "served_entities": [{
                     "external_model": {
@@ -933,7 +933,7 @@ mod tests {
 
         let info = DatabricksProvider::endpoint_info_from_value(&endpoint).unwrap();
 
-        assert_eq!(info.name, "goose");
+        assert_eq!(info.name, "warmachine");
         assert_eq!(
             info.upstream_model_name.as_deref(),
             Some("databricks-claude-opus-4-6")
@@ -948,7 +948,7 @@ mod tests {
     #[test]
     fn endpoint_metadata_marks_reasoning_alias_from_pending_gpt_model() {
         let endpoint = json!({
-            "name": "goose",
+            "name": "warmachine",
             "pending_config": {
                 "served_entities": [{
                     "external_model": {
@@ -962,7 +962,7 @@ mod tests {
 
         let info = DatabricksProvider::endpoint_info_from_value(&endpoint).unwrap();
 
-        assert_eq!(info.name, "goose");
+        assert_eq!(info.name, "warmachine");
         assert_eq!(info.upstream_model_name.as_deref(), Some("gpt-5.5"));
         assert_eq!(info.reasoning, Some(true));
     }

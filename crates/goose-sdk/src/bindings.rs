@@ -1,7 +1,7 @@
 //! In-process uniffi bindings for the GDK.
 //!
 //! This is the API surface exposed to Python and Kotlin. It focuses on native
-//! Goose providers and mirrors the provider message/tool/streaming model closely
+//! WarMachine providers and mirrors the provider message/tool/streaming model closely
 //! enough for Kotlin agent frameworks to avoid JSON-only shims for common paths.
 
 use std::{collections::HashMap, future::Future, sync::Arc, sync::OnceLock, time::Duration};
@@ -1886,14 +1886,14 @@ mod tests {
             signature: "ErUBCkYIBRgCIkAe0pAQ==".to_string(),
         };
 
-        let goose = original.to_goose_content().unwrap();
-        let GooseMessageContent::Thinking(thinking) = &goose else {
+        let warmachine = original.to_goose_content().unwrap();
+        let GooseMessageContent::Thinking(thinking) = &warmachine else {
             panic!("expected thinking content");
         };
         assert_eq!(thinking.thinking, "step one, then step two");
         assert_eq!(thinking.signature, "ErUBCkYIBRgCIkAe0pAQ==");
 
-        let round_tripped = MessageContent::from_goose_content(&goose).unwrap();
+        let round_tripped = MessageContent::from_goose_content(&warmachine).unwrap();
         let MessageContent::Thinking {
             thinking,
             signature,
@@ -1911,13 +1911,13 @@ mod tests {
             data: "EroBCkYIBRgCKkBb0pAQopaque".to_string(),
         };
 
-        let goose = original.to_goose_content().unwrap();
-        let GooseMessageContent::RedactedThinking(redacted) = &goose else {
+        let warmachine = original.to_goose_content().unwrap();
+        let GooseMessageContent::RedactedThinking(redacted) = &warmachine else {
             panic!("expected redacted thinking content");
         };
         assert_eq!(redacted.data, "EroBCkYIBRgCKkBb0pAQopaque");
 
-        let round_tripped = MessageContent::from_goose_content(&goose).unwrap();
+        let round_tripped = MessageContent::from_goose_content(&warmachine).unwrap();
         let MessageContent::RedactedThinking { data } = round_tripped else {
             panic!("expected redacted thinking content");
         };
@@ -1937,8 +1937,8 @@ mod tests {
             tool_error_json: None,
         };
 
-        let goose = original.to_goose_content().unwrap();
-        let GooseMessageContent::ToolRequest(request) = &goose else {
+        let warmachine = original.to_goose_content().unwrap();
+        let GooseMessageContent::ToolRequest(request) = &warmachine else {
             panic!("expected tool request");
         };
         assert_eq!(
@@ -1946,7 +1946,7 @@ mod tests {
             "nested_sig_xyz789"
         );
 
-        let round_tripped = MessageContent::from_goose_content(&goose).unwrap();
+        let round_tripped = MessageContent::from_goose_content(&warmachine).unwrap();
         let MessageContent::ToolRequest {
             provider_metadata_json,
             ..

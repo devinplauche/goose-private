@@ -132,7 +132,7 @@ impl PairingStore {
 
         Self::revoke_legacy_pending_codes(config, legacy_codes)?;
         Err(anyhow::anyhow!(
-            "legacy pending codes remain in ordinary configuration and have been revoked; stop older Goose processes, remove GATEWAY_PENDING_CODES and gateway_pending_codes from configured files, then retry and generate a new pairing code"
+            "legacy pending codes remain in ordinary configuration and have been revoked; stop older WarMachine processes, remove GATEWAY_PENDING_CODES and gateway_pending_codes from configured files, then retry and generate a new pairing code"
         ))
     }
 
@@ -380,7 +380,7 @@ mod tests {
 
         let error =
             PairingStore::store_pending_code_in(&config, new_code, "telegram", 101).unwrap_err();
-        assert!(error.to_string().contains("stop older Goose processes"));
+        assert!(error.to_string().contains("stop older WarMachine processes"));
 
         let ordinary_config =
             std::fs::read_to_string(directory.path().join("config.yaml")).unwrap_or_default();
@@ -659,7 +659,7 @@ mod tests {
             PairingStore::consume_pending_code_in(&config, "ROLLBACK-CODE", 100)
                 .unwrap_err()
                 .to_string()
-                .contains("stop older Goose processes")
+                .contains("stop older WarMachine processes")
         );
         config.delete(PENDING_CODES_CONFIG_KEY).unwrap();
         assert_eq!(
@@ -703,7 +703,7 @@ mod tests {
         assert!(PairingStore::migrate_pending_codes(&config)
             .unwrap_err()
             .to_string()
-            .contains("stop older Goose processes"));
+            .contains("stop older WarMachine processes"));
         let legacy_codes: Vec<StoredPendingCode> =
             config.get_param(PENDING_CODES_CONFIG_KEY).unwrap();
         assert_eq!(

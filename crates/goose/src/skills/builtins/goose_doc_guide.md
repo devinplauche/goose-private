@@ -1,19 +1,19 @@
 ---
 name: goose-doc-guide
-description: Reference goose documentation to create, configure, or explain goose-specific features like recipes, extensions, sessions, and providers. You MUST read the relevant goose docs before answering. You MUST NOT rely on training data or assumptions for any goose-specific fields, values, names, syntax, or commands.
+description: Reference warmachine documentation to create, configure, or explain goose-specific features like recipes, extensions, sessions, and providers. You MUST read the relevant warmachine docs before answering. You MUST NOT rely on training data or assumptions for any goose-specific fields, values, names, syntax, or commands.
 ---
 
 Use this skill when working with **goose-specific features**:
 - Creating or editing recipes
 - Configuring extensions or providers
-- Explaining how goose features work
-- Any goose configuration or setup task
+- Explaining how warmachine features work
+- Any warmachine configuration or setup task
 
 Do NOT use this skill for:
-- General coding tasks unrelated to goose
+- General coding tasks unrelated to warmachine
 - Running existing recipes (just run them directly)
 
-The docs root for this session is `{{GOOSE_DOCS_ROOT}}`. It may be a local
+The docs root for this session is `{{WARMACHINE_DOCS_ROOT}}`. It may be a local
 filesystem path or an HTTP(S) URL. When it is a local path read files with the
 shell/file tools; when it is not set or is an HTTP(S) URL fetch them from the
 canonical location which is https://goose-docs.ai. Everything below refers to
@@ -32,12 +32,12 @@ this docs root as `<docs-root>`.
    - Use the temp files for subsequent searches instead of re-reading
 
 2. **Create/modify content**
-   - For goose configuration files:
+   - For warmachine configuration files:
       - Consult schema/field reference documentation first
       - **Search the docs to extract the complete schema for each element you plan to use**
       - Extract example snippets to understand usage patterns
       - Create your configuration based on reference specs, following example patterns
-      - **⚠️ STOP: Before showing the user, verify output content MUST match the schema and reference in the goose official documentation:**
+      - **⚠️ STOP: Before showing the user, verify output content MUST match the schema and reference in the warmachine official documentation:**
          - [ ] Field names match exactly as shown in docs
          - [ ] Required fields/properties are present
          - [ ] Value formats match examples (YAML/JSON syntax, data types, etc.)

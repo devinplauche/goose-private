@@ -1,7 +1,7 @@
 import type { GooseServeExitSignal, GooseServeResult, Logger } from './gooseServe';
 
-export const GOOSE_SERVE_EXITED_USER_MESSAGE =
-  "This window's Goose backend stopped. Close this window and open a new chat to start a new backend. If this keeps happening, restart Goose Desktop.";
+export const WARMACHINE_SERVE_EXITED_USER_MESSAGE =
+  "This window's WarMachine backend stopped. Close this window and open a new chat to start a new backend. If this keeps happening, restart WarMachine Desktop.";
 
 export interface GooseServeLease {
   acpUrl: string;
@@ -50,7 +50,7 @@ export class GooseServeLeaseRegistry {
       }
 
       if (logUnexpected && firstExit && !lease.cleanedUp) {
-        this.logger.error('Goose ACP server exited unexpectedly', {
+        this.logger.error('WarMachine ACP server exited unexpectedly', {
           code: lease.exitCode,
           signal: lease.exitSignal,
           windowIds: [...lease.windowIds],
@@ -97,7 +97,7 @@ export class GooseServeLeaseRegistry {
       return null;
     }
     if (lease.exited) {
-      throw new Error(GOOSE_SERVE_EXITED_USER_MESSAGE);
+      throw new Error(WARMACHINE_SERVE_EXITED_USER_MESSAGE);
     }
     return lease.acpUrl;
   }
@@ -108,7 +108,7 @@ export class GooseServeLeaseRegistry {
       return null;
     }
     if (lease.exited) {
-      throw new Error(GOOSE_SERVE_EXITED_USER_MESSAGE);
+      throw new Error(WARMACHINE_SERVE_EXITED_USER_MESSAGE);
     }
     return lease.secretKey;
   }
@@ -146,7 +146,7 @@ export class GooseServeLeaseRegistry {
     try {
       await lease.cleanup();
     } catch (error) {
-      this.logger.error('Failed to cleanup goose serve backend:', error);
+      this.logger.error('Failed to cleanup warmachine serve backend:', error);
     }
   }
 

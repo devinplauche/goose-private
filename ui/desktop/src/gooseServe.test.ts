@@ -4,7 +4,7 @@ import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { buildLocalServeUrls, findGooseBinaryPath, startGooseServe } from './gooseServe';
 
-const binaryName = process.platform === 'win32' ? 'goose.exe' : 'goose';
+const binaryName = process.platform === 'win32' ? 'warmachine.exe' : 'warmachine';
 const tempDirs: string[] = [];
 const originalCwd = process.cwd();
 type ReadinessFetchInit = Parameters<typeof globalThis.fetch>[1];
@@ -52,23 +52,23 @@ describe('findGooseBinaryPath', () => {
     }
   });
 
-  it('uses GOOSE_BINARY in development builds', () => {
+  it('uses WARMACHINE_BINARY in development builds', () => {
     const tempDir = makeTempDir();
     const overridePath = makeFile(path.join(tempDir, 'override-goose'));
-    vi.stubEnv('GOOSE_BINARY', overridePath);
+    vi.stubEnv('WARMACHINE_BINARY', overridePath);
 
     expect(findGooseBinaryPath({ isPackaged: false })).toBe(overridePath);
   });
 
-  it('rejects GOOSE_BINARY in packaged builds', () => {
+  it('rejects WARMACHINE_BINARY in packaged builds', () => {
     const tempDir = makeTempDir();
     const resourcesPath = path.join(tempDir, 'resources');
     const overridePath = makeFile(path.join(tempDir, 'override-goose'));
     makeFile(path.join(resourcesPath, 'bin', binaryName));
-    vi.stubEnv('GOOSE_BINARY', overridePath);
+    vi.stubEnv('WARMACHINE_BINARY', overridePath);
 
     expect(() => findGooseBinaryPath({ isPackaged: true, resourcesPath })).toThrow(
-      'GOOSE_BINARY is only supported in development builds'
+      'WARMACHINE_BINARY is only supported in development builds'
     );
   });
 
@@ -86,7 +86,7 @@ describe('findGooseBinaryPath', () => {
     expect(fs.realpathSync(resolvedPath)).not.toBe(fs.realpathSync(debugPath));
   });
 
-  it('uses the bundled goose binary in packaged builds', () => {
+  it('uses the bundled warmachine binary in packaged builds', () => {
     const tempDir = makeTempDir();
     const resourcesPath = path.join(tempDir, 'resources');
     const bundledPath = makeFile(path.join(resourcesPath, 'bin', binaryName));
@@ -133,10 +133,10 @@ describe('startGooseServe', () => {
   it.skipIf(process.platform === 'win32')('uses the injected readiness fetch', async () => {
     const tempDir = makeTempDir();
     const goosePath = makeExecutable(
-      path.join(tempDir, 'goose'),
+      path.join(tempDir, 'warmachine'),
       '#!/usr/bin/env sh\nwhile true; do sleep 1; done\n'
     );
-    vi.stubEnv('GOOSE_BINARY', goosePath);
+    vi.stubEnv('WARMACHINE_BINARY', goosePath);
 
     const readinessUrls: string[] = [];
     const readinessFetch = vi.fn(async (input: string, _init?: ReadinessFetchInit) => {
@@ -161,15 +161,15 @@ describe('startGooseServe', () => {
   it.skipIf(process.platform === 'win32')('captures the TLS fingerprint from stdout', async () => {
     const tempDir = makeTempDir();
     const goosePath = makeExecutable(
-      path.join(tempDir, 'goose'),
+      path.join(tempDir, 'warmachine'),
       [
         '#!/usr/bin/env sh',
-        'printf "GOOSED_CERT_FINGERPRINT=AA:BB:CC\\n"',
+        'printf "WARMACHINE_CERT_FINGERPRINT=AA:BB:CC\\n"',
         'while true; do sleep 1; done',
         '',
       ].join('\n')
     );
-    vi.stubEnv('GOOSE_BINARY', goosePath);
+    vi.stubEnv('WARMACHINE_BINARY', goosePath);
 
     let fingerprintLogged!: () => void;
     const fingerprintSeen = new Promise<void>((resolve) => {
@@ -206,16 +206,16 @@ describe('startGooseServe', () => {
     const tempDir = makeTempDir();
     const argsPath = path.join(tempDir, 'args.txt');
     const goosePath = makeExecutable(
-      path.join(tempDir, 'goose'),
+      path.join(tempDir, 'warmachine'),
       [
         '#!/usr/bin/env sh',
         'printf "%s\\n" "$@" > "$TEST_ARGS_PATH"',
-        'printf "GOOSED_CERT_FINGERPRINT=DD:EE:FF\\n"',
+        'printf "WARMACHINE_CERT_FINGERPRINT=DD:EE:FF\\n"',
         'while true; do sleep 1; done',
         '',
       ].join('\n')
     );
-    vi.stubEnv('GOOSE_BINARY', goosePath);
+    vi.stubEnv('WARMACHINE_BINARY', goosePath);
 
     const readinessUrls: string[] = [];
     const logger = {
@@ -253,16 +253,16 @@ describe('startGooseServe', () => {
   it.skipIf(process.platform === 'win32')('waits for TLS fingerprint after readiness succeeds', async () => {
     const tempDir = makeTempDir();
     const goosePath = makeExecutable(
-      path.join(tempDir, 'goose'),
+      path.join(tempDir, 'warmachine'),
       [
         '#!/usr/bin/env sh',
         'sleep 0.1',
-        'printf "GOOSED_CERT_FINGERPRINT=11:22:33\\n"',
+        'printf "WARMACHINE_CERT_FINGERPRINT=11:22:33\\n"',
         'while true; do sleep 1; done',
         '',
       ].join('\n')
     );
-    vi.stubEnv('GOOSE_BINARY', goosePath);
+    vi.stubEnv('WARMACHINE_BINARY', goosePath);
 
     const readinessFetch = vi.fn(async () => new Response(null, { status: 200 }));
 

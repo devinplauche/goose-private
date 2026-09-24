@@ -3,7 +3,7 @@
 # requires-python = ">=3.12"
 # dependencies = ["harbor==0.8.0", "PyYAML>=6.0"]
 # ///
-"""Harbor benchmark runner and reporter for Goose.
+"""Harbor benchmark runner and reporter for WarMachine.
 
 Subcommands:
     run        run a benchmark job
@@ -38,7 +38,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     p_run = sub.add_parser("run", help="run a benchmark job")
-    p_run.add_argument("goose_binary", type=Path, help="path to the goose binary to test")
+    p_run.add_argument("goose_binary", type=Path, help="path to the warmachine binary to test")
     p_run.add_argument("--dataset", default=DEFAULT_DATASET)
     p_run.add_argument("--model", default=DEFAULT_MODEL)
     p_run.add_argument(
@@ -93,7 +93,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_pull = sub.add_parser("pull", help="rsync runs from a remote machine")
     p_pull.add_argument(
         "remote",
-        help="user@host:/path/to/goose (we append evals/harbor/runs/)",
+        help="user@host:/path/to/warmachine (we append evals/harbor/runs/)",
     )
     p_pull.add_argument(
         "--jobs",

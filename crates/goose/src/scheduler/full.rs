@@ -918,7 +918,7 @@ async fn execute_job(
     let recipe_version = recipe.version.clone();
 
     tracing::info!(
-        monotonic_counter.goose.session_starts = 1,
+        monotonic_counter.warmachine.session_starts = 1,
         session_type = "schedule",
         interface = "scheduler",
         interactive = false,
@@ -926,7 +926,7 @@ async fn execute_job(
     );
 
     tracing::info!(
-        monotonic_counter.goose.recipe_runs = 1,
+        monotonic_counter.warmachine.recipe_runs = 1,
         recipe_name = %recipe_display_name,
         recipe_version = %recipe_version,
         session_type = "schedule",
@@ -1023,7 +1023,7 @@ async fn execute_job(
             .unwrap_or((0, 0));
 
         tracing::info!(
-            monotonic_counter.goose.session_completions = 1,
+            monotonic_counter.warmachine.session_completions = 1,
             session_type = "schedule",
             interface = "scheduler",
             exit_type,
@@ -1034,7 +1034,7 @@ async fn execute_job(
         );
 
         tracing::info!(
-            monotonic_counter.goose.session_duration_ms = session_duration.as_millis() as u64,
+            monotonic_counter.warmachine.session_duration_ms = session_duration.as_millis() as u64,
             session_type = "schedule",
             interface = "scheduler",
             "Session duration"
@@ -1042,7 +1042,7 @@ async fn execute_job(
 
         if total_tokens > 0 {
             tracing::info!(
-                monotonic_counter.goose.session_tokens = total_tokens,
+                monotonic_counter.warmachine.session_tokens = total_tokens,
                 session_type = "schedule",
                 interface = "scheduler",
                 "Session tokens"
@@ -1204,7 +1204,7 @@ mod tests {
     async fn validated_recipe_bytes_and_base_are_persisted_after_source_replacement() {
         let temp_dir = tempdir().unwrap();
         let _guard =
-            env_lock::lock_env([("GOOSE_PATH_ROOT", Some(temp_dir.path().to_str().unwrap()))]);
+            env_lock::lock_env([("WARMACHINE_PATH_ROOT", Some(temp_dir.path().to_str().unwrap()))]);
         let trusted_dir = temp_dir.path().join("trusted");
         let replacement_dir = temp_dir.path().join("replacement");
         fs::create_dir_all(&trusted_dir).unwrap();
@@ -1354,9 +1354,9 @@ mod tests {
     #[tokio::test]
     async fn test_job_runs_on_schedule() {
         let _guard = env_lock::lock_env([
-            ("GOOSE_PROVIDER", Some("openai")),
-            ("GOOSE_MODEL", Some("gpt-4o")),
-            ("GOOSE_MODE", Some("chat")),
+            ("WARMACHINE_PROVIDER", Some("openai")),
+            ("WARMACHINE_MODEL", Some("gpt-4o")),
+            ("WARMACHINE_MODE", Some("chat")),
             ("OPENAI_API_KEY", Some("fake-openai-no-keyring")),
             ("OPENAI_CUSTOM_HEADERS", Some("")),
         ]);
@@ -1397,8 +1397,8 @@ mod tests {
     #[tokio::test]
     async fn test_paused_job_does_not_run() {
         let _guard = env_lock::lock_env([
-            ("GOOSE_PROVIDER", Some("openai")),
-            ("GOOSE_MODEL", Some("gpt-4o")),
+            ("WARMACHINE_PROVIDER", Some("openai")),
+            ("WARMACHINE_MODEL", Some("gpt-4o")),
             ("OPENAI_API_KEY", Some("fake-openai-no-keyring")),
             ("OPENAI_CUSTOM_HEADERS", Some("")),
         ]);

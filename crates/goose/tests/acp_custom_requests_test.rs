@@ -11,8 +11,8 @@ use common_tests::fixtures::{
     run_test, send_custom, Connection, PermissionDecision, Session, SessionData,
     TestConnectionConfig,
 };
-use goose::acp::server::AcpProviderFactory;
-use goose::providers::base::{MessageStream, Provider};
+use warmachine::acp::server::AcpProviderFactory;
+use warmachine::providers::base::{MessageStream, Provider};
 use goose_providers::errors::ProviderError;
 use goose_providers::model::ModelConfig;
 use goose_test_support::{EnforceSessionId, IgnoreSessionId, McpFixture, FAKE_CODE};
@@ -24,22 +24,22 @@ use std::time::Duration;
 use common_tests::fixtures::OpenAiFixture;
 
 const DEFAULT_ACP_TEST_CONFIG: &str =
-    "GOOSE_MODEL: gpt-4o\nGOOSE_PROVIDER: openai\nGOOSE_DISABLE_KEYRING: true\n";
+    "WARMACHINE_MODEL: gpt-4o\nGOOSE_PROVIDER: openai\nGOOSE_DISABLE_KEYRING: true\n";
 
 static ACP_CONFIG_ROOT: LazyLock<tempfile::TempDir> =
     LazyLock::new(|| tempfile::tempdir().unwrap());
 
 fn write_acp_global_config(contents: &str) -> PathBuf {
-    std::env::set_var("GOOSE_PATH_ROOT", ACP_CONFIG_ROOT.path());
-    std::env::set_var("GOOSE_DISABLE_KEYRING", "1");
-    let config_dir = goose::config::paths::Paths::config_dir();
+    std::env::set_var("WARMACHINE_PATH_ROOT", ACP_CONFIG_ROOT.path());
+    std::env::set_var("WARMACHINE_DISABLE_KEYRING", "1");
+    let config_dir = warmachine::config::paths::Paths::config_dir();
     std::fs::create_dir_all(&config_dir).unwrap();
     let mut contents = contents.to_string();
-    if !contents.contains("GOOSE_DISABLE_KEYRING") {
-        contents.push_str("GOOSE_DISABLE_KEYRING: true\n");
+    if !contents.contains("WARMACHINE_DISABLE_KEYRING") {
+        contents.push_str("WARMACHINE_DISABLE_KEYRING: true\n");
     }
     std::fs::write(
-        config_dir.join(goose::config::base::CONFIG_YAML_NAME),
+        config_dir.join(warmachine::config::base::CONFIG_YAML_NAME),
         contents,
     )
     .unwrap();
@@ -62,7 +62,7 @@ impl Provider for MockProvider {
         &self,
         _model_config: &ModelConfig,
         _system: &str,
-        _messages: &[goose::conversation::message::Message],
+        _messages: &[warmachine::conversation::message::Message],
         _tools: &[rmcp::model::Tool],
     ) -> Result<MessageStream, ProviderError> {
         unimplemented!()
@@ -86,7 +86,7 @@ fn active_run_id_from_update(update: &SessionUpdate) -> Option<String> {
     };
     info.meta
         .as_ref()?
-        .get("goose")?
+        .get("warmachine")?
         .get("activeRunId")?
         .as_str()
         .map(ToString::to_string)
@@ -101,7 +101,7 @@ fn queued_steer_message_ids(updates: &[SessionUpdate]) -> Vec<String> {
             };
             info.meta
                 .as_ref()?
-                .get("goose")?
+                .get("warmachine")?
                 .get("queuedSteer")?
                 .get("messageId")?
                 .as_str()
@@ -117,9 +117,9 @@ fn steer_chunk_message_ids(updates: &[SessionUpdate]) -> Vec<String> {
             let SessionUpdate::UserMessageChunk(chunk) = update else {
                 return None;
             };
-            let goose = chunk.meta.as_ref()?.get("goose")?;
-            goose.get("steer")?.as_bool().filter(|b| *b)?;
-            goose.get("messageId")?.as_str().map(ToString::to_string)
+            let warmachine = chunk.meta.as_ref()?.get("warmachine")?;
+            warmachine.get("steer")?.as_bool().filter(|b| *b)?;
+            warmachine.get("messageId")?.as_str().map(ToString::to_string)
         })
         .collect()
 }
@@ -140,7 +140,7 @@ fn steer_chunk_texts(updates: &[SessionUpdate]) -> Vec<String> {
             let is_steer = chunk
                 .meta
                 .as_ref()
-                .and_then(|m| m.get("goose"))
+                .and_then(|m| m.get("warmachine"))
                 .and_then(|g| g.get("steer"))
                 .and_then(|s| s.as_bool())
                 .unwrap_or(false);
@@ -192,7 +192,7 @@ fn test_custom_get_tools() {
 #[cfg(feature = "live-voice")]
 fn test_live_voice_availability_is_bound_to_an_accessible_main_session() {
     let _guard = env_lock::lock_env([
-        ("GOOSE_LIVE_VOICE_ENABLED", None::<&str>),
+        ("WARMACHINE_LIVE_VOICE_ENABLED", None::<&str>),
         ("OPENAI_API_KEY", None::<&str>),
     ]);
     write_acp_global_config(DEFAULT_ACP_TEST_CONFIG);
@@ -206,7 +206,7 @@ fn test_live_voice_availability_is_bound_to_an_accessible_main_session() {
             "_goose/unstable/session/live-voice/availability",
             serde_json::json!({
                 "sessionId": session.session_id().0,
-                "_meta": { "goose": { "unrolledAgentLoop": true } }
+                "_meta": { "warmachine": { "unrolledAgentLoop": true } }
             }),
         )
         .await
@@ -218,7 +218,7 @@ fn test_live_voice_availability_is_bound_to_an_accessible_main_session() {
             conn.cx(),
             "_goose/unstable/config/upsert",
             serde_json::json!({
-                "key": "GOOSE_LIVE_VOICE_ENABLED",
+                "key": "WARMACHINE_LIVE_VOICE_ENABLED",
                 "value": true,
                 "isSecret": false
             }),
@@ -242,7 +242,7 @@ fn test_live_voice_availability_is_bound_to_an_accessible_main_session() {
             "_goose/unstable/session/live-voice/availability",
             serde_json::json!({
                 "sessionId": session.session_id().0,
-                "_meta": { "goose": { "unrolledAgentLoop": false } }
+                "_meta": { "warmachine": { "unrolledAgentLoop": false } }
             }),
         )
         .await
@@ -258,7 +258,7 @@ fn test_live_voice_availability_is_bound_to_an_accessible_main_session() {
             "_goose/unstable/session/live-voice/availability",
             serde_json::json!({
                 "sessionId": session.session_id().0,
-                "_meta": { "goose": { "unrolledAgentLoop": true } }
+                "_meta": { "warmachine": { "unrolledAgentLoop": true } }
             }),
         )
         .await
@@ -271,7 +271,7 @@ fn test_live_voice_availability_is_bound_to_an_accessible_main_session() {
             "_goose/unstable/session/live-voice/availability",
             serde_json::json!({
                 "sessionId": "not-loaded-on-this-connection",
-                "_meta": { "goose": { "unrolledAgentLoop": true } }
+                "_meta": { "warmachine": { "unrolledAgentLoop": true } }
             }),
         )
         .await;
@@ -314,7 +314,7 @@ fn test_custom_get_extensions() {
         )
         .await;
         assert!(add_result.is_ok(), "expected ok, got: {:?}", add_result);
-        let stored_inline_token = goose::config::Config::global()
+        let stored_inline_token = warmachine::config::Config::global()
             .get_secret::<String>("INLINE_TOKEN")
             .expect("inline env should be saved as a secret");
         assert!(
@@ -699,7 +699,7 @@ fn test_steer_session_adds_input_to_active_prompt() {
             steer_chunks
                 .iter()
                 .any(|t| t.contains("steer while active")),
-            "expected a chunk marked _meta.goose.steer with the steer text, got: {steer_chunks:?}"
+            "expected a chunk marked _meta.warmachine.steer with the steer text, got: {steer_chunks:?}"
         );
 
         // The queued steer must be announced (so a UI can show it as pending)
@@ -792,7 +792,7 @@ fn test_custom_provider_inventory_includes_metadata() {
 #[serial]
 fn test_custom_preferences_read_save() {
     let config_dir = write_acp_global_config(
-        "GOOSE_MODEL: gpt-4o\nGOOSE_PROVIDER: openai\nGOOSE_AUTO_COMPACT_THRESHOLD: 0.7\nGOOSE_THINKING_EFFORT: high\nVOICE_AUTO_SUBMIT_PHRASES: send it\n",
+        "WARMACHINE_MODEL: gpt-4o\nGOOSE_PROVIDER: openai\nGOOSE_AUTO_COMPACT_THRESHOLD: 0.7\nGOOSE_THINKING_EFFORT: high\nVOICE_AUTO_SUBMIT_PHRASES: send it\n",
     );
 
     run_test(async move {
@@ -933,7 +933,7 @@ fn test_custom_preferences_save_rejects_invalid_values() {
 #[serial]
 fn test_custom_defaults_read() {
     let config_dir = write_acp_global_config(
-        "GOOSE_MODEL: claude-3-5-haiku-latest\nGOOSE_PROVIDER: anthropic\n",
+        "WARMACHINE_MODEL: claude-3-5-haiku-latest\nGOOSE_PROVIDER: anthropic\n",
     );
 
     run_test(async move {
@@ -970,7 +970,7 @@ fn test_custom_defaults_read() {
 fn test_custom_defaults_save_allows_unlisted_model() {
     let _env = env_lock::lock_env([("ANTHROPIC_API_KEY", Some("test-key"))]);
     let config_dir = write_acp_global_config(
-        "GOOSE_MODEL: claude-3-5-haiku-latest\nGOOSE_PROVIDER: anthropic\n",
+        "WARMACHINE_MODEL: claude-3-5-haiku-latest\nGOOSE_PROVIDER: anthropic\n",
     );
 
     run_test(async move {
@@ -1048,9 +1048,9 @@ fn test_provider_switching_updates_session_state() {
             .await
             .expect("provider switch to openai should succeed");
 
-        conn.set_config_option(&session_id, "provider", "goose")
+        conn.set_config_option(&session_id, "provider", "warmachine")
             .await
-            .expect("provider reset to goose should succeed");
+            .expect("provider reset to warmachine should succeed");
     });
 }
 
@@ -1089,7 +1089,7 @@ fn test_developer_fs_requests_use_acp_session_id() {
         )
         .await;
         let config_dir = write_acp_global_config(&format!(
-            "GOOSE_MODEL: gpt-4.1\nGOOSE_PROVIDER: openai\nOPENAI_HOST: {}\n",
+            "WARMACHINE_MODEL: gpt-4.1\nGOOSE_PROVIDER: openai\nOPENAI_HOST: {}\n",
             openai.uri()
         ));
         let config = TestConnectionConfig {

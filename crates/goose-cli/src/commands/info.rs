@@ -1,9 +1,9 @@
 use anyhow::{anyhow, Result};
 use console::style;
-use goose::config::paths::Paths;
-use goose::config::Config;
-use goose::conversation::message::Message;
-use goose::session::session_manager::{DB_NAME, SESSIONS_FOLDER};
+use warmachine::config::paths::Paths;
+use warmachine::config::Config;
+use warmachine::conversation::message::Message;
+use warmachine::session::session_manager::{DB_NAME, SESSIONS_FOLDER};
 use goose_providers::errors::ProviderError;
 use serde_yaml;
 use std::time::Duration;
@@ -12,7 +12,7 @@ fn print_aligned(label: &str, value: &str, width: usize) {
     println!("  {:<width$} {}", label, value, width = width);
 }
 
-use goose::config::base::CONFIG_YAML_NAME;
+use warmachine::config::base::CONFIG_YAML_NAME;
 use std::fs;
 use std::path::Path;
 
@@ -73,10 +73,10 @@ async fn check_provider(
         }
     };
 
-    let model_config = goose::model_config::model_config_from_user_config(&provider, &model)
+    let model_config = warmachine::model_config::model_config_from_user_config(&provider, &model)
         .map_err(|e| ProviderCheckError::InvalidModel(e.to_string()))?;
 
-    let provider_client = goose::providers::create(&provider, Vec::new())
+    let provider_client = warmachine::providers::create(&provider, Vec::new())
         .await
         .map_err(|e| {
             let error = e.to_string();
@@ -88,7 +88,7 @@ async fn check_provider(
 
     let test_msg = Message::user().with_text("Say 'ok'");
     let start = std::time::Instant::now();
-    goose::session_context::with_session_id(
+    warmachine::session_context::with_session_id(
         Some("check".to_string()),
         provider_client.complete(&model_config, "", &[test_msg], &[]),
     )
@@ -125,7 +125,7 @@ pub async fn handle_info(verbose: bool, check: bool) -> Result<()> {
         .unwrap_or(0)
         + 4;
 
-    println!("{}", style("goose Version:").cyan().bold());
+    println!("{}", style("warmachine Version:").cyan().bold());
     print_aligned("Version:", env!("CARGO_PKG_VERSION"), label_padding);
     println!();
 
@@ -140,13 +140,13 @@ pub async fn handle_info(verbose: bool, check: bool) -> Result<()> {
     }
 
     if verbose {
-        println!("\n{}", style("goose Configuration:").cyan().bold());
+        println!("\n{}", style("warmachine Configuration:").cyan().bold());
         let values = config.all_values()?;
         if values.is_empty() {
             println!("  No configuration values set");
             println!(
-                "  Run '{}' to configure goose",
-                style("goose configure").cyan()
+                "  Run '{}' to configure warmachine",
+                style("warmachine configure").cyan()
             );
         } else {
             let sorted_values: std::collections::BTreeMap<_, _> =
@@ -187,7 +187,7 @@ pub async fn handle_info(verbose: bool, check: bool) -> Result<()> {
                 );
                 print_aligned(
                     "Hint:",
-                    &format!("Run '{}'", style("goose configure").cyan()),
+                    &format!("Run '{}'", style("warmachine configure").cyan()),
                     label_padding,
                 );
             }
@@ -216,7 +216,7 @@ pub async fn handle_info(verbose: bool, check: bool) -> Result<()> {
                         "Hint:",
                         &format!(
                             "Set the API key in your environment or run '{}'",
-                            style("goose configure").cyan()
+                            style("warmachine configure").cyan()
                         ),
                         label_padding,
                     );
@@ -230,7 +230,7 @@ pub async fn handle_info(verbose: bool, check: bool) -> Result<()> {
                         "Hint:",
                         &format!(
                             "Check the provider name and config, or run '{}'",
-                            style("goose configure").cyan()
+                            style("warmachine configure").cyan()
                         ),
                         label_padding,
                     );
@@ -247,7 +247,7 @@ pub async fn handle_info(verbose: bool, check: bool) -> Result<()> {
                         "Hint:",
                         &format!(
                             "Check your API key or run '{}'",
-                            style("goose configure").cyan()
+                            style("warmachine configure").cyan()
                         ),
                         label_padding,
                     );
@@ -263,7 +263,7 @@ pub async fn handle_info(verbose: bool, check: bool) -> Result<()> {
         }
 
         // Propagate non-zero exit status so automation (CI scripts, install
-        // checks, health probes) can rely on `goose info --check` as a
+        // checks, health probes) can rely on `warmachine info --check` as a
         // pre-flight verifier.
         if result.is_err() {
             return Err(anyhow!("provider check failed"));

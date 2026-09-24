@@ -19,28 +19,28 @@ use tokio_util::sync::CancellationToken;
 const LIVE_VOICE_INPUT_MESSAGE_LIMIT: usize = 128;
 const LIVE_VOICE_INPUT_TOKEN_LIMIT: usize = 8_192;
 #[cfg(feature = "live-voice")]
-const LIVE_VOICE_ENABLED_CONFIG_KEY: &str = "GOOSE_LIVE_VOICE_ENABLED";
+const LIVE_VOICE_ENABLED_CONFIG_KEY: &str = "WARMACHINE_LIVE_VOICE_ENABLED";
 #[cfg(feature = "live-voice")]
-const LIVE_VOICE_CONFIG_KEY: &str = "GOOSE_LIVE_VOICE";
+const LIVE_VOICE_CONFIG_KEY: &str = "WARMACHINE_LIVE_VOICE";
 #[cfg(feature = "live-voice")]
 const DEFAULT_OPENAI_LIVE_VOICE: &str = "marin";
 #[cfg(feature = "live-voice")]
 const LIVE_SESSION_INSTRUCTIONS: &str = concat!(
-    "You are Goose's live voice interface. Keep the conversation natural and concise.\n",
+    "You are WarMachine's live voice interface. Keep the conversation natural and concise.\n",
     "Interruption policy: Stop speaking when the user interrupts and listen to what they say.\n",
     "Delegation policy:\n",
     "Backend tools:\n",
-    "- Goose can use backend reasoning and tools for longer tasks.\n",
-    "Delegate to Goose when:\n",
+    "- WarMachine can use backend reasoning and tools for longer tasks.\n",
+    "Delegate to WarMachine when:\n",
     "- The user has finished stating a complete request that needs backend tools or reasoning.\n",
     "- The user corrects or changes backend work already in progress.\n",
-    "Do not delegate to Goose when:\n",
+    "Do not delegate to WarMachine when:\n",
     "- The request is unfinished or is missing a required detail such as a location, object, ",
     "command, or desired outcome. Ask one brief clarification and wait for the answer.\n",
     "- The user is greeting you or making conversation that you can answer directly.\n",
     "After delegating, briefly say the work is underway. Keep listening and accept corrections ",
-    "while Goose works. Do not guess the result. Present delegated results directly. Only say ",
-    "the task stopped or finished after Goose confirms it."
+    "while WarMachine works. Do not guess the result. Present delegated results directly. Only say ",
+    "the task stopped or finished after WarMachine confirms it."
 );
 #[cfg(feature = "live-voice")]
 const DELEGATION_DELIVERY_FAILURE_INSTRUCTIONS: &str = concat!(

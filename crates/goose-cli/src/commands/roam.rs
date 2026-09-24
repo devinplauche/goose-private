@@ -1,4 +1,4 @@
-//! `goose roam` — peer-to-peer agent access over iroh.
+//! `warmachine roam` — peer-to-peer agent access over iroh.
 //!
 //! The model is deliberately infrastructural: roaming is just an authenticated
 //! p2p ACP transport. Each node has one identity and produces a **connection
@@ -6,7 +6,7 @@
 //! reach it. You swap cards with another node and each side chooses to **accept**
 //! the other's key. A connection only succeeds when the host has accepted the
 //! dialer's key; there is no bearer token that grants access by possession. An
-//! accepted peer gets goose's full ACP surface.
+//! accepted peer gets warmachine's full ACP surface.
 //!
 //! Subcommands:
 //! * `id` — print this node's connection card (share it with a peer).
@@ -19,11 +19,11 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use clap::Subcommand;
-use goose::acp::server::AcpBuiltinSelection;
-use goose::acp::server_factory::{AcpServer, AcpServerFactoryConfig};
-use goose::agents::GoosePlatform;
-use goose::config::paths::Paths;
-use goose::config::{Config, ConfigError};
+use warmachine::acp::server::AcpBuiltinSelection;
+use warmachine::acp::server_factory::{AcpServer, AcpServerFactoryConfig};
+use warmachine::agents::GoosePlatform;
+use warmachine::config::paths::Paths;
+use warmachine::config::{Config, ConfigError};
 use goose_roaming::{
     default_key_path, parse_endpoint_id, ConnectionCard, Directory, EndpointId, RelayEntry,
     RelaySettings, RoamingConfig, RoamingIdentity, RoamingNode, TrustBook,
@@ -31,7 +31,7 @@ use goose_roaming::{
 
 use crate::commands::roam_full_bridge::FullAcpBridge;
 
-const CARD_SCHEME: &str = "goose+roam://";
+const CARD_SCHEME: &str = "warmachine+roam://";
 
 pub(crate) fn directory_path() -> std::path::PathBuf {
     Paths::state_dir().join("roaming_directory.json")
@@ -45,14 +45,14 @@ fn peerbook_path() -> std::path::PathBuf {
     Paths::config_dir().join("roaming_peers.json")
 }
 
-/// Config key (or `GOOSE_ROAM_RELAYS` env) overriding the relay URLs the
+/// Config key (or `WARMACHINE_ROAM_RELAYS` env) overriding the relay URLs the
 /// roaming endpoint uses. When unset, roaming uses the managed relays below —
 /// never iroh's shared public n0 relays.
-const CONFIG_ROAM_RELAYS_KEY: &str = "GOOSE_ROAM_RELAYS";
+const CONFIG_ROAM_RELAYS_KEY: &str = "WARMACHINE_ROAM_RELAYS";
 /// Optional shared bearer token (secret) presented to every *explicitly
 /// configured* relay (for gated / `AccessConfig::Restricted` relays). Not
 /// applied to the default managed relays, which register open.
-const CONFIG_ROAM_RELAY_TOKEN_KEY: &str = "GOOSE_ROAM_RELAY_TOKEN";
+const CONFIG_ROAM_RELAY_TOKEN_KEY: &str = "WARMACHINE_ROAM_RELAY_TOKEN";
 
 /// Default managed iroh relays — the same four dedicated relays mesh-llm uses
 /// (provisioned via services.iroh.computer on the `iroh.link` domain), one per
@@ -61,7 +61,7 @@ const CONFIG_ROAM_RELAY_TOKEN_KEY: &str = "GOOSE_ROAM_RELAY_TOKEN";
 /// header. We default to these rather than iroh's public n0 relays so roaming
 /// never depends on the shared, rate-limited, no-SLA public relays.
 ///
-/// Override with `GOOSE_ROAM_RELAYS` to point at other relays (e.g. a Block-run
+/// Override with `WARMACHINE_ROAM_RELAYS` to point at other relays (e.g. a Block-run
 /// deployment).
 const DEFAULT_ROAM_RELAYS: &[&str] = &[
     "https://usw1-2.relay.michaelneale.mesh-llm.iroh.link./", // US West
@@ -72,11 +72,11 @@ const DEFAULT_ROAM_RELAYS: &[&str] = &[
 
 /// Resolve the relay settings for a roaming endpoint.
 ///
-/// Uses `GOOSE_ROAM_RELAYS` (env or config file) when set — optionally
-/// authenticated with the `GOOSE_ROAM_RELAY_TOKEN` secret applied to each —
+/// Uses `WARMACHINE_ROAM_RELAYS` (env or config file) when set — optionally
+/// authenticated with the `WARMACHINE_ROAM_RELAY_TOKEN` secret applied to each —
 /// otherwise the default managed relays. Never iroh's public n0 relays.
 ///
-/// Fails when `GOOSE_ROAM_RELAYS` is set but unreadable: a deployment that
+/// Fails when `WARMACHINE_ROAM_RELAYS` is set but unreadable: a deployment that
 /// configured private relays must not silently fall back to the managed ones.
 pub(crate) fn resolve_relay_settings() -> Result<RelaySettings> {
     let config = Config::global();
@@ -157,7 +157,7 @@ pub enum RoamCommand {
     /// Serve this node's agent to accepted peers over ACP.
     ///
     /// Only peers whose key you have accepted (`roam peers accept`) can connect.
-    /// Each connected peer gets goose's full ACP surface — it drives its own
+    /// Each connected peer gets warmachine's full ACP surface — it drives its own
     /// sessions (new/list/load/prompt) backed by this node's session store.
     Share {
         /// Builtin extensions to load into the hosted agent.
@@ -181,7 +181,7 @@ pub enum RoamCommand {
     /// real work, prefer `bridge` (drive the remote agent from Zed or any other
     /// ACP client) or `delegate` (scriptable one-shot tasks).
     Connect {
-        /// A saved peer nickname (see `roam peers`) or a `goose+roam://...` card.
+        /// A saved peer nickname (see `roam peers`) or a `warmachine+roam://...` card.
         target: String,
 
         /// Optional label reported to the host's directory.
@@ -196,7 +196,7 @@ pub enum RoamCommand {
     /// exits. Session enumeration and resume are plain ACP (`session/list` /
     /// `session/load`) served by the remote's full ACP surface.
     Delegate {
-        /// A saved peer nickname (see `roam peers`) or a `goose+roam://...` card.
+        /// A saved peer nickname (see `roam peers`) or a `warmachine+roam://...` card.
         target: String,
         /// The task/question to send to the remote agent. Omit when using
         /// `--list-sessions`.
@@ -217,10 +217,10 @@ pub enum RoamCommand {
     /// remote agent. Point Zed or any other ACP client at it
     /// and the remote agent behaves as if it were running locally.
     ///
-    /// Defaults to stdio (for a client that spawns `goose roam bridge ...` as a
+    /// Defaults to stdio (for a client that spawns `warmachine roam bridge ...` as a
     /// subprocess). Use `--listen` to accept a single TCP connection instead.
     Bridge {
-        /// A saved peer nickname (see `roam peers`) or a `goose+roam://...` card.
+        /// A saved peer nickname (see `roam peers`) or a `warmachine+roam://...` card.
         target: String,
 
         /// Listen for one ACP client on this TCP address (e.g. `127.0.0.1:8900`)
@@ -256,16 +256,16 @@ pub enum PeersCommand {
     /// Save a peer's connection card to the address book so you can reach it by
     /// name. Does NOT let them connect to you — use `accept` for that.
     Add {
-        /// The peer's `goose+roam://...` card.
+        /// The peer's `warmachine+roam://...` card.
         card: String,
         /// Friendly nickname (defaults to a short id if omitted).
         name: Option<String>,
     },
     /// Accept inbound connections from a peer's key. The target is a saved
-    /// nickname or a `goose+roam://...` card (which is also saved to the address
-    /// book). An accepted peer gets goose's full ACP surface.
+    /// nickname or a `warmachine+roam://...` card (which is also saved to the address
+    /// book). An accepted peer gets warmachine's full ACP surface.
     Accept {
-        /// A saved nickname or a `goose+roam://...` card.
+        /// A saved nickname or a `warmachine+roam://...` card.
         target: String,
         /// Nickname to save an inline card under (defaults to a short id).
         /// Ignored when the target is already a saved nickname.
@@ -347,8 +347,8 @@ async fn handle_id(qr: bool) -> Result<()> {
     eprintln!("  endpoint id : {}", card.endpoint_id);
     eprintln!("  fingerprint : {}", card.fingerprint());
     eprintln!();
-    eprintln!("the peer adds it with:  goose roam peers add '<card>' <name>");
-    eprintln!("and accepts you with:   goose roam peers accept <name>");
+    eprintln!("the peer adds it with:  warmachine roam peers add '<card>' <name>");
+    eprintln!("and accepts you with:   warmachine roam peers accept <name>");
     node.shutdown().await?;
     Ok(())
 }
@@ -392,7 +392,7 @@ async fn handle_pair(name: Option<String>) -> Result<()> {
         anyhow::bail!("no card entered; pairing cancelled");
     }
     let decoded = ConnectionCard::decode(device_card)
-        .context("that does not look like a goose+roam:// connection card")?;
+        .context("that does not look like a warmachine+roam:// connection card")?;
     let name =
         name.unwrap_or_else(|| format!("device-{}", short_id(&decoded.endpoint_id.to_string())));
 
@@ -445,7 +445,7 @@ async fn handle_peers(command: PeersCommand) -> Result<()> {
                 decoded.endpoint_id,
                 decoded.fingerprint()
             );
-            eprintln!("accept connections from it with: goose roam peers accept {name}");
+            eprintln!("accept connections from it with: warmachine roam peers accept {name}");
             Ok(())
         }
         PeersCommand::Accept { target, name } => {
@@ -465,7 +465,7 @@ async fn handle_peers(command: PeersCommand) -> Result<()> {
                     let rec = book.get(&target).ok_or_else(|| {
                         anyhow::anyhow!(
                             "no saved peer `{target}` and it is not a card; add it first with \
-                             `goose roam peers add`"
+                             `warmachine roam peers add`"
                         )
                     })?;
                     rec.card.clone()
@@ -482,7 +482,7 @@ async fn handle_peers(command: PeersCommand) -> Result<()> {
             )?;
             eprintln!("accepting connections from {}", card.endpoint_id);
             eprintln!("verify the fingerprint out of band: {}", card.fingerprint());
-            eprintln!("a running `goose roam share` picks this up on the next connection");
+            eprintln!("a running `warmachine roam share` picks this up on the next connection");
             Ok(())
         }
         PeersCommand::Revoke { target } => {
@@ -520,7 +520,7 @@ async fn handle_peers(command: PeersCommand) -> Result<()> {
                 trust.allowed_keys().into_iter().collect();
             let peers = book.list();
             if peers.is_empty() && accepted.is_empty() {
-                eprintln!("no saved peers; add one with `goose roam peers add '<card>' <name>`");
+                eprintln!("no saved peers; add one with `warmachine roam peers add '<card>' <name>`");
                 return Ok(());
             }
             println!("{:<16} {:<8} ENDPOINT ID", "NAME", "ACCEPT");
@@ -602,7 +602,7 @@ pub(crate) fn load_identity() -> Result<RoamingIdentity> {
 
 /// Roaming is an app-level service: every backend loads the same persisted
 /// identity, so only one process may advertise the endpoint at a time. An OS
-/// advisory lock decides ownership across all goose processes (desktop
+/// advisory lock decides ownership across all warmachine processes (desktop
 /// windows, CLI serves, standalone shares); it auto-releases when the owner
 /// dies — even on SIGKILL — so a standby can promote itself and paired
 /// devices keep access.
@@ -634,7 +634,7 @@ pub(crate) fn try_acquire_roam_lock_owner() -> Result<Option<std::fs::File>> {
 
 pub(crate) fn try_acquire_roam_lock() -> Result<std::fs::File> {
     try_acquire_roam_lock_owner()?.ok_or_else(|| {
-        anyhow::anyhow!("another goose process is already running the roaming endpoint")
+        anyhow::anyhow!("another warmachine process is already running the roaming endpoint")
     })
 }
 
@@ -672,7 +672,7 @@ async fn handle_share(
     if accepted_count == 0 {
         eprintln!(
             "warning: no peers are accepted yet — no one can connect.\n\
-             Accept a peer's key first: goose roam peers accept <name|card>"
+             Accept a peer's key first: warmachine roam peers accept <name|card>"
         );
     }
 
@@ -745,7 +745,7 @@ fn resolve_card(target: &str) -> Result<ConnectionCard> {
     match book.get(target) {
         Some(rec) => Ok(rec.card.clone()),
         None => anyhow::bail!(
-            "no saved peer named `{target}` (and it is not a card); see `goose roam peers`"
+            "no saved peer named `{target}` (and it is not a card); see `warmachine roam peers`"
         ),
     }
 }

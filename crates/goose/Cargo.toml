@@ -1,5 +1,5 @@
 [package]
-name = "goose"
+name = "warmachine"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -315,7 +315,7 @@ path = "examples/test_whisper.rs"
 required-features = ["local-inference"]
 
 [[bin]]
-name = "goose-acp"
+name = "warmachine-acp"
 path = "src/bin/goose-acp.rs"
 
 [[bin]]

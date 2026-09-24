@@ -68,7 +68,7 @@ permissions:
 
 jobs:
   build-goose-windows:
-    name: Build Goose (Windows)
+    name: Build WarMachine (Windows)
     runs-on: ${{ inputs.windows_variant == 'cuda' && 'windows-2022' || 'windows-latest' }}
     steps:
       - name: Checkout repository
@@ -128,12 +128,12 @@ jobs:
           $isCuda = "${{ inputs.windows_variant }}" -eq "cuda"
 
           if ($isCuda) {
-            cargo build --release --target x86_64-pc-windows-msvc -p goose-cli --bin goose --features cuda
+            cargo build --release --target x86_64-pc-windows-msvc -p goose-cli --bin warmachine --features cuda
           } else {
-            cargo build --release --target x86_64-pc-windows-msvc -p goose-cli --bin goose
+            cargo build --release --target x86_64-pc-windows-msvc -p goose-cli --bin warmachine
           }
 
-          $binaryPath = "./target/x86_64-pc-windows-msvc/release/goose.exe"
+          $binaryPath = "./target/x86_64-pc-windows-msvc/release/warmachine.exe"
           if (-not (Test-Path $binaryPath)) {
             Write-Error "Windows binary not found: $binaryPath"
             Get-ChildItem ./target/x86_64-pc-windows-msvc/release/ -ErrorAction SilentlyContinue
@@ -145,7 +145,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: internal-goose-x86_64-pc-windows-msvc${{ inputs.windows_variant == 'cuda' && '-cuda' || '' }}
-          path: target/x86_64-pc-windows-msvc/release/goose.exe
+          path: target/x86_64-pc-windows-msvc/release/warmachine.exe
           if-no-files-found: error
           retention-days: 1
           overwrite: true
@@ -168,7 +168,7 @@ jobs:
           VARIANT_SUFFIX: ${{ inputs.windows_variant == 'cuda' && '-cuda' || '' }}
         run: |
           mkdir -p goose-package
-          cp package/goose.exe goose-package/
+          cp package/warmachine.exe goose-package/
           7z a -tzip "goose-x86_64-pc-windows-msvc${VARIANT_SUFFIX}.zip" goose-package/
 
       - name: Upload CLI artifact
@@ -229,12 +229,12 @@ jobs:
         run: |
           rm -rf ./ui/desktop/src/bin
           mkdir -p ./ui/desktop/src/bin
-          cp -f ./backend/goose.exe ./ui/desktop/src/bin/
+          cp -f ./backend/warmachine.exe ./ui/desktop/src/bin/
 
           if [ -d "./ui/desktop/src/platform/windows/bin" ]; then
             for file in ./ui/desktop/src/platform/windows/bin/*.{exe,dll,cmd}; do
               filename="$(basename "$file")"
-              if [ -f "$file" ] && [ "$filename" != "goose.exe" ]; then
+              if [ -f "$file" ] && [ "$filename" != "warmachine.exe" ]; then
                 cp -f "$file" ./ui/desktop/src/bin/
               fi
             done
@@ -313,15 +313,15 @@ jobs:
           trusted-signing-account-name: ${{ secrets.AZURE_SIGNING_ACCOUNT_NAME }}
           certificate-profile-name: ${{ secrets.AZURE_CERTIFICATE_PROFILE_NAME }}
           files: |
-            ${{ github.workspace }}/dist-windows/Goose.exe
-            ${{ github.workspace }}/dist-windows/resources/bin/goose.exe
+            ${{ github.workspace }}/dist-windows/WarMachine.exe
+            ${{ github.workspace }}/dist-windows/resources/bin/warmachine.exe
 
       - name: Verify signed executables
         shell: pwsh
         run: |
           $files = @(
-            "dist-windows/Goose.exe",
-            "dist-windows/resources/bin/goose.exe"
+            "dist-windows/WarMachine.exe",
+            "dist-windows/resources/bin/warmachine.exe"
           )
           foreach ($file in $files) {
             Write-Output "Verifying signature: $file"

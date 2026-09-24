@@ -12,7 +12,7 @@ export async function acpPromptSession(
   return client.connection.agent.request(methods.agent.session.prompt, {
     sessionId,
     prompt: messageToAcpPromptContent(message),
-    _meta: { goose: { unrolledAgentLoop: !useLegacyAgentLoop } },
+    _meta: { warmachine: { unrolledAgentLoop: !useLegacyAgentLoop } },
   });
 }
 
@@ -27,7 +27,7 @@ export async function acpSteerSession(
   expectedRunId: string
 ): Promise<SteerSessionResponse_unstable> {
   const client = await getAcpClient();
-  return client.goose.sessionSteer_unstable({
+  return client.warmachine.sessionSteer_unstable({
     sessionId,
     expectedRunId,
     prompt: messageToAcpPromptContent(message) as unknown as SteerSessionRequest_unstable['prompt'],

@@ -8,21 +8,21 @@ import * as publicApi from "../dist/index.js";
 import { resolveGooseBinaryForRuntime } from "../dist/resolve-binary.js";
 
 const supportedPlatforms = [
-  ["darwin", "arm64", "@aaif/goose-binary-darwin-arm64", "goose"],
-  ["darwin", "x64", "@aaif/goose-binary-darwin-x64", "goose"],
-  ["linux", "arm64", "@aaif/goose-binary-linux-arm64", "goose"],
-  ["linux", "x64", "@aaif/goose-binary-linux-x64", "goose"],
-  ["win32", "x64", "@aaif/goose-binary-win32-x64", "goose.exe"],
+  ["darwin", "arm64", "@aaif/goose-binary-darwin-arm64", "warmachine"],
+  ["darwin", "x64", "@aaif/goose-binary-darwin-x64", "warmachine"],
+  ["linux", "arm64", "@aaif/goose-binary-linux-arm64", "warmachine"],
+  ["linux", "x64", "@aaif/goose-binary-linux-x64", "warmachine"],
+  ["win32", "x64", "@aaif/goose-binary-win32-x64", "warmachine.exe"],
 ];
 
 function setGooseBinary(t, value) {
-  const original = process.env.GOOSE_BINARY;
-  process.env.GOOSE_BINARY = value;
+  const original = process.env.WARMACHINE_BINARY;
+  process.env.WARMACHINE_BINARY = value;
   t.after(() => {
     if (original === undefined) {
-      delete process.env.GOOSE_BINARY;
+      delete process.env.WARMACHINE_BINARY;
     } else {
-      process.env.GOOSE_BINARY = original;
+      process.env.WARMACHINE_BINARY = original;
     }
   });
 }
@@ -60,9 +60,9 @@ test("exports only the public resolver from the package root", () => {
   assert.deepEqual(Object.keys(publicApi), ["resolveGooseBinary"]);
 });
 
-test("uses GOOSE_BINARY as an explicit override", (t) => {
+test("uses WARMACHINE_BINARY as an explicit override", (t) => {
   const directory = mkdtempSync(join(tmpdir(), "goose-acp-override-"));
-  const binaryPath = join(directory, "goose");
+  const binaryPath = join(directory, "warmachine");
   writeFileSync(binaryPath, "");
   setGooseBinary(t, relative(process.cwd(), binaryPath));
 
@@ -73,12 +73,12 @@ test("uses GOOSE_BINARY as an explicit override", (t) => {
   assert.equal(publicApi.resolveGooseBinary(), binaryPath);
 });
 
-test("rejects an invalid GOOSE_BINARY override", (t) => {
+test("rejects an invalid WARMACHINE_BINARY override", (t) => {
   setGooseBinary(t, "missing-goose-binary");
 
   assert.throws(
     () => publicApi.resolveGooseBinary(),
-    /GOOSE_BINARY does not point to a file/,
+    /WARMACHINE_BINARY does not point to a file/,
   );
 });
 
@@ -93,7 +93,7 @@ test("reports unsupported platform and architecture combinations", () => {
           return false;
         },
       }),
-    /No Goose npm binary is available for freebsd-x64/,
+    /No WarMachine npm binary is available for freebsd-x64/,
   );
 });
 
@@ -108,7 +108,7 @@ test("reports a missing optional platform package", () => {
           return false;
         },
       }),
-    /Goose binary package @aaif\/goose-binary-linux-x64 is not installed/,
+    /WarMachine binary package @aaif\/goose-binary-linux-x64 is not installed/,
   );
 });
 
@@ -126,6 +126,6 @@ test("reports a missing executable in an installed platform package", () => {
           return false;
         },
       }),
-    /Goose executable from @aaif\/goose-binary-darwin-arm64 was not found/,
+    /WarMachine executable from @aaif\/goose-binary-darwin-arm64 was not found/,
   );
 });

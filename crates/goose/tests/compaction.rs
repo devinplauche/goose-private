@@ -1,15 +1,15 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use futures::StreamExt;
-use goose::agents::{Agent, AgentEvent, SessionConfig};
-use goose::config::GooseMode;
-use goose::conversation::message::{Message, MessageContent};
-use goose::conversation::Conversation;
-use goose::providers::base::{
+use warmachine::agents::{Agent, AgentEvent, SessionConfig};
+use warmachine::config::GooseMode;
+use warmachine::conversation::message::{Message, MessageContent};
+use warmachine::conversation::Conversation;
+use warmachine::providers::base::{
     stream_from_single_message, MessageStream, Provider, ProviderDef, ProviderMetadata,
 };
-use goose::session::session_manager::SessionType;
-use goose::session::Session;
+use warmachine::session::session_manager::SessionType;
+use warmachine::session::Session;
 use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
 use goose_providers::errors::ProviderError;
 use goose_providers::model::ModelConfig;
@@ -187,7 +187,7 @@ impl Provider for MockCompactionProvider {
     }
 }
 
-impl goose::providers::base::ProviderDescriptor for MockCompactionProvider {
+impl warmachine::providers::base::ProviderDescriptor for MockCompactionProvider {
     fn metadata() -> ProviderMetadata {
         ProviderMetadata {
             name: "mock".to_string(),
@@ -208,8 +208,8 @@ impl ProviderDef for MockCompactionProvider {
     type Provider = Self;
 
     fn from_env(
-        _extensions: Vec<goose::config::ExtensionConfig>,
-        _tls_config: Option<goose::providers::api_client::TlsConfig>,
+        _extensions: Vec<warmachine::config::ExtensionConfig>,
+        _tls_config: Option<warmachine::providers::api_client::TlsConfig>,
     ) -> futures::future::BoxFuture<'static, anyhow::Result<Self>> {
         Box::pin(async { Ok(Self::new()) })
     }
@@ -541,7 +541,7 @@ async fn test_auto_compaction_during_reply() -> Result<()> {
         .reply(
             user_message,
             session_config,
-            goose::agents::state_machine::enabled(),
+            warmachine::agents::state_machine::enabled(),
             None,
         )
         .await?;
@@ -701,7 +701,7 @@ async fn test_context_limit_recovery_compaction() -> Result<()> {
         .reply(
             Message::user().with_text("Tell me more"),
             session_config,
-            goose::agents::state_machine::enabled(),
+            warmachine::agents::state_machine::enabled(),
             None,
         )
         .await?;

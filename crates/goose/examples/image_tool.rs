@@ -1,10 +1,10 @@
 use anyhow::Result;
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use dotenvy::dotenv;
-use goose::conversation::message::Message;
-use goose::providers::anthropic::ANTHROPIC_DEFAULT_MODEL;
-use goose::providers::create_with_named_model;
-use goose::providers::openai::OPEN_AI_DEFAULT_MODEL;
+use warmachine::conversation::message::Message;
+use warmachine::providers::anthropic::ANTHROPIC_DEFAULT_MODEL;
+use warmachine::providers::create_with_named_model;
+use warmachine::providers::openai::OPEN_AI_DEFAULT_MODEL;
 use goose_providers::databricks::DATABRICKS_DEFAULT_MODEL;
 use rmcp::model::{CallToolRequestParams, ContentBlock, Tool};
 use rmcp::object;
@@ -18,23 +18,23 @@ async fn main() -> Result<()> {
 
     // Create providers
     let providers: Vec<(
-        Arc<dyn goose::providers::base::Provider>,
+        Arc<dyn warmachine::providers::base::Provider>,
         goose_providers::model::ModelConfig,
     )> = vec![
         (
             create_with_named_model("databricks", Vec::new()).await?,
-            goose::model_config::model_config_from_user_config(
+            warmachine::model_config::model_config_from_user_config(
                 "databricks",
                 DATABRICKS_DEFAULT_MODEL,
             )?,
         ),
         (
             create_with_named_model("openai", Vec::new()).await?,
-            goose::model_config::model_config_from_user_config("openai", OPEN_AI_DEFAULT_MODEL)?,
+            warmachine::model_config::model_config_from_user_config("openai", OPEN_AI_DEFAULT_MODEL)?,
         ),
         (
             create_with_named_model("anthropic", Vec::new()).await?,
-            goose::model_config::model_config_from_user_config(
+            warmachine::model_config::model_config_from_user_config(
                 "anthropic",
                 ANTHROPIC_DEFAULT_MODEL,
             )?,
@@ -42,7 +42,7 @@ async fn main() -> Result<()> {
     ];
     for (provider, model_config) in providers {
         // Read and encode test image
-        let image_data = fs::read("crates/goose/examples/test_assets/test_image.png")?;
+        let image_data = fs::read("crates/warmachine/examples/test_assets/test_image.png")?;
         let base64_image = BASE64.encode(image_data);
 
         // Create a message sequence that includes a tool response with both text and image

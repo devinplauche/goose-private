@@ -11,7 +11,7 @@ use crate::session::{
 };
 use goose_providers::errors::ProviderError;
 
-pub(crate) const DEVELOPER_EXTENSION_REQUIRED_MESSAGE: &str = "**Goose Doctor**\n\n\
+pub(crate) const DEVELOPER_EXTENSION_REQUIRED_MESSAGE: &str = "**WarMachine Doctor**\n\n\
 `/doctor` requires the Developer extension, but it is disabled for this session.\n\n\
 Enable it for this session and run `/doctor` again:\n\
 - CLI: `/builtin developer`\n\
@@ -109,7 +109,7 @@ async fn ensure_working_provider(
             save_and_set(agent, session_id, working, model_config).await?;
             let preamble = log.join("\n");
             return Ok(Some(Message::assistant().with_text(format!(
-                "**Goose Doctor**\n\n{}\n\n\
+                "**WarMachine Doctor**\n\n{}\n\n\
                  Your configured model wasn't working, so I switched to \
                  **{} / {}**. You can continue chatting now.",
                 preamble, pname, new_model,
@@ -127,7 +127,7 @@ async fn ensure_working_provider(
         save_and_set(agent, session_id, working, model_config).await?;
         let preamble = log.join("\n");
         return Ok(Some(Message::assistant().with_text(format!(
-            "**Goose Doctor**\n\n{}\n\n\
+            "**WarMachine Doctor**\n\n{}\n\n\
              Switched to **{} / {}**. You can continue chatting now.",
             preamble, name, model,
         ))));
@@ -135,8 +135,8 @@ async fn ensure_working_provider(
 
     let preamble = log.join("\n");
     Ok(Some(Message::assistant().with_text(format!(
-        "**Goose Doctor**\n\n{}\n\n\
-         No working provider found. Run `goose configure` to set one up.",
+        "**WarMachine Doctor**\n\n{}\n\n\
+         No working provider found. Run `warmachine configure` to set one up.",
         preamble,
     ))))
 }
@@ -196,7 +196,7 @@ async fn try_other_models(
     let entry = providers::get_from_registry(provider_name).await.ok()?;
     let temp = entry.create_with_default_model(vec![]).await.ok()?;
     let toolshim = Config::global()
-        .get_param::<bool>("GOOSE_TOOLSHIM")
+        .get_param::<bool>("WARMACHINE_TOOLSHIM")
         .unwrap_or(false);
     let models = temp.fetch_recommended_models(toolshim).await.ok()?;
 
@@ -250,10 +250,10 @@ async fn try_other_providers(
 fn describe_error(e: &ProviderError) -> String {
     match e {
         ProviderError::NotConfigured => {
-            "Provider is not configured. Run `goose configure` to set it up.".to_string()
+            "Provider is not configured. Run `warmachine configure` to set it up.".to_string()
         }
         ProviderError::Authentication(_) => {
-            "Authentication failed — check your API key. Run `goose configure` to update it."
+            "Authentication failed — check your API key. Run `warmachine configure` to update it."
                 .to_string()
         }
         ProviderError::CreditsExhausted { top_up_url, .. } => {

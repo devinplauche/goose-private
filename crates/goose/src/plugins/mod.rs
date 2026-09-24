@@ -14,7 +14,7 @@ use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use tracing::warn;
 
-const INSTALL_METADATA: &str = ".goose-plugin-install.json";
+const INSTALL_METADATA: &str = ".warmachine-plugin-install.json";
 const AUTO_UPDATE_INTERVAL_HOURS: i64 = 24;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -576,8 +576,8 @@ mod tests {
 
     fn init_git_repo(repo: &Path) {
         run_git(repo, &["init"]);
-        run_git(repo, &["config", "user.email", "goose@example.com"]);
-        run_git(repo, &["config", "user.name", "Goose"]);
+        run_git(repo, &["config", "user.email", "warmachine@example.com"]);
+        run_git(repo, &["config", "user.name", "WarMachine"]);
     }
 
     fn commit_git_repo(repo: &Path, message: &str) {

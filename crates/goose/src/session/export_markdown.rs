@@ -873,7 +873,7 @@ if __name__ == "__main__":
             tool_meta: None,
         };
 
-        let build_output = r#"   Compiling goose-cli v0.1.0 (/Users/user/goose)
+        let build_output = r#"   Compiling goose-cli v0.1.0 (/Users/user/warmachine)
 warning: unused variable `x`
  --> src/main.rs:10:9
    |

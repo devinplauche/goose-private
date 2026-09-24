@@ -71,7 +71,7 @@ fn platform_notification(result: &CallToolResult) -> Option<rmcp::model::ServerN
 
 pub(super) fn tool_span(tool_name: &str, tool_call_id: &str, session_id: &str) -> tracing::Span {
     tracing::info_span!(
-        target: "goose::state_machine",
+        target: "warmachine::state_machine",
         "execute_tool",
         "gen_ai.operation.name" = "execute_tool",
         "gen_ai.tool.name" = %tool_name,

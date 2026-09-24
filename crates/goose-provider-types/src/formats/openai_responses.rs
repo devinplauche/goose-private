@@ -2042,7 +2042,7 @@ mod tests {
 
     #[test]
     fn test_responses_request_gpt6_astra_off_uses_low_not_none() {
-        for model_name in ["gpt-6-astra", "data_workflow_tools.goose.goose-gpt-6-astra"] {
+        for model_name in ["gpt-6-astra", "data_workflow_tools.warmachine.warmachine-gpt-6-astra"] {
             let model_config = ModelConfig::new(model_name)
                 .with_thinking_effort(crate::thinking::ThinkingEffort::Off);
 
@@ -2134,7 +2134,7 @@ mod tests {
         assert_eq!(result["model"], "gpt-5.6-sol");
         assert!(
             result.get("max_output_tokens").is_none(),
-            "unknown/new models should not receive Goose's fallback max_output_tokens"
+            "unknown/new models should not receive WarMachine's fallback max_output_tokens"
         );
     }
 
@@ -2152,7 +2152,7 @@ mod tests {
 
     #[test]
     fn test_responses_request_non_reasoning_model_ignores_global_thinking_effort() {
-        let _guard = env_lock::lock_env([("GOOSE_THINKING_EFFORT", Some("high"))]);
+        let _guard = env_lock::lock_env([("WARMACHINE_THINKING_EFFORT", Some("high"))]);
         let model_config = ModelConfig {
             model_name: "gpt-4o".to_string(),
             context_limit: None,

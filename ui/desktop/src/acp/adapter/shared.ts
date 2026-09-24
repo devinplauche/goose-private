@@ -62,19 +62,19 @@ export function getGooseMessageMeta(update: { _meta?: unknown }): GooseMessageMe
     return {};
   }
 
-  const goose = update._meta.goose;
-  if (!isRecord(goose)) {
+  const warmachine = update._meta.warmachine;
+  if (!isRecord(warmachine)) {
     return {};
   }
 
-  const outputTokenLimitReached = goose.outputTokenLimitReached === true;
+  const outputTokenLimitReached = warmachine.outputTokenLimitReached === true;
 
   return {
-    created: typeof goose.created === 'number' ? goose.created : undefined,
-    messageId: typeof goose.messageId === 'string' ? goose.messageId : undefined,
+    created: typeof warmachine.created === 'number' ? warmachine.created : undefined,
+    messageId: typeof warmachine.messageId === 'string' ? warmachine.messageId : undefined,
     outputTokenLimitReached: outputTokenLimitReached ? true : undefined,
-    fallbackContent: goose.fallbackContent === true ? true : undefined,
-    steer: goose.steer === true ? true : undefined,
+    fallbackContent: warmachine.fallbackContent === true ? true : undefined,
+    steer: warmachine.steer === true ? true : undefined,
   };
 }
 
@@ -83,21 +83,21 @@ export function getGooseActiveRunId(update: { _meta?: unknown }): string | null 
     return undefined;
   }
 
-  const goose = update._meta.goose;
-  if (!isRecord(goose) || !('activeRunId' in goose)) {
+  const warmachine = update._meta.warmachine;
+  if (!isRecord(warmachine) || !('activeRunId' in warmachine)) {
     return undefined;
   }
 
-  return typeof goose.activeRunId === 'string' || goose.activeRunId === null
-    ? goose.activeRunId
+  return typeof warmachine.activeRunId === 'string' || warmachine.activeRunId === null
+    ? warmachine.activeRunId
     : undefined;
 }
 
 export function getGooseQueuedSteer(update: { _meta?: unknown }): string | undefined {
   if (!isRecord(update._meta)) return undefined;
-  const goose = update._meta.goose;
-  if (!isRecord(goose) || !isRecord(goose.queuedSteer)) return undefined;
-  return typeof goose.queuedSteer.messageId === 'string' ? goose.queuedSteer.messageId : undefined;
+  const warmachine = update._meta.warmachine;
+  if (!isRecord(warmachine) || !isRecord(warmachine.queuedSteer)) return undefined;
+  return typeof warmachine.queuedSteer.messageId === 'string' ? warmachine.queuedSteer.messageId : undefined;
 }
 
 export function rawInputToArguments(rawInput: unknown): Record<string, unknown> {
@@ -109,15 +109,15 @@ export function toolIdentity(update: ToolCall | ToolCallUpdate): ToolIdentity {
     return {};
   }
 
-  const goose = update._meta.goose;
-  if (!isRecord(goose) || !isRecord(goose.toolCall)) {
+  const warmachine = update._meta.warmachine;
+  if (!isRecord(warmachine) || !isRecord(warmachine.toolCall)) {
     return {};
   }
 
   return {
-    toolName: typeof goose.toolCall.toolName === 'string' ? goose.toolCall.toolName : undefined,
+    toolName: typeof warmachine.toolCall.toolName === 'string' ? warmachine.toolCall.toolName : undefined,
     extensionName:
-      typeof goose.toolCall.extensionName === 'string' ? goose.toolCall.extensionName : undefined,
+      typeof warmachine.toolCall.extensionName === 'string' ? warmachine.toolCall.extensionName : undefined,
   };
 }
 

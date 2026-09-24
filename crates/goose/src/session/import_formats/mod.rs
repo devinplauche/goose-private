@@ -1,6 +1,6 @@
 //! Importers for non-goose session formats.
 //!
-//! Goose's native session export is a JSON-serialized [`crate::session::Session`].
+//! WarMachine's native session export is a JSON-serialized [`crate::session::Session`].
 //! These submodules let users also import sessions exported by other coding
 //! agents — currently:
 //!
@@ -8,7 +8,7 @@
 //! - **Codex** (`.jsonl` rollouts under `~/.codex/sessions/YYYY/MM/DD/...`)
 //! - **Pi** (`.jsonl` files under `~/.pi/agent/sessions/...`)
 //!
-//! The strategy is to convert any supported foreign format into goose's
+//! The strategy is to convert any supported foreign format into warmachine's
 //! native [`Session`] JSON, then hand it off to the existing
 //! `SessionManager::import_session` pipeline.
 
@@ -72,8 +72,8 @@ pub(crate) fn build_session_json(session: ImportedSession) -> Value {
 /// Detected import source format.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ImportFormat {
-    /// Native goose session export — a JSON object representing a `Session`.
-    Goose,
+    /// Native warmachine session export — a JSON object representing a `Session`.
+    WarMachine,
     /// Claude Code `.jsonl` transcript (one JSON object per line, no header).
     ClaudeCode,
     /// Codex (OpenAI) `.jsonl` rollout file. First line is `{"type":"session_meta",...}`.
@@ -86,7 +86,7 @@ pub enum ImportFormat {
 ///
 /// We peek at the first non-blank line:
 /// - If it parses as a JSON object whose top-level has `working_dir`/`workingDir`
-///   and a `conversation` (or `messages`) field, it's goose.
+///   and a `conversation` (or `messages`) field, it's warmachine.
 /// - If the *first* line is `{"type":"session", ...}` it's pi.
 /// - If it's a JSON-Lines stream with per-line `type` fields like
 ///   `user`/`assistant`/`attachment`, it's Claude Code.
@@ -105,7 +105,7 @@ pub fn detect_format(content: &str) -> ImportFormat {
         {
             return ImportFormat::Pi;
         }
-        // Claude Code lines always include a sessionId; goose's native JSON is
+        // Claude Code lines always include a sessionId; warmachine's native JSON is
         // a single multi-line object whose first *parsed* line is `{` only.
         if v.is_object()
             && v.get("sessionId").is_some()
@@ -115,7 +115,7 @@ pub fn detect_format(content: &str) -> ImportFormat {
         }
     }
 
-    // Goose's pretty-printed export starts with `{` and *eventually* contains
+    // WarMachine's pretty-printed export starts with `{` and *eventually* contains
     // a full Session object — try to parse the entire payload.
     if serde_json::from_str::<serde_json::Value>(content)
         .ok()
@@ -126,7 +126,7 @@ pub fn detect_format(content: &str) -> ImportFormat {
         })
         .is_some()
     {
-        return ImportFormat::Goose;
+        return ImportFormat::WarMachine;
     }
 
     // Fallback: if every non-blank line is a JSON object with a `type` and
@@ -143,20 +143,20 @@ pub fn detect_format(content: &str) -> ImportFormat {
         return ImportFormat::ClaudeCode;
     }
 
-    ImportFormat::Goose
+    ImportFormat::WarMachine
 }
 
 /// Convert any supported foreign format to a goose-native session JSON string.
 pub fn convert_to_goose_session_json(content: &str) -> Result<String> {
     match detect_format(content) {
-        ImportFormat::Goose => Ok(upgrade_legacy_token_fields(content)),
+        ImportFormat::WarMachine => Ok(upgrade_legacy_token_fields(content)),
         ImportFormat::ClaudeCode => claude_code::convert(content),
         ImportFormat::Codex => codex::convert(content),
         ImportFormat::Pi => pi::convert(content),
     }
 }
 
-/// Exports from goose versions before `usage`/`accumulated_usage` existed
+/// Exports from warmachine versions before `usage`/`accumulated_usage` existed
 /// store token counts as flat fields.
 fn upgrade_legacy_token_fields(content: &str) -> String {
     let Ok(Value::Object(mut obj)) = serde_json::from_str::<Value>(content) else {

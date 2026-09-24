@@ -137,7 +137,7 @@ pub struct AuthConfig {
     #[serde(default)]
     pub timeout_seconds: Option<u64>,
     /// Working directory for the command, and the base a relative `command`
-    /// path is resolved against. Defaults to goose's current directory.
+    /// path is resolved against. Defaults to warmachine's current directory.
     #[serde(default)]
     pub cwd: Option<String>,
 }

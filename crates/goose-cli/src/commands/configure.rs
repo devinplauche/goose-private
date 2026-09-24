@@ -1,30 +1,30 @@
-use crate::recipes::github_recipe::GOOSE_RECIPE_GITHUB_REPO_CONFIG_KEY;
+use crate::recipes::github_recipe::WARMACHINE_RECIPE_GITHUB_REPO_CONFIG_KEY;
 use cliclack::spinner;
 use console::style;
-use goose::agents::extension::{ToolInfo, PLATFORM_EXTENSIONS};
-use goose::agents::extension_manager::get_parameter_names;
-use goose::agents::Agent;
-use goose::agents::{extension::Envs, ExtensionConfig};
-use goose::config::declarative_providers::{
+use warmachine::agents::extension::{ToolInfo, PLATFORM_EXTENSIONS};
+use warmachine::agents::extension_manager::get_parameter_names;
+use warmachine::agents::Agent;
+use warmachine::agents::{extension::Envs, ExtensionConfig};
+use warmachine::config::declarative_providers::{
     create_custom_provider, remove_custom_provider, AuthConfig, CreateCustomProviderParams,
 };
-use goose::config::extensions::{
+use warmachine::config::extensions::{
     get_all_extension_names, get_all_extensions, get_enabled_extensions, get_extension_by_name,
     name_to_key, remove_extension, set_extension, set_extension_enabled,
 };
-use goose::config::paths::Paths;
-use goose::config::permission::PermissionLevel;
-use goose::config::signup_tetrate::TetrateAuth;
-use goose::config::{
+use warmachine::config::paths::Paths;
+use warmachine::config::permission::PermissionLevel;
+use warmachine::config::signup_tetrate::TetrateAuth;
+use warmachine::config::{
     configure_tetrate, Config, ConfigError, ExperimentManager, ExtensionEntry, GooseMode,
     PermissionManager,
 };
 #[cfg(feature = "telemetry")]
-use goose::posthog::{get_telemetry_choice, TELEMETRY_ENABLED_KEY};
-use goose::providers::base::ConfigKey;
-use goose::providers::provider_test::test_provider_configuration;
-use goose::providers::{create, providers, retry_operation, RetryConfig};
-use goose::session::SessionType;
+use warmachine::posthog::{get_telemetry_choice, TELEMETRY_ENABLED_KEY};
+use warmachine::providers::base::ConfigKey;
+use warmachine::providers::provider_test::test_provider_configuration;
+use warmachine::providers::{create, providers, retry_operation, RetryConfig};
+use warmachine::session::SessionType;
 use goose_providers::thinking::ThinkingEffort;
 use serde_json::Value;
 use std::collections::HashMap;
@@ -145,8 +145,8 @@ impl Drop for CursorRestoreGuard {
 pub async fn handle_configure() -> anyhow::Result<()> {
     if !std::io::stdin().is_terminal() {
         anyhow::bail!(
-            "goose configure requires an interactive terminal.\n\
-             If you installed via 'curl ... | bash', run 'goose configure' separately after installation."
+            "warmachine configure requires an interactive terminal.\n\
+             If you installed via 'curl ... | bash', run 'warmachine configure' separately after installation."
         );
     }
 
@@ -165,15 +165,15 @@ pub fn configure_telemetry_consent_dialog() -> anyhow::Result<bool> {
     let config = Config::global();
 
     println!();
-    println!("{}", style("Help improve goose").bold());
+    println!("{}", style("Help improve warmachine").bold());
     println!();
     println!(
         "{}",
-        style("Would you like to help improve goose by sharing anonymous usage data?").dim()
+        style("Would you like to help improve warmachine by sharing anonymous usage data?").dim()
     );
     println!(
         "{}",
-        style("This helps us understand how goose is used and identify areas for improvement.")
+        style("This helps us understand how warmachine is used and identify areas for improvement.")
             .dim()
     );
     println!();
@@ -182,7 +182,7 @@ pub fn configure_telemetry_consent_dialog() -> anyhow::Result<bool> {
         "{}",
         style("  • Operating system, version, and architecture").dim()
     );
-    println!("{}", style("  • goose version and install method").dim());
+    println!("{}", style("  • warmachine version and install method").dim());
     println!("{}", style("  • Provider and model used").dim());
     println!(
         "{}",
@@ -203,18 +203,18 @@ pub fn configure_telemetry_consent_dialog() -> anyhow::Result<bool> {
     );
     println!(
         "{}",
-        style("or any personal data. You can change this anytime with 'goose configure'.").dim()
+        style("or any personal data. You can change this anytime with 'warmachine configure'.").dim()
     );
     println!();
 
-    let enabled = cliclack::confirm("Share anonymous usage data to help improve goose?")
+    let enabled = cliclack::confirm("Share anonymous usage data to help improve warmachine?")
         .initial_value(true)
         .interact()?;
 
     config.set_param(TELEMETRY_ENABLED_KEY, enabled)?;
 
     if enabled {
-        let _ = cliclack::log::success("Thank you for helping improve goose!");
+        let _ = cliclack::log::success("Thank you for helping improve warmachine!");
     } else {
         let _ = cliclack::log::info("Telemetry disabled. You can enable it anytime in settings.");
     }
@@ -224,7 +224,7 @@ pub fn configure_telemetry_consent_dialog() -> anyhow::Result<bool> {
 
 async fn handle_first_time_setup(config: &Config) -> anyhow::Result<()> {
     println!();
-    println!("{}", style("Welcome to goose! Let's get you set up.").dim());
+    println!("{}", style("Welcome to warmachine! Let's get you set up.").dim());
     println!(
         "{}",
         style("  you can rerun this command later to update your configuration").dim()
@@ -288,7 +288,7 @@ async fn handle_manual_provider_setup(config: &Config) {
             println!(
                 "\n  {}: Run '{}' again to adjust your config or add extensions",
                 style("Tip").green().italic(),
-                style("goose configure").cyan()
+                style("warmachine configure").cyan()
             );
             set_extension(ExtensionEntry {
                 enabled: true,
@@ -298,9 +298,9 @@ async fn handle_manual_provider_setup(config: &Config) {
         Ok(false) => {
             let _ = config.clear();
             println!(
-                "\n  {}: We did not save your config, inspect your credentials\n   and run '{}' again to ensure goose can connect",
+                "\n  {}: We did not save your config, inspect your credentials\n   and run '{}' again to ensure warmachine can connect",
                 style("Warning").yellow().italic(),
-                style("goose configure").cyan()
+                style("warmachine configure").cyan()
             );
         }
         Err(e) => {
@@ -317,7 +317,7 @@ fn print_manual_config_error(e: &anyhow::Error) {
                 "\n  {} Required configuration key '{}' not found \n  Please provide this value and run '{}' again",
                 style("Error").red().italic(),
                 key,
-                style("goose configure").cyan()
+                style("warmachine configure").cyan()
             );
         }
         Some(ConfigError::KeyringError(msg)) => {
@@ -328,7 +328,7 @@ fn print_manual_config_error(e: &anyhow::Error) {
                 "\n  {} Invalid configuration value: {} \n  Please check your input and run '{}' again",
                 style("Error").red().italic(),
                 msg,
-                style("goose configure").cyan()
+                style("warmachine configure").cyan()
             );
         }
         Some(ConfigError::FileError(err)) => {
@@ -336,7 +336,7 @@ fn print_manual_config_error(e: &anyhow::Error) {
                 "\n  {} Failed to access config file: {} \n  Please check file permissions and run '{}' again",
                 style("Error").red().italic(),
                 err,
-                style("goose configure").cyan()
+                style("warmachine configure").cyan()
             );
         }
         Some(ConfigError::DirectoryError(msg)) => {
@@ -344,15 +344,15 @@ fn print_manual_config_error(e: &anyhow::Error) {
                 "\n  {} Failed to access config directory: {} \n  Please check directory permissions and run '{}' again",
                 style("Error").red().italic(),
                 msg,
-                style("goose configure").cyan()
+                style("warmachine configure").cyan()
             );
         }
         _ => {
             println!(
-                "\n  {} {} \n  We did not save your config, inspect your credentials\n   and run '{}' again to ensure goose can connect",
+                "\n  {} {} \n  We did not save your config, inspect your credentials\n   and run '{}' again to ensure warmachine can connect",
                 style("Error").red().italic(),
                 e,
-                style("goose configure").cyan()
+                style("warmachine configure").cyan()
             );
         }
     }
@@ -364,7 +364,7 @@ fn print_keyring_error(msg: &str) {
         "\n  {} Failed to access secure storage (keyring): {} \n  Please check your system keychain and run '{}' again. \n  If your system is unable to use the keyring, please try setting secret key(s) via environment variables.",
         style("Error").red().italic(),
         msg,
-        style("goose configure").cyan()
+        style("warmachine configure").cyan()
     );
 }
 
@@ -374,7 +374,7 @@ fn print_keyring_error(msg: &str) {
         "\n  {} Failed to access Windows Credential Manager: {} \n  Please check Windows Credential Manager and run '{}' again. \n  If your system is unable to use the Credential Manager, please try setting secret key(s) via environment variables.",
         style("Error").red().italic(),
         msg,
-        style("goose configure").cyan()
+        style("warmachine configure").cyan()
     );
 }
 
@@ -384,7 +384,7 @@ fn print_keyring_error(msg: &str) {
         "\n  {} Failed to access secure storage: {} \n  Please check your system's secure storage and run '{}' again. \n  If your system is unable to use secure storage, please try setting secret key(s) via environment variables.",
         style("Error").red().italic(),
         msg,
-        style("goose configure").cyan()
+        style("warmachine configure").cyan()
     );
 }
 
@@ -424,8 +424,8 @@ async fn handle_existing_config() -> anyhow::Result<()> {
         .item("remove", "Remove Extension", "Remove an extension")
         .item(
             "settings",
-            "goose settings",
-            "Set the goose mode, Tool Output, Tool Permissions, Experiment, goose recipe github repo and more",
+            "warmachine settings",
+            "Set the warmachine mode, Tool Output, Tool Permissions, Experiment, warmachine recipe github repo and more",
         )
         .interact()?;
 
@@ -477,7 +477,7 @@ const UNLISTED_MODEL_KEY: &str = "__unlisted__";
 
 fn interactive_model_search(
     models: &[String],
-    provider_meta: &goose::providers::base::ProviderMetadata,
+    provider_meta: &warmachine::providers::base::ProviderMetadata,
 ) -> anyhow::Result<String> {
     const MAX_VISIBLE: usize = 30;
     let mut query = String::new();
@@ -580,7 +580,7 @@ fn interactive_model_search(
 
 fn select_model_from_list(
     models: &[String],
-    provider_meta: &goose::providers::base::ProviderMetadata,
+    provider_meta: &warmachine::providers::base::ProviderMetadata,
 ) -> anyhow::Result<String> {
     const MAX_MODELS: usize = 10;
 
@@ -653,7 +653,7 @@ fn select_model_from_list(
 }
 
 fn prompt_unlisted_model(
-    provider_meta: &goose::providers::base::ProviderMetadata,
+    provider_meta: &warmachine::providers::base::ProviderMetadata,
 ) -> anyhow::Result<String> {
     let model: String = cliclack::input("Enter the model name:")
         .placeholder(&provider_meta.default_model)
@@ -674,7 +674,7 @@ fn try_store_secret(config: &Config, key_name: &str, value: String) -> anyhow::R
         Err(ConfigError::FallbackToFileStorage) => Ok(true),
         Err(e) => {
             cliclack::outro(style(format!(
-                "Failed to store {} securely: {}. Please ensure your system's secure storage is accessible. Alternatively you can run with GOOSE_DISABLE_KEYRING=true or set the key in your environment variables",
+                "Failed to store {} securely: {}. Please ensure your system's secure storage is accessible. Alternatively you can run with WARMACHINE_DISABLE_KEYRING=true or set the key in your environment variables",
                 key_name, e
             )).on_red().white())?;
             Ok(false)
@@ -934,7 +934,7 @@ pub async fn configure_provider_dialog() -> anyhow::Result<bool> {
     let temp_provider = create(&provider_name, Vec::new()).await?;
     let models_res = retry_operation(&RetryConfig::default(), || async {
         temp_provider
-            .fetch_recommended_models(goose::model_config::global_toolshim())
+            .fetch_recommended_models(warmachine::model_config::global_toolshim())
             .await
     })
     .await;
@@ -950,7 +950,7 @@ pub async fn configure_provider_dialog() -> anyhow::Result<bool> {
         Ok(models) if !models.is_empty() => select_model_from_list(&models, provider_meta)?,
         Ok(_) => {
             let default_model =
-                std::env::var("GOOSE_MODEL").unwrap_or(provider_meta.default_model.clone());
+                std::env::var("WARMACHINE_MODEL").unwrap_or(provider_meta.default_model.clone());
             cliclack::input("Enter a model from that provider:")
                 .default_input(&default_model)
                 .interact()?
@@ -982,16 +982,16 @@ pub async fn configure_provider_dialog() -> anyhow::Result<bool> {
     let spin = spinner();
     spin.start("Checking your configuration...");
 
-    let toolshim_enabled = std::env::var("GOOSE_TOOLSHIM")
+    let toolshim_enabled = std::env::var("WARMACHINE_TOOLSHIM")
         .map(|val| val == "1" || val.to_lowercase() == "true")
         .unwrap_or(false);
-    let toolshim_model = std::env::var("GOOSE_TOOLSHIM_OLLAMA_MODEL").ok();
+    let toolshim_model = std::env::var("WARMACHINE_TOOLSHIM_OLLAMA_MODEL").ok();
 
     match test_provider_configuration(&provider_name, &model, toolshim_enabled, toolshim_model)
         .await
     {
         Ok(()) => {
-            goose::config::set_active_provider(config, &provider_name, &model)?;
+            warmachine::config::set_active_provider(config, &provider_name, &model)?;
             print_config_file_saved()?;
             Ok(true)
         }
@@ -1007,10 +1007,10 @@ pub async fn configure_provider_dialog() -> anyhow::Result<bool> {
     }
 }
 
-/// Configure extensions that can be used with goose
+/// Configure extensions that can be used with warmachine
 /// Dialog for toggling which extensions are enabled/disabled
 pub fn toggle_extensions_dialog() -> anyhow::Result<()> {
-    for warning in goose::config::get_warnings() {
+    for warning in warmachine::config::get_warnings() {
         eprintln!("{}", style(format!("Warning: {}", warning)).yellow());
     }
 
@@ -1073,7 +1073,7 @@ pub fn toggle_extensions_dialog() -> anyhow::Result<()> {
 fn prompt_extension_timeout() -> anyhow::Result<u64> {
     Ok(
         cliclack::input("Please set the timeout for this tool (in secs):")
-            .placeholder(&goose::config::DEFAULT_EXTENSION_TIMEOUT.to_string())
+            .placeholder(&warmachine::config::DEFAULT_EXTENSION_TIMEOUT.to_string())
             .validate(|input: &String| match input.parse::<u64>() {
                 Ok(_) => Ok(()),
                 Err(_) => Err("Please enter a valid timeout"),
@@ -1255,7 +1255,7 @@ fn configure_stdio_extension() -> anyhow::Result<()> {
 
     let timeout = prompt_extension_timeout()?;
 
-    let mut parts = goose::utils::split_command_args(&command_str)?;
+    let mut parts = warmachine::utils::split_command_args(&command_str)?;
     let cmd = if parts.is_empty() {
         String::new()
     } else {
@@ -1338,7 +1338,7 @@ pub fn configure_extensions_dialog() -> anyhow::Result<()> {
         .item(
             "built-in",
             "Built-in Extension",
-            "Use an extension that comes with goose",
+            "Use an extension that comes with warmachine",
         )
         .item(
             "stdio",
@@ -1364,7 +1364,7 @@ pub fn configure_extensions_dialog() -> anyhow::Result<()> {
 }
 
 pub fn remove_extension_dialog() -> anyhow::Result<()> {
-    for warning in goose::config::get_warnings() {
+    for warning in warmachine::config::get_warnings() {
         eprintln!("{}", style(format!("Warning: {}", warning)).yellow());
     }
 
@@ -1428,8 +1428,8 @@ pub async fn configure_settings_dialog() -> anyhow::Result<()> {
     #[allow(unused_mut)]
     let mut setting_select = cliclack::select("What setting would you like to configure?").item(
         "goose_mode",
-        "goose mode",
-        "Configure goose mode",
+        "warmachine mode",
+        "Configure warmachine mode",
     );
     #[cfg(feature = "telemetry")]
     {
@@ -1467,8 +1467,8 @@ pub async fn configure_settings_dialog() -> anyhow::Result<()> {
         )
         .item(
             "recipe",
-            "goose recipe github repo",
-            "goose will pull recipes from this repo if not found locally.",
+            "warmachine recipe github repo",
+            "warmachine will pull recipes from this repo if not found locally.",
         )
         .interact()?;
 
@@ -1515,13 +1515,13 @@ pub async fn configure_settings_dialog() -> anyhow::Result<()> {
 pub fn configure_goose_mode_dialog() -> anyhow::Result<()> {
     let config = Config::global();
 
-    if std::env::var("GOOSE_MODE").is_ok() {
+    if std::env::var("WARMACHINE_MODE").is_ok() {
         let _ = cliclack::log::info(
-            "Notice: GOOSE_MODE environment variable is set and will override the configuration here.",
+            "Notice: WARMACHINE_MODE environment variable is set and will override the configuration here.",
         );
     }
 
-    let mode = cliclack::select("Which goose mode would you like to configure?")
+    let mode = cliclack::select("Which warmachine mode would you like to configure?")
         .item(
             GooseMode::Auto,
             "Auto Mode",
@@ -1559,9 +1559,9 @@ pub fn configure_goose_mode_dialog() -> anyhow::Result<()> {
 pub fn configure_telemetry_dialog() -> anyhow::Result<()> {
     let config = Config::global();
 
-    if std::env::var("GOOSE_TELEMETRY_OFF").is_ok() {
+    if std::env::var("WARMACHINE_TELEMETRY_OFF").is_ok() {
         let _ = cliclack::log::info(
-            "Notice: GOOSE_TELEMETRY_OFF environment variable is set and will override the configuration here.",
+            "Notice: WARMACHINE_TELEMETRY_OFF environment variable is set and will override the configuration here.",
         );
     }
 
@@ -1574,14 +1574,14 @@ pub fn configure_telemetry_dialog() -> anyhow::Result<()> {
 
     let _ = cliclack::log::info(format!("Current telemetry status: {}", current_status));
 
-    let enabled = cliclack::confirm("Share anonymous usage data to help improve goose?")
+    let enabled = cliclack::confirm("Share anonymous usage data to help improve warmachine?")
         .initial_value(current_choice.unwrap_or(true))
         .interact()?;
 
     config.set_param(TELEMETRY_ENABLED_KEY, enabled)?;
 
     if enabled {
-        cliclack::outro("Telemetry enabled - thank you for helping improve goose!")?;
+        cliclack::outro("Telemetry enabled - thank you for helping improve warmachine!")?;
     } else {
         cliclack::outro("Telemetry disabled")?;
     }
@@ -1592,9 +1592,9 @@ pub fn configure_telemetry_dialog() -> anyhow::Result<()> {
 pub fn configure_tool_output_dialog() -> anyhow::Result<()> {
     let config = Config::global();
 
-    if std::env::var("GOOSE_CLI_MIN_PRIORITY").is_ok() {
+    if std::env::var("WARMACHINE_CLI_MIN_PRIORITY").is_ok() {
         let _ = cliclack::log::info(
-            "Notice: GOOSE_CLI_MIN_PRIORITY environment variable is set and will override the configuration here.",
+            "Notice: WARMACHINE_CLI_MIN_PRIORITY environment variable is set and will override the configuration here.",
         );
     }
     let tool_log_level = cliclack::select("Which tool output would you like to show?")
@@ -1605,15 +1605,15 @@ pub fn configure_tool_output_dialog() -> anyhow::Result<()> {
 
     match tool_log_level {
         "high" => {
-            config.set_param("GOOSE_CLI_MIN_PRIORITY", 0.8)?;
+            config.set_param("WARMACHINE_CLI_MIN_PRIORITY", 0.8)?;
             cliclack::outro("Showing tool output of high importance only.")?;
         }
         "medium" => {
-            config.set_param("GOOSE_CLI_MIN_PRIORITY", 0.2)?;
+            config.set_param("WARMACHINE_CLI_MIN_PRIORITY", 0.2)?;
             cliclack::outro("Showing tool output of medium importance.")?;
         }
         "all" => {
-            config.set_param("GOOSE_CLI_MIN_PRIORITY", 0.0)?;
+            config.set_param("WARMACHINE_CLI_MIN_PRIORITY", 0.0)?;
             cliclack::outro("Showing all tool output.")?;
         }
         _ => unreachable!(),
@@ -1625,13 +1625,13 @@ pub fn configure_tool_output_dialog() -> anyhow::Result<()> {
 pub fn configure_keyring_dialog() -> anyhow::Result<()> {
     let config = Config::global();
 
-    if std::env::var("GOOSE_DISABLE_KEYRING").is_ok() {
+    if std::env::var("WARMACHINE_DISABLE_KEYRING").is_ok() {
         let _ = cliclack::log::info(
-            "Notice: GOOSE_DISABLE_KEYRING environment variable is set and will override the configuration here.",
+            "Notice: WARMACHINE_DISABLE_KEYRING environment variable is set and will override the configuration here.",
         );
     }
 
-    let currently_disabled = config.get_param::<String>("GOOSE_DISABLE_KEYRING").is_ok();
+    let currently_disabled = config.get_param::<String>("WARMACHINE_DISABLE_KEYRING").is_ok();
 
     let current_status = if currently_disabled {
         "Disabled (using file-based storage)"
@@ -1662,20 +1662,20 @@ pub fn configure_keyring_dialog() -> anyhow::Result<()> {
     match storage_option {
         "keyring" => {
             // Set to empty string to enable keyring (absence or empty = enabled)
-            config.set_param("GOOSE_DISABLE_KEYRING", Value::String("".to_string()))?;
+            config.set_param("WARMACHINE_DISABLE_KEYRING", Value::String("".to_string()))?;
             cliclack::outro("Secret storage set to system keyring (secure)")?;
             let _ =
-                cliclack::log::info("You may need to restart goose for this change to take effect");
+                cliclack::log::info("You may need to restart warmachine for this change to take effect");
         }
         "file" => {
             // Set the disable flag to use file storage
-            config.set_param("GOOSE_DISABLE_KEYRING", Value::String("true".to_string()))?;
+            config.set_param("WARMACHINE_DISABLE_KEYRING", Value::String("true".to_string()))?;
             cliclack::outro(format!(
                 "Secret storage set to file ({}). Keep this file secure!",
                 secrets_path.display(),
             ))?;
             let _ =
-                cliclack::log::info("You may need to restart goose for this change to take effect");
+                cliclack::log::info("You may need to restart warmachine for this change to take effect");
         }
         _ => unreachable!(),
     };
@@ -1683,7 +1683,7 @@ pub fn configure_keyring_dialog() -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Configure experiment features that can be used with goose
+/// Configure experiment features that can be used with warmachine
 /// Dialog for toggling which experiments are enabled/disabled
 pub fn toggle_experiments_dialog() -> anyhow::Result<()> {
     let experiments = ExperimentManager::get_all()?;
@@ -1751,7 +1751,7 @@ pub async fn configure_tool_permissions_dialog() -> anyhow::Result<()> {
     let model: String = config
         .get_goose_model()
         .expect("No model configured. Please set model first");
-    let model_config = goose::model_config::model_config_from_user_config(&provider_name, &model)?;
+    let model_config = warmachine::model_config::model_config_from_user_config(&provider_name, &model)?;
 
     let agent = Agent::new();
 
@@ -1896,13 +1896,13 @@ pub async fn configure_tool_permissions_dialog() -> anyhow::Result<()> {
 }
 
 fn configure_recipe_dialog() -> anyhow::Result<()> {
-    let key_name = GOOSE_RECIPE_GITHUB_REPO_CONFIG_KEY;
+    let key_name = WARMACHINE_RECIPE_GITHUB_REPO_CONFIG_KEY;
     let config = Config::global();
     let default_recipe_repo = std::env::var(key_name)
         .ok()
         .or_else(|| config.get_param(key_name).unwrap_or(None));
     let mut recipe_repo_input = cliclack::input(
-        "Enter your goose recipe GitHub repo (owner/repo): eg: my_org/goose-recipes",
+        "Enter your warmachine recipe GitHub repo (owner/repo): eg: my_org/goose-recipes",
     )
     .required(false);
     if let Some(recipe_repo) = default_recipe_repo {
@@ -1920,7 +1920,7 @@ fn configure_recipe_dialog() -> anyhow::Result<()> {
 pub fn configure_max_turns_dialog() -> anyhow::Result<()> {
     let config = Config::global();
 
-    let current_max_turns: u32 = config.get_param("GOOSE_MAX_TURNS").unwrap_or(1000);
+    let current_max_turns: u32 = config.get_param("WARMACHINE_MAX_TURNS").unwrap_or(1000);
 
     let max_turns_input: String =
         cliclack::input("Set maximum number of agent turns without user input:")
@@ -1939,10 +1939,10 @@ pub fn configure_max_turns_dialog() -> anyhow::Result<()> {
             .interact()?;
 
     let max_turns: u32 = max_turns_input.parse()?;
-    config.set_param("GOOSE_MAX_TURNS", max_turns)?;
+    config.set_param("WARMACHINE_MAX_TURNS", max_turns)?;
 
     cliclack::outro(format!(
-        "Set maximum turns to {} - goose will ask for input after {} consecutive actions",
+        "Set maximum turns to {} - warmachine will ask for input after {} consecutive actions",
         max_turns, max_turns
     ))?;
 
@@ -1951,9 +1951,9 @@ pub fn configure_max_turns_dialog() -> anyhow::Result<()> {
 
 /// Handle OpenRouter authentication
 pub async fn handle_openrouter_auth() -> anyhow::Result<()> {
-    use goose::config::{configure_openrouter, signup_openrouter::OpenRouterAuth};
-    use goose::conversation::message::Message;
-    use goose::providers::create;
+    use warmachine::config::{configure_openrouter, signup_openrouter::OpenRouterAuth};
+    use warmachine::conversation::message::Message;
+    use warmachine::providers::create;
 
     // Use the OpenRouter authentication flow
     let mut auth_flow = OpenRouterAuth::new()?;
@@ -1974,7 +1974,7 @@ pub async fn handle_openrouter_auth() -> anyhow::Result<()> {
     println!("\nTesting configuration...");
     let configured_model: String = config.get_goose_model()?;
     let model_config =
-        match goose::model_config::model_config_from_user_config("openrouter", &configured_model) {
+        match warmachine::model_config::model_config_from_user_config("openrouter", &configured_model) {
             Ok(config) => config,
             Err(e) => {
                 eprintln!("⚠️  Invalid model configuration: {}", e);
@@ -1988,7 +1988,7 @@ pub async fn handle_openrouter_auth() -> anyhow::Result<()> {
             let test_result = provider
                 .complete(
                     &model_config,
-                    "You are goose, an AI assistant.",
+                    "You are warmachine, an AI assistant.",
                     &[Message::user().with_text("Say 'Configuration test successful!'")],
                     &[],
                 )
@@ -2010,7 +2010,7 @@ pub async fn handle_openrouter_auth() -> anyhow::Result<()> {
                             config: ExtensionConfig::Platform {
                                 name: "developer".to_string(),
                                 description: "Developer extension".to_string(),
-                                display_name: Some(goose::config::DEFAULT_DISPLAY_NAME.to_string()),
+                                display_name: Some(warmachine::config::DEFAULT_DISPLAY_NAME.to_string()),
                                 bundled: Some(true),
                                 available_tools: Vec::new(),
                             },
@@ -2018,7 +2018,7 @@ pub async fn handle_openrouter_auth() -> anyhow::Result<()> {
                         println!("✓ Developer extension enabled");
                     }
 
-                    cliclack::outro("OpenRouter setup complete! You can now use goose.")?;
+                    cliclack::outro("OpenRouter setup complete! You can now use warmachine.")?;
                 }
                 Err(e) => {
                     eprintln!("⚠️  Configuration test failed: {}", e);
@@ -2053,7 +2053,7 @@ pub async fn handle_tetrate_auth() -> anyhow::Result<()> {
     // Test configuration
     println!("\nTesting configuration...");
     let configured_model: String = config.get_goose_model()?;
-    if let Err(e) = goose::model_config::model_config_from_user_config("tetrate", &configured_model)
+    if let Err(e) = warmachine::model_config::model_config_from_user_config("tetrate", &configured_model)
     {
         eprintln!("⚠️  Invalid model configuration: {}", e);
         eprintln!("Your settings have been saved. Please check your model configuration.");
@@ -2079,7 +2079,7 @@ pub async fn handle_tetrate_auth() -> anyhow::Result<()> {
                             config: ExtensionConfig::Platform {
                                 name: "developer".to_string(),
                                 description: "Developer extension".to_string(),
-                                display_name: Some(goose::config::DEFAULT_DISPLAY_NAME.to_string()),
+                                display_name: Some(warmachine::config::DEFAULT_DISPLAY_NAME.to_string()),
                                 bundled: Some(true),
                                 available_tools: Vec::new(),
                             },
@@ -2088,7 +2088,7 @@ pub async fn handle_tetrate_auth() -> anyhow::Result<()> {
                     }
 
                     cliclack::outro(
-                        "Tetrate Agent Router Service setup complete! You can now use goose.",
+                        "Tetrate Agent Router Service setup complete! You can now use warmachine.",
                     )?;
                 }
                 Err(e) => {
@@ -2202,7 +2202,7 @@ fn add_provider() -> anyhow::Result<()> {
     let mut auth: Option<AuthConfig> = None;
 
     if requires_auth {
-        let auth_mode = cliclack::select("How should goose obtain credentials for this provider?")
+        let auth_mode = cliclack::select("How should warmachine obtain credentials for this provider?")
             .item("static", "Static API key", "Enter a fixed API key now")
             .item(
                 "command",
@@ -2332,9 +2332,9 @@ fn add_provider() -> anyhow::Result<()> {
 }
 
 async fn remove_provider() -> anyhow::Result<()> {
-    let custom_providers_dir = goose::config::declarative_providers::custom_providers_dir();
+    let custom_providers_dir = warmachine::config::declarative_providers::custom_providers_dir();
     let custom_providers = if custom_providers_dir.exists() {
-        goose::config::declarative_providers::load_custom_providers(&custom_providers_dir)?
+        warmachine::config::declarative_providers::load_custom_providers(&custom_providers_dir)?
     } else {
         Vec::new()
     };
@@ -2355,7 +2355,7 @@ async fn remove_provider() -> anyhow::Result<()> {
         .interact()?;
 
     // Clean up provider-specific cache files (e.g., OAuth tokens) before removing config
-    if let Err(e) = goose::providers::cleanup_provider(selected_id).await {
+    if let Err(e) = warmachine::providers::cleanup_provider(selected_id).await {
         tracing::warn!("Failed to clean up provider cache: {}", e);
     }
 

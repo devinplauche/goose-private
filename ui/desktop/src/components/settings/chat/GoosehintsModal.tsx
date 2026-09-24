@@ -15,22 +15,22 @@ import { defineMessages, useIntl } from '../../../i18n';
 const i18n = defineMessages({
   dialogTitle: {
     id: 'goosehintsModal.dialogTitle',
-    defaultMessage: 'Configure Project Hints (.goosehints)',
+    defaultMessage: 'Configure Project Hints (.warmachinehints)',
   },
   dialogDescription: {
     id: 'goosehintsModal.dialogDescription',
     defaultMessage:
-      'Provide additional context about your project to improve communication with Goose',
+      'Provide additional context about your project to improve communication with WarMachine',
   },
   helpText1: {
     id: 'goosehintsModal.helpText1',
     defaultMessage:
-      '.goosehints is a text file used to provide additional context about your project and improve the communication with Goose.',
+      '.warmachinehints is a text file used to provide additional context about your project and improve the communication with WarMachine.',
   },
   helpText2: {
     id: 'goosehintsModal.helpText2',
     defaultMessage:
-      "Please make sure {bold} extension is enabled in the extensions page. This extension is required to use .goosehints. You'll need to restart your session for .goosehints updates to take effect.",
+      "Please make sure {bold} extension is enabled in the extensions page. This extension is required to use .warmachinehints. You'll need to restart your session for .warmachinehints updates to take effect.",
   },
   helpText3: {
     id: 'goosehintsModal.helpText3',
@@ -38,19 +38,19 @@ const i18n = defineMessages({
   },
   helpTextLink: {
     id: 'goosehintsModal.helpTextLink',
-    defaultMessage: 'using .goosehints',
+    defaultMessage: 'using .warmachinehints',
   },
   errorReading: {
     id: 'goosehintsModal.errorReading',
-    defaultMessage: 'Error reading .goosehints file: {error}',
+    defaultMessage: 'Error reading .warmachinehints file: {error}',
   },
   fileFound: {
     id: 'goosehintsModal.fileFound',
-    defaultMessage: '.goosehints file found at: {filePath}',
+    defaultMessage: '.warmachinehints file found at: {filePath}',
   },
   fileCreating: {
     id: 'goosehintsModal.fileCreating',
-    defaultMessage: 'Creating new .goosehints file at: {filePath}',
+    defaultMessage: 'Creating new .warmachinehints file at: {filePath}',
   },
   placeholder: {
     id: 'goosehintsModal.placeholder',
@@ -74,11 +74,11 @@ const i18n = defineMessages({
   },
   failedToAccess: {
     id: 'goosehintsModal.failedToAccess',
-    defaultMessage: 'Failed to access .goosehints file',
+    defaultMessage: 'Failed to access .warmachinehints file',
   },
   failedToSave: {
     id: 'goosehintsModal.failedToSave',
-    defaultMessage: 'Failed to save .goosehints file',
+    defaultMessage: 'Failed to save .warmachinehints file',
   },
   developer: {
     id: 'goosehintsModal.developer',
@@ -155,7 +155,7 @@ interface GoosehintsModalProps {
 
 export const GoosehintsModal = ({ directory, setIsGoosehintsModalOpen }: GoosehintsModalProps) => {
   const intl = useIntl();
-  const goosehintsFilePath = `${directory}/.goosehints`;
+  const goosehintsFilePath = `${directory}/.warmachinehints`;
   const [goosehintsFile, setGoosehintsFile] = useState<string>('');
   const [goosehintsFileFound, setGoosehintsFileFound] = useState<boolean>(false);
   const [goosehintsFileReadError, setGoosehintsFileReadError] = useState<string>('');
@@ -170,7 +170,7 @@ export const GoosehintsModal = ({ directory, setIsGoosehintsModalOpen }: Goosehi
         setGoosehintsFileFound(found);
         setGoosehintsFileReadError(error ?? '');
       } catch (error) {
-        console.error('Error fetching .goosehints file:', error);
+        console.error('Error fetching .warmachinehints file:', error);
         setGoosehintsFileReadError(intl.formatMessage(i18n.failedToAccess));
       }
     };
@@ -183,13 +183,13 @@ export const GoosehintsModal = ({ directory, setIsGoosehintsModalOpen }: Goosehi
     try {
       const saved = await window.electron.writeGoosehints(goosehintsFile);
       if (!saved) {
-        throw new Error('Unable to save .goosehints');
+        throw new Error('Unable to save .warmachinehints');
       }
       setSaveSuccess(true);
       setGoosehintsFileFound(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
-      console.error('Error writing .goosehints file:', error);
+      console.error('Error writing .warmachinehints file:', error);
       setGoosehintsFileReadError(intl.formatMessage(i18n.failedToSave));
     } finally {
       setIsSaving(false);

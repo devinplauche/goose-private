@@ -146,7 +146,7 @@ jobs:
             goose-*.tar.bz2
             goose-*.tar.gz
             goose-*.zip
-            Goose*.zip
+            WarMachine*.zip
             *.deb
             *.rpm
             *.flatpak
@@ -162,7 +162,7 @@ jobs:
             goose-*.tar.bz2
             goose-*.tar.gz
             goose-*.zip
-            Goose*.zip
+            WarMachine*.zip
             *.deb
             *.rpm
             *.flatpak
@@ -183,7 +183,7 @@ jobs:
             goose-*.tar.bz2
             goose-*.tar.gz
             goose-*.zip
-            Goose*.zip
+            WarMachine*.zip
             *.deb
             *.rpm
             *.flatpak

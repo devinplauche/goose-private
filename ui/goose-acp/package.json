@@ -1,14 +1,14 @@
 {
   "name": "@aaif/goose-acp",
   "version": "1.52.0",
-  "description": "Install and resolve the Goose executable through npm",
+  "description": "Install and resolve the WarMachine executable through npm",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aaif-goose/goose.git"
   },
   "keywords": [
-    "goose",
+    "warmachine",
     "ai",
     "agent",
     "acp",
@@ -24,7 +24,7 @@
     }
   },
   "bin": {
-    "goose": "./bin/goose.mjs"
+    "warmachine": "./bin/warmachine.mjs"
   },
   "files": [
     "bin",

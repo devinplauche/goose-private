@@ -1,6 +1,6 @@
 # goose-sdk
 
-Python bindings for the goose Development Kit (GDK).
+Python bindings for the warmachine Development Kit (GDK).
 
 This package is generated from the Rust `goose-sdk` crate using UniFFI.
 

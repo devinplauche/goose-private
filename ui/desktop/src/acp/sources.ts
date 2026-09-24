@@ -26,7 +26,7 @@ async function loadSkillSources(projectDir: string): Promise<SourceEntry[]> {
   const client = await getAcpClient();
   const responses = await Promise.all(
     SKILL_SOURCE_TYPES.map((type) =>
-      client.goose.sourcesList_unstable({
+      client.warmachine.sourcesList_unstable({
         type,
         projectDir,
       })

@@ -20,4 +20,4 @@ This script performs two operations by default:
    - Shows changed/added/removed mappings
    - Writes to: `crates/goose-provider-types/src/canonical/data/canonical_mapping_report.json`
 
-The script is currently built from `crates/goose/src/bin/build_canonical_models.rs` and writes into this crate's `src/canonical/data` directory.
+The script is currently built from `crates/warmachine/src/bin/build_canonical_models.rs` and writes into this crate's `src/canonical/data` directory.

@@ -34,7 +34,7 @@ fn build_env_filter(extra_directives: &[&str]) -> EnvFilter {
 
     let mut filter = EnvFilter::new("")
         .add_directive("mcp_client=info".parse().unwrap())
-        .add_directive("goose=info".parse().unwrap())
+        .add_directive("warmachine=info".parse().unwrap())
         .add_directive(LevelFilter::WARN.into());
 
     for directive in extra_directives {
@@ -45,7 +45,7 @@ fn build_env_filter(extra_directives: &[&str]) -> EnvFilter {
     filter
 }
 
-/// Set up file-based (and optionally console) tracing for a goose component.
+/// Set up file-based (and optionally console) tracing for a warmachine component.
 ///
 /// Call `try_init` on the returned subscriber; callers are responsible for the
 /// `Once` guard or direct init as appropriate for their use case.

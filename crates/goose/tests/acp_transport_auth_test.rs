@@ -4,10 +4,10 @@ use std::sync::Arc;
 use axum::body::Body;
 use axum::http::{HeaderValue, Method, Request, Response, StatusCode};
 use axum::Router;
-use goose::acp::server::AcpBuiltinSelection;
-use goose::acp::server_factory::{AcpServer, AcpServerFactoryConfig};
-use goose::acp::transport::{create_acp_router, create_router};
-use goose::agents::GoosePlatform;
+use warmachine::acp::server::AcpBuiltinSelection;
+use warmachine::acp::server_factory::{AcpServer, AcpServerFactoryConfig};
+use warmachine::acp::transport::{create_acp_router, create_router};
+use warmachine::agents::GoosePlatform;
 use tower::ServiceExt;
 
 const SECRET: &str = "test-secret-token";

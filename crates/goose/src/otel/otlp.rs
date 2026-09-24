@@ -27,15 +27,15 @@ static LOGGER_PROVIDER: Mutex<Option<SdkLoggerProvider>> = Mutex::new(None);
 static GRPC_PROTOCOL_WARNING_EMITTED: std::sync::Once = std::sync::Once::new();
 
 /// One-shot stderr warning when `OTEL_EXPORTER_OTLP_PROTOCOL=grpc` is set
-/// in an environment where goose was built without the `grpc-tonic`
+/// in an environment where warmachine was built without the `grpc-tonic`
 /// transport feature. Using `tracing::warn!` here would race the OTel
 /// subscriber that is being initialized; eprintln keeps it visible
 /// regardless of subscriber state.
 fn warn_grpc_protocol_skipped_once() {
     GRPC_PROTOCOL_WARNING_EMITTED.call_once(|| {
         eprintln!(
-            "goose otel: OTEL_EXPORTER_OTLP_PROTOCOL is set to a gRPC \
-             variant, but this goose build only includes the HTTP \
+            "warmachine otel: OTEL_EXPORTER_OTLP_PROTOCOL is set to a gRPC \
+             variant, but this warmachine build only includes the HTTP \
              transport (http-proto). OTLP signals are disabled to \
              avoid background-thread panics. Set \
              OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf and point \
@@ -194,7 +194,7 @@ impl ExporterType {
 /// shared `OTEL_EXPORTER_OTLP_PROTOCOL`, and the default is `http/protobuf`
 /// (matching what `.with_http()` produces in this build).
 ///
-/// goose's `opentelemetry-otlp` build only enables the `http-proto` /
+/// warmachine's `opentelemetry-otlp` build only enables the `http-proto` /
 /// `reqwest-blocking-client` transport features — not `grpc-tonic`. If the caller's
 /// environment sets `…_PROTOCOL=grpc`, the `.with_http()` exporter still
 /// builds successfully but its background batch / metric reader threads
@@ -212,7 +212,7 @@ fn signal_protocol_is_http(signal: &str) -> bool {
     match raw.trim().to_lowercase().as_str() {
         // Default per spec when unset — matches `.with_http()`.
         "" | "http/protobuf" | "http/json" => true,
-        // gRPC variants require the `grpc-tonic` feature, which goose
+        // gRPC variants require the `grpc-tonic` feature, which warmachine
         // does not enable.
         _ => false,
     }
@@ -257,7 +257,7 @@ pub fn signal_exporter(signal: &str) -> Option<ExporterType> {
     }
 }
 
-/// Promotes goose config-file OTel settings to env vars before exporter build.
+/// Promotes warmachine config-file OTel settings to env vars before exporter build.
 pub fn promote_config_to_env(config: &crate::config::Config) {
     if env::var("OTEL_EXPORTER_OTLP_ENDPOINT").is_err() {
         if let Ok(endpoint) = config.get_param::<String>("otel_exporter_otlp_endpoint") {
@@ -276,9 +276,9 @@ fn create_resource() -> Resource {
 
     let mut builder = Resource::builder_empty()
         .with_attributes([
-            KeyValue::new("service.name", "goose"),
+            KeyValue::new("service.name", "warmachine"),
             KeyValue::new("service.version", env!("CARGO_PKG_VERSION")),
-            KeyValue::new("service.namespace", "goose"),
+            KeyValue::new("service.namespace", "warmachine"),
             KeyValue::new("host.name", session_host()),
             KeyValue::new("user.name", session_user()),
         ])
@@ -331,7 +331,7 @@ fn create_otlp_tracing_layer() -> OtlpResult<OtlpTracingLayer> {
         ExporterType::Otlp => {
             if !signal_protocol_is_http("traces") {
                 warn_grpc_protocol_skipped_once();
-                return Err("OTLP traces protocol is grpc but goose was built without grpc-tonic; skipping traces exporter".into());
+                return Err("OTLP traces protocol is grpc but warmachine was built without grpc-tonic; skipping traces exporter".into());
             }
             let rt = get_or_create_otel_rt()?;
             let exporter = TokioSpanExporter {
@@ -356,7 +356,7 @@ fn create_otlp_tracing_layer() -> OtlpResult<OtlpTracingLayer> {
     };
 
     global::set_tracer_provider(tracer_provider.clone());
-    let tracer = tracer_provider.tracer("goose");
+    let tracer = tracer_provider.tracer("warmachine");
     *TRACER_PROVIDER.lock().unwrap_or_else(|e| e.into_inner()) = Some(tracer_provider);
 
     Ok(tracing_opentelemetry::layer().with_tracer(tracer))
@@ -383,7 +383,7 @@ fn create_otlp_metrics_layer() -> OtlpResult<OtlpMetricsLayer> {
         ExporterType::Otlp => {
             if !signal_protocol_is_http("metrics") {
                 warn_grpc_protocol_skipped_once();
-                return Err("OTLP metrics protocol is grpc but goose was built without grpc-tonic; skipping metrics exporter".into());
+                return Err("OTLP metrics protocol is grpc but warmachine was built without grpc-tonic; skipping metrics exporter".into());
             }
             let rt = get_or_create_otel_rt()?;
             let exporter = TokioMetricExporter {
@@ -422,7 +422,7 @@ fn create_otlp_logs_layer() -> OtlpResult<OtlpLogsLayer> {
         ExporterType::Otlp => {
             if !signal_protocol_is_http("logs") {
                 warn_grpc_protocol_skipped_once();
-                return Err("OTLP logs protocol is grpc but goose was built without grpc-tonic; skipping logs exporter".into());
+                return Err("OTLP logs protocol is grpc but warmachine was built without grpc-tonic; skipping logs exporter".into());
             }
             let rt = get_or_create_otel_rt()?;
             let exporter = TokioLogExporter {
@@ -490,7 +490,7 @@ fn create_otlp_tracing_filter() -> FilterFn<impl Fn(&Metadata<'_>) -> bool> {
 
         if metadata.level() == &Level::DEBUG {
             let target = metadata.target();
-            if target.starts_with("goose::")
+            if target.starts_with("warmachine::")
                 || target.starts_with("opentelemetry")
                 || target.starts_with("tracing_opentelemetry")
             {
@@ -514,8 +514,8 @@ fn create_otlp_metrics_filter() -> FilterFn<impl Fn(&Metadata<'_>) -> bool> {
 
         if metadata.level() == &Level::DEBUG {
             let target = metadata.target();
-            if target.starts_with("goose::telemetry")
-                || target.starts_with("goose::metrics")
+            if target.starts_with("warmachine::telemetry")
+                || target.starts_with("warmachine::metrics")
                 || target.contains("metric")
             {
                 return true;
@@ -685,7 +685,7 @@ mod tests {
             tracing::warn!(target: "rmcp::service::client", "suppressed descendant");
             tracing::info!(target: "rmcp::services", "allowed plural neighbor");
             tracing::info!(target: "rmcp::service_worker", "allowed underscore neighbor");
-            tracing::info!(target: "goose::test", "allowed ordinary event");
+            tracing::info!(target: "warmachine::test", "allowed ordinary event");
         });
 
         assert_eq!(seen, 3);
@@ -698,7 +698,7 @@ mod tests {
             tracing::error!(target: "rmcp::service::client", "suppressed descendant");
             tracing::info!(target: "rmcp::services", "allowed plural neighbor");
             tracing::info!(target: "rmcp::service_worker", "allowed underscore neighbor");
-            tracing::info!(target: "goose::test", "allowed ordinary event");
+            tracing::info!(target: "warmachine::test", "allowed ordinary event");
         });
 
         assert_eq!(seen, 3);
@@ -850,12 +850,12 @@ mod tests {
                 .map(|(_, v)| v.to_string())
         };
 
-        assert_eq!(get("service.name").as_deref(), Some("goose"));
+        assert_eq!(get("service.name").as_deref(), Some("warmachine"));
         assert_eq!(
             get("service.version").as_deref(),
             Some(env!("CARGO_PKG_VERSION"))
         );
-        assert_eq!(get("service.namespace").as_deref(), Some("goose"));
+        assert_eq!(get("service.namespace").as_deref(), Some("warmachine"));
         assert!(get("host.name").is_some(), "host.name should be set");
         assert!(get("user.name").is_some(), "user.name should be set");
     }
@@ -873,7 +873,7 @@ mod tests {
         };
 
         assert_eq!(get("service.name").as_deref(), Some("custom"));
-        assert_eq!(get("service.namespace").as_deref(), Some("goose"));
+        assert_eq!(get("service.namespace").as_deref(), Some("warmachine"));
     }
 
     #[test]
@@ -888,7 +888,7 @@ mod tests {
                 .map(|(_, v)| v.to_string())
         };
 
-        assert_eq!(get("service.name").as_deref(), Some("goose"));
+        assert_eq!(get("service.name").as_deref(), Some("warmachine"));
         assert_eq!(get("deployment.environment").as_deref(), Some("prod"));
     }
 
@@ -935,15 +935,15 @@ mod tests {
     #[test_case(
         &[],
         Resource::builder_empty()
-            .with_attributes([KeyValue::new("service.name", "goose"), KeyValue::new("service.version", env!("CARGO_PKG_VERSION")), KeyValue::new("service.namespace", "goose"), KeyValue::new("host.name", session_host()), KeyValue::new("user.name", session_user())])
+            .with_attributes([KeyValue::new("service.name", "warmachine"), KeyValue::new("service.version", env!("CARGO_PKG_VERSION")), KeyValue::new("service.namespace", "warmachine"), KeyValue::new("host.name", session_host()), KeyValue::new("user.name", session_user())])
             .with_detector(Box::new(TelemetryResourceDetector))
             .build();
-        "no env vars uses goose defaults"
+        "no env vars uses warmachine defaults"
     )]
     #[test_case(
         &[("OTEL_SERVICE_NAME", "custom")],
         Resource::builder_empty()
-            .with_attributes([KeyValue::new("service.name", "goose"), KeyValue::new("service.version", env!("CARGO_PKG_VERSION")), KeyValue::new("service.namespace", "goose"), KeyValue::new("host.name", session_host()), KeyValue::new("user.name", session_user())])
+            .with_attributes([KeyValue::new("service.name", "warmachine"), KeyValue::new("service.version", env!("CARGO_PKG_VERSION")), KeyValue::new("service.namespace", "warmachine"), KeyValue::new("host.name", session_host()), KeyValue::new("user.name", session_user())])
             .with_detector(Box::new(TelemetryResourceDetector))
             .with_service_name("custom")
             .build();
@@ -952,7 +952,7 @@ mod tests {
     #[test_case(
         &[("OTEL_RESOURCE_ATTRIBUTES", "deployment.environment=prod")],
         Resource::builder_empty()
-            .with_attributes([KeyValue::new("service.name", "goose"), KeyValue::new("service.version", env!("CARGO_PKG_VERSION")), KeyValue::new("service.namespace", "goose"), KeyValue::new("host.name", session_host()), KeyValue::new("user.name", session_user())])
+            .with_attributes([KeyValue::new("service.name", "warmachine"), KeyValue::new("service.version", env!("CARGO_PKG_VERSION")), KeyValue::new("service.namespace", "warmachine"), KeyValue::new("host.name", session_host()), KeyValue::new("user.name", session_user())])
             .with_detector(Box::new(TelemetryResourceDetector))
             .with_attribute(KeyValue::new("deployment.environment", "prod"))
             .build();
@@ -961,7 +961,7 @@ mod tests {
     #[test_case(
         &[("OTEL_SERVICE_NAME", "custom"), ("OTEL_RESOURCE_ATTRIBUTES", "deployment.environment=prod")],
         Resource::builder_empty()
-            .with_attributes([KeyValue::new("service.name", "goose"), KeyValue::new("service.version", env!("CARGO_PKG_VERSION")), KeyValue::new("service.namespace", "goose"), KeyValue::new("host.name", session_host()), KeyValue::new("user.name", session_user())])
+            .with_attributes([KeyValue::new("service.name", "warmachine"), KeyValue::new("service.version", env!("CARGO_PKG_VERSION")), KeyValue::new("service.namespace", "warmachine"), KeyValue::new("host.name", session_host()), KeyValue::new("user.name", session_user())])
             .with_detector(Box::new(TelemetryResourceDetector))
             .with_service_name("custom")
             .with_attribute(KeyValue::new("deployment.environment", "prod"))
@@ -985,9 +985,9 @@ mod tests {
     #[test]
     fn otlp_logs_filter_honors_bare_rust_log_level() {
         let seen = count_otlp_log_events(&[("RUST_LOG", "warn")], || {
-            tracing::error!(target: "goose::test", "error event");
-            tracing::warn!(target: "goose::test", "warn event");
-            tracing::info!(target: "goose::test", "info event");
+            tracing::error!(target: "warmachine::test", "error event");
+            tracing::warn!(target: "warmachine::test", "warn event");
+            tracing::info!(target: "warmachine::test", "info event");
         });
 
         assert_eq!(seen, 2);
@@ -998,11 +998,11 @@ mod tests {
         let seen = count_otlp_log_events(
             &[(
                 "RUST_LOG",
-                "goose=error,goose::agents::retry=debug,other=warn",
+                "warmachine=error,warmachine::agents::retry=debug,other=warn",
             )],
             || {
-                tracing::debug!(target: "goose::agents::retry", "retry detail");
-                tracing::info!(target: "goose::providers", "provider detail");
+                tracing::debug!(target: "warmachine::agents::retry", "retry detail");
+                tracing::info!(target: "warmachine::providers", "provider detail");
                 tracing::warn!(target: "other::component", "other warning");
                 tracing::info!(target: "other::component", "other detail");
             },
@@ -1015,12 +1015,12 @@ mod tests {
     fn otlp_logs_filter_falls_back_for_invalid_rust_log() {
         let seen = count_otlp_log_events(
             &[
-                ("RUST_LOG", "goose=definitely-not-a-level"),
+                ("RUST_LOG", "warmachine=definitely-not-a-level"),
                 ("OTEL_LOG_LEVEL", "error"),
             ],
             || {
-                tracing::error!(target: "goose::test", "error event");
-                tracing::warn!(target: "goose::test", "warn event");
+                tracing::error!(target: "warmachine::test", "error event");
+                tracing::warn!(target: "warmachine::test", "warn event");
             },
         );
 
@@ -1031,12 +1031,12 @@ mod tests {
     fn otlp_logs_filter_uses_otel_and_default_fallbacks() {
         let otel_seen =
             count_otlp_log_events(&[("RUST_LOG", ""), ("OTEL_LOG_LEVEL", "error")], || {
-                tracing::error!(target: "goose::test", "error event");
-                tracing::warn!(target: "goose::test", "warn event");
+                tracing::error!(target: "warmachine::test", "error event");
+                tracing::warn!(target: "warmachine::test", "warn event");
             });
         let default_seen = count_otlp_log_events(&[("RUST_LOG", "")], || {
-            tracing::info!(target: "goose::test", "info event");
-            tracing::debug!(target: "goose::test", "debug event");
+            tracing::info!(target: "warmachine::test", "info event");
+            tracing::debug!(target: "warmachine::test", "debug event");
         });
 
         assert_eq!(otel_seen, 1);
@@ -1049,7 +1049,7 @@ mod tests {
             count_otlp_log_events(&[("RUST_LOG", "trace,rmcp::service::client=trace")], || {
                 tracing::info!(target: "rmcp::service", "suppressed root");
                 tracing::error!(target: "rmcp::service::client", "suppressed descendant");
-                tracing::info!(target: "goose::test", "allowed event");
+                tracing::info!(target: "warmachine::test", "allowed event");
             });
 
         assert_eq!(seen, 1);
@@ -1057,9 +1057,9 @@ mod tests {
 
     #[test]
     fn otlp_logs_filter_excludes_sensitive_info_event_for_goose_error() {
-        let seen = count_otlp_log_events(&[("RUST_LOG", "goose=error")], || {
+        let seen = count_otlp_log_events(&[("RUST_LOG", "warmachine=error")], || {
             tracing::info!(
-                target: "goose::agents::retry",
+                target: "warmachine::agents::retry",
                 command = "curl -H Authorization:Bearer_REDACTED_TEST_VALUE",
                 "success check passed"
             );

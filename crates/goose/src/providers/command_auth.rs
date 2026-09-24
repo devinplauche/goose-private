@@ -27,7 +27,7 @@ pub struct CommandAuthProvider {
     refresh_interval: Duration,
     timeout: Duration,
     /// Working directory for the command, and the base a relative `command`
-    /// resolves against. Captured once at construction (defaults to goose's
+    /// resolves against. Captured once at construction (defaults to warmachine's
     /// current directory at that point), not re-read per invocation.
     cwd: PathBuf,
     header_name: String,
@@ -77,8 +77,8 @@ impl CommandAuthProvider {
 
     async fn fetch_token(&self) -> Result<String> {
         // Spawned directly, never through a shell, so `args` is never
-        // shell-interpolated. Inherits goose's full environment, since the
-        // same user configures goose and writes the script.
+        // shell-interpolated. Inherits warmachine's full environment, since the
+        // same user configures warmachine and writes the script.
         let program = resolve_program(&self.command, &self.cwd);
         let mut command = tokio::process::Command::new(&program);
         command

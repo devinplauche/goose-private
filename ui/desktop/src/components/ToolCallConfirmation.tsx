@@ -11,7 +11,7 @@ const i18n = defineMessages({
   },
   gooseWouldLikeToCallWithName: {
     id: 'toolConfirmation.gooseWouldLikeToCallWithName',
-    defaultMessage: 'Goose would like to call {toolName}. Allow?',
+    defaultMessage: 'WarMachine would like to call {toolName}. Allow?',
   },
 });
 

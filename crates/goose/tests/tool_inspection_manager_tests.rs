@@ -1,8 +1,8 @@
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use goose::config::GooseMode;
-use goose::conversation::message::{Message, ToolRequest};
-use goose::tool_inspection::{
+use warmachine::config::GooseMode;
+use warmachine::conversation::message::{Message, ToolRequest};
+use warmachine::tool_inspection::{
     InspectionAction, InspectionResult, ToolInspectionManager, ToolInspector,
 };
 

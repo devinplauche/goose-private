@@ -15,7 +15,7 @@ import {
 } from "./github_manager.mjs";
 
 const issue = {
-  repository: "aaif-goose/goose",
+  repository: "aaif-goose/warmachine",
   number: 123,
 };
 
@@ -25,14 +25,14 @@ test("matches current and legacy issue channels", () => {
       {
         name: "123 short title",
         description:
-          "Discussion for aaif-goose/goose#123: https://github.com/aaif-goose/goose/issues/123",
+          "Discussion for aaif-goose/warmachine#123: https://github.com/aaif-goose/goose/issues/123",
       },
       issue,
     ),
     true,
   );
   assert.equal(
-    channelMatchesIssue({ name: "aaif-goose/goose #123" }, issue),
+    channelMatchesIssue({ name: "aaif-goose/warmachine #123" }, issue),
     true,
   );
   assert.equal(channelMatchesIssue({ name: "#123 title" }, issue), true);
@@ -53,9 +53,9 @@ test("does not match another repository from an explicit reference", () => {
 
 test("parses a legacy channel ending at the issue number", () => {
   assert.deepEqual(
-    issueReferenceFromChannel({ name: "aaif-goose/goose #123" }),
+    issueReferenceFromChannel({ name: "aaif-goose/warmachine #123" }),
     {
-      repository: "aaif-goose/goose",
+      repository: "aaif-goose/warmachine",
       number: 123,
       kind: null,
       source: "legacy-name",
@@ -115,7 +115,7 @@ test("retries a project read that changes while being listed", () => {
   const issueItem = {
     content: {
       type: "Issue",
-      repository: "aaif-goose/goose",
+      repository: "aaif-goose/warmachine",
       number: 123,
     },
   };
@@ -131,7 +131,7 @@ test("retries a project read that changes while being listed", () => {
       projectNumber: 1,
       projectOwner: "aaif-goose",
       projectLimit: 1000,
-      repository: "aaif-goose/goose",
+      repository: "aaif-goose/warmachine",
     },
   );
   assert.equal(calls, 2);
@@ -142,7 +142,7 @@ test("matches project repository names without case sensitivity", () => {
   const issueItem = {
     content: {
       type: "Issue",
-      repository: "AAIF-Goose/Goose",
+      repository: "AAIF-Goose/WarMachine",
       number: 123,
     },
   };
@@ -153,7 +153,7 @@ test("matches project repository names without case sensitivity", () => {
       projectNumber: 1,
       projectOwner: "aaif-goose",
       projectLimit: 1000,
-      repository: "aaif-goose/goose",
+      repository: "aaif-goose/warmachine",
     },
   );
   assert.equal(result.byNumber.get(123), issueItem);
@@ -172,14 +172,14 @@ test("normalizes paginated REST issues and excludes pull requests", () => {
         { number: 124, pull_request: {} },
       ],
     ],
-    { command: "gh", repository: "aaif-goose/goose" },
+    { command: "gh", repository: "aaif-goose/warmachine" },
   );
   assert.deepEqual(issues, [
     {
       number: 123,
       title: "Issue",
       url: "https://github.com/aaif-goose/goose/issues/123",
-      repository: "aaif-goose/goose",
+      repository: "aaif-goose/warmachine",
       assignees: [{ login: "person" }],
     },
   ]);

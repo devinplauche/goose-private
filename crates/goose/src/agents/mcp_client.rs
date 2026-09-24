@@ -324,7 +324,7 @@ impl GooseClient {
             .as_ref()
             .and_then(|host_info| host_info.client_version.clone())
             .unwrap_or_else(|| {
-                std::env::var("GOOSE_MCP_CLIENT_VERSION")
+                std::env::var("WARMACHINE_MCP_CLIENT_VERSION")
                     .unwrap_or(env!("CARGO_PKG_VERSION").to_owned())
             });
 

@@ -637,8 +637,8 @@ mod tests {
     #[test]
     fn always_on_effort_mapping_preserves_supported_values() {
         for model in [
-            "catalog.schema.goose-glm-5-3",
-            "catalog.schema.goose-kimi-k3",
+            "catalog.schema.warmachine-glm-5-3",
+            "catalog.schema.warmachine-kimi-k3",
         ] {
             for (effort, expected) in [
                 (None, "max"),
@@ -673,7 +673,7 @@ mod tests {
         for model in [
             "databricks-gpt-5-5",
             "databricks-gpt5",
-            "data_workflow_tools.goose.goose-gpt-6-astra",
+            "data_workflow_tools.warmachine.warmachine-gpt-6-astra",
         ] {
             assert_eq!(
                 DatabricksV2Provider::route_for_model(model),
@@ -899,7 +899,7 @@ mod tests {
 
         #[tokio::test]
         async fn model_service_gpt_6_uses_responses_route_and_preserves_fqn() {
-            let model = "data_workflow_tools.goose.goose-gpt-6-astra";
+            let model = "data_workflow_tools.warmachine.warmachine-gpt-6-astra";
             let completed = format!(
                 r#"data: {{"type":"response.completed","sequence_number":1,"response":{{"id":"resp_1","object":"response","created_at":0,"status":"completed","model":"{model}","output":[],"usage":{{"input_tokens":1,"output_tokens":1,"total_tokens":2}}}}}}"#
             );
@@ -924,8 +924,8 @@ mod tests {
                 .expect("GPT-6 model service should use the Responses API");
         }
 
-        #[test_case::test_case("catalog.schema.goose-glm-5-3" ; "glm 5.3")]
-        #[test_case::test_case("catalog.schema.goose-kimi-k3" ; "kimi k3")]
+        #[test_case::test_case("catalog.schema.warmachine-glm-5-3" ; "glm 5.3")]
+        #[test_case::test_case("catalog.schema.warmachine-kimi-k3" ; "kimi k3")]
         #[tokio::test]
         async fn model_service_forwards_reasoning_effort(model: &str) {
             let body = "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n";
@@ -1066,7 +1066,7 @@ mod tests {
                 .respond_with(ResponseTemplate::new(200).set_body_json(json!({
                     "model_services": [
                         {"name": "model-services/catalog.schema.shared-model"},
-                        {"name": "model-services/data.goose.goose-kimi-k3"}
+                        {"name": "model-services/data.warmachine.warmachine-kimi-k3"}
                     ]
                 })))
                 .expect(1)
@@ -1079,7 +1079,7 @@ mod tests {
                 models,
                 vec![
                     "catalog.schema.shared-model",
-                    "data.goose.goose-kimi-k3",
+                    "data.warmachine.warmachine-kimi-k3",
                     "databricks-gpt-5-5",
                 ]
             );

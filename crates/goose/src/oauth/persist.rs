@@ -13,7 +13,7 @@ struct PersistedCredentials {
 
 /// Goose-specific credential store that uses the Config system
 ///
-/// This implementation stores OAuth credentials in the goose configuration
+/// This implementation stores OAuth credentials in the warmachine configuration
 /// system, which handles secure storage (e.g., keychain integration).
 
 #[derive(Clone)]

@@ -71,7 +71,7 @@ export default function Hub({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { time, meridiem, hour } = useClock();
 
-  // Re-resolve the working dir on mount: GOOSE_WORKING_DIR is fixed at window
+  // Re-resolve the working dir on mount: WARMACHINE_WORKING_DIR is fixed at window
   // creation, so a configured remote directory may have changed since then.
   useEffect(() => {
     let active = true;

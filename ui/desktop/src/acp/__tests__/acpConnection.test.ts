@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { GOOSE_SERVE_EXITED_USER_MESSAGE } from '../../gooseServeLeaseRegistry';
+import { WARMACHINE_SERVE_EXITED_USER_MESSAGE } from '../../gooseServeLeaseRegistry';
 
 const mockClientFactory = vi.hoisted(() => {
   const initialize = vi.fn();
@@ -10,7 +10,7 @@ const mockClientFactory = vi.hoisted(() => {
       closed: Promise<void>;
       close: ReturnType<typeof vi.fn>;
     };
-    goose: Record<string, never>;
+    warmachine: Record<string, never>;
   };
   const instances: Array<{ client: MockClient; resolveClosed: () => void }> = [];
   const connectGooseAcpClient = vi.fn((_stream: MockStream): MockClient => {
@@ -24,7 +24,7 @@ const mockClientFactory = vi.hoisted(() => {
         closed,
         close: vi.fn(),
       },
-      goose: {},
+      warmachine: {},
     };
     instances.push({ client, resolveClosed });
     return client;
@@ -38,7 +38,7 @@ const transport = vi.hoisted(() => ({
 }));
 
 vi.mock('@aaif/goose-acp-client', () => ({
-  DEFAULT_GOOSE_MCP_HOST_CAPABILITIES: {},
+  DEFAULT_WARMACHINE_MCP_HOST_CAPABILITIES: {},
 }));
 
 vi.mock('../gooseAcpClient', () => ({
@@ -130,7 +130,7 @@ describe('ACP connection ownership', () => {
     expect(mockClientFactory.instances).toHaveLength(3);
   });
 
-  it('stops reconnecting when the Goose backend has exited', async () => {
+  it('stops reconnecting when the WarMachine backend has exited', async () => {
     const { getAcpClient, subscribeToAcpRecovery } = await import('../acpConnection');
     const listener = vi.fn();
     subscribeToAcpRecovery(listener);
@@ -139,13 +139,13 @@ describe('ACP connection ownership', () => {
     const getAcpUrl = vi
       .fn()
       .mockRejectedValue(
-        new Error(`Error invoking remote method 'get-acp-url': ${GOOSE_SERVE_EXITED_USER_MESSAGE}`)
+        new Error(`Error invoking remote method 'get-acp-url': ${WARMACHINE_SERVE_EXITED_USER_MESSAGE}`)
       );
     window.electron.getAcpUrl = getAcpUrl;
     mockClientFactory.instances[0].resolveClosed();
     await Promise.resolve();
 
-    const connection = expect(getAcpClient()).rejects.toThrow(GOOSE_SERVE_EXITED_USER_MESSAGE);
+    const connection = expect(getAcpClient()).rejects.toThrow(WARMACHINE_SERVE_EXITED_USER_MESSAGE);
     await vi.advanceTimersByTimeAsync(250);
     await connection;
 
@@ -161,17 +161,17 @@ describe('ACP connection ownership', () => {
     const getAcpUrl = vi
       .fn()
       .mockRejectedValue(
-        new Error(`Error invoking remote method 'get-acp-url': ${GOOSE_SERVE_EXITED_USER_MESSAGE}`)
+        new Error(`Error invoking remote method 'get-acp-url': ${WARMACHINE_SERVE_EXITED_USER_MESSAGE}`)
       );
     window.electron.getAcpUrl = getAcpUrl;
     mockClientFactory.instances[0].resolveClosed();
     await Promise.resolve();
 
-    const failedRecovery = expect(getAcpClient()).rejects.toThrow(GOOSE_SERVE_EXITED_USER_MESSAGE);
+    const failedRecovery = expect(getAcpClient()).rejects.toThrow(WARMACHINE_SERVE_EXITED_USER_MESSAGE);
     await vi.advanceTimersByTimeAsync(250);
     await failedRecovery;
 
-    await expect(getAcpClient()).rejects.toThrow(GOOSE_SERVE_EXITED_USER_MESSAGE);
+    await expect(getAcpClient()).rejects.toThrow(WARMACHINE_SERVE_EXITED_USER_MESSAGE);
 
     expect(getAcpUrl).toHaveBeenCalledTimes(2);
     expect(mockClientFactory.instances).toHaveLength(1);

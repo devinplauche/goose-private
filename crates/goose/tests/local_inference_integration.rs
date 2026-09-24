@@ -2,21 +2,21 @@
 //!
 //! These tests require a downloaded GGUF model and are ignored by default.
 //! Download a model first:
-//!   goose local-models download bartowski/Llama-3.2-1B-Instruct-GGUF:Q4_K_M
+//!   warmachine local-models download bartowski/Llama-3.2-1B-Instruct-GGUF:Q4_K_M
 //!
 //! Run with the default model:
-//!   cargo test -p goose --test local_inference_integration -- --ignored
+//!   cargo test -p warmachine --test local_inference_integration -- --ignored
 //!
 //! Run with a specific model:
-//!   TEST_MODEL="bartowski/Qwen_Qwen3-32B-GGUF:Q4_K_M" cargo test -p goose --test local_inference_integration -- --ignored
+//!   TEST_MODEL="bartowski/Qwen_Qwen3-32B-GGUF:Q4_K_M" cargo test -p warmachine --test local_inference_integration -- --ignored
 //!
 //! Run vision tests (requires a vision-capable model like gemma-4):
-//!   TEST_VISION_MODEL="unsloth/gemma-4-E4B-it-GGUF:Q4_K_M" cargo test -p goose --test local_inference_integration test_local_inference_vision -- --ignored
+//!   TEST_VISION_MODEL="unsloth/gemma-4-E4B-it-GGUF:Q4_K_M" cargo test -p warmachine --test local_inference_integration test_local_inference_vision -- --ignored
 
 use base64::prelude::*;
 use futures::StreamExt;
-use goose::conversation::message::Message;
-use goose::providers::create;
+use warmachine::conversation::message::Message;
+use warmachine::providers::create;
 use goose_providers::model::ModelConfig;
 
 const DEFAULT_TEST_MODEL: &str = "bartowski/Llama-3.2-1B-Instruct-GGUF:Q4_K_M";
@@ -76,7 +76,7 @@ async fn test_local_inference_large_prompt() {
         .expect("provider creation should succeed");
 
     // Build a large prompt (~3500 tokens) to exercise prefill performance
-    let padding = "You are Goose, a highly capable AI assistant.\n".repeat(80);
+    let padding = "You are WarMachine, a highly capable AI assistant.\n".repeat(80);
     let prompt = format!("{padding}\nNow answer this: what is the capital of Moldova?");
     let messages = vec![Message::user().with_text(&prompt)];
 
@@ -120,7 +120,7 @@ fn tiny_red_png() -> Vec<u8> {
 /// Requires TEST_VISION_MODEL to be set to a downloaded vision model.
 /// Example:
 ///   TEST_VISION_MODEL="unsloth/gemma-4-E4B-it-GGUF:Q4_K_M" \
-///     cargo test -p goose --test local_inference_integration test_local_inference_vision -- --ignored
+///     cargo test -p warmachine --test local_inference_integration test_local_inference_vision -- --ignored
 #[tokio::test]
 #[ignore]
 async fn test_local_inference_vision_produces_output() {

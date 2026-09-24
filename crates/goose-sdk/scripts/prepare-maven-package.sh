@@ -40,7 +40,7 @@ cp LICENSE "$resources_dir/META-INF/LICENSE"
   --no-format \
   --out-dir "$kotlin_dir" 2>/dev/null
 
-python3 - "$kotlin_dir/io/github/aaif_goose/goose.kt" <<'PY'
+python3 - "$kotlin_dir/io/github/aaif_goose/warmachine.kt" <<'PY'
 import sys
 from pathlib import Path
 

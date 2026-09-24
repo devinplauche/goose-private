@@ -4,8 +4,8 @@
 use crate::scenario_tests::scenario_runner::SCENARIO_TESTS_DIR;
 use base64::engine::general_purpose;
 use base64::Engine;
-use goose::conversation::message::Message;
-use goose::providers::base::Provider;
+use warmachine::conversation::message::Message;
+use warmachine::providers::base::Provider;
 
 pub type MessageGenerator<'a> = Box<dyn Fn(&dyn Provider) -> Message + 'a>;
 

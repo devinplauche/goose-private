@@ -17,14 +17,14 @@ impl Paths {
             }
         } else {
             // NOTE: "Block" is kept here for backwards compatibility with existing
-            // user config/data directories (e.g. ~/Library/Application Support/Block/goose/).
+            // user config/data directories (e.g. ~/Library/Application Support/Block/warmachine/).
             // Changing this would orphan existing installations.
             let strategy = choose_app_strategy(AppStrategyArgs {
                 top_level_domain: "Block".to_string(),
                 author: "Block".to_string(),
-                app_name: "goose".to_string(),
+                app_name: "warmachine".to_string(),
             })
-            .expect("goose requires a home dir");
+            .expect("warmachine requires a home dir");
 
             match dir_type {
                 DirType::Config => strategy.config_dir(),
@@ -38,7 +38,7 @@ impl Paths {
     }
 
     fn path_root() -> Option<PathBuf> {
-        Self::validated_path_root(std::env::var_os("GOOSE_PATH_ROOT"))
+        Self::validated_path_root(std::env::var_os("WARMACHINE_PATH_ROOT"))
     }
 
     fn validated_path_root(value: Option<OsString>) -> Option<PathBuf> {

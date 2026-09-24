@@ -4,11 +4,11 @@ use crate::recipes::print_recipe::{
 };
 use crate::recipes::search_recipe::load_recipe_file;
 use anyhow::Result;
-use goose::recipe::build_recipe::{
+use warmachine::recipe::build_recipe::{
     apply_values_to_parameters_without_file_expansion, build_recipe_from_template, RecipeError,
 };
-use goose::recipe::validate_recipe::parse_and_validate_parameters;
-use goose::recipe::Recipe;
+use warmachine::recipe::validate_recipe::parse_and_validate_parameters;
+use warmachine::recipe::Recipe;
 
 fn create_user_prompt_callback() -> impl Fn(&str, &str) -> Result<String> {
     |key: &str, description: &str| -> Result<String> {
@@ -73,8 +73,8 @@ pub fn explain_recipe(recipe_name: &str, params: Vec<(String, String)>) -> Resul
 
 #[cfg(test)]
 mod tests {
-    use goose::recipe::build_recipe::apply_values_to_parameters_without_file_expansion;
-    use goose::recipe::{RecipeParameterInputType, RecipeParameterRequirement};
+    use warmachine::recipe::build_recipe::apply_values_to_parameters_without_file_expansion;
+    use warmachine::recipe::{RecipeParameterInputType, RecipeParameterRequirement};
 
     use crate::recipes::recipe::load_recipe;
 
@@ -123,7 +123,7 @@ mod tests {
     fn explanation_preserves_file_parameter_path_without_reading_contents() {
         let temp_dir = tempfile::tempdir().unwrap();
         let file_path = temp_dir.path().join("does-not-exist.txt");
-        let parameters = vec![goose::recipe::RecipeParameter {
+        let parameters = vec![warmachine::recipe::RecipeParameter {
             key: "input_file".to_string(),
             input_type: RecipeParameterInputType::File,
             requirement: RecipeParameterRequirement::Required,

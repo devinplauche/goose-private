@@ -18,7 +18,7 @@ const SESSION_LIST_PAGE_SIZE: usize = 50;
 struct SessionListCursorToken {
     #[serde(alias = "updated_at")]
     sort_at: chrono::DateTime<chrono::Utc>,
-    // Goose stores timestamps with second precision in common write paths, so the
+    // WarMachine stores timestamps with second precision in common write paths, so the
     // cursor needs the full (sort_at, id) sort key to avoid skipping tied rows.
     session_id: String,
     filter_hash: String,
@@ -77,7 +77,7 @@ fn session_types_from_meta(
 fn include_last_message_snippet_from_meta(
     meta: Option<&Meta>,
 ) -> Result<bool, agent_client_protocol::Error> {
-    let Some(value) = meta.and_then(|meta| meta.get("goose")) else {
+    let Some(value) = meta.and_then(|meta| meta.get("warmachine")) else {
         return Ok(false);
     };
     if value.is_null() {
@@ -85,7 +85,7 @@ fn include_last_message_snippet_from_meta(
     }
 
     let Some(goose_meta) = value.as_object() else {
-        return Err(agent_client_protocol::Error::invalid_params().data("goose must be an object"));
+        return Err(agent_client_protocol::Error::invalid_params().data("warmachine must be an object"));
     };
     let Some(value) = goose_meta.get("includeLastMessageSnippet") else {
         return Ok(false);
@@ -96,7 +96,7 @@ fn include_last_message_snippet_from_meta(
 
     value.as_bool().ok_or_else(|| {
         agent_client_protocol::Error::invalid_params()
-            .data("goose.includeLastMessageSnippet must be a boolean")
+            .data("warmachine.includeLastMessageSnippet must be a boolean")
     })
 }
 

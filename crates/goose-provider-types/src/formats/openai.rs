@@ -1721,7 +1721,7 @@ pub fn create_request_for_model_with_options(
 ) -> anyhow::Result<Value, Error> {
     if model_config.model_name.starts_with("o1-mini") {
         return Err(anyhow!(
-            "o1-mini model is not currently supported since goose uses tool calling and o1-mini does not support it. Please use o1 or o3 models instead."
+            "o1-mini model is not currently supported since warmachine uses tool calling and o1-mini does not support it. Please use o1 or o3 models instead."
         ));
     }
 
@@ -1775,7 +1775,7 @@ pub fn create_request_for_model_with_options(
     }
 
     // Only emit max_tokens / max_completion_tokens when the user (via
-    // GOOSE_MAX_TOKENS) or a canonical model record has supplied a value.
+    // WARMACHINE_MAX_TOKENS) or a canonical model record has supplied a value.
     // For unknown models on OpenAI-compatible endpoints (e.g. llama_swap,
     // lmstudio) sending the historic 4096 default truncates non-trivial
     // responses; omitting the field lets the server use its own max.
@@ -1878,7 +1878,7 @@ pub fn is_xai_reasoning_model(model_name: &str) -> bool {
         || model_name.starts_with("grok-4-1-fast-reasoning")
 }
 
-/// Maps Goose's effort levels to values accepted by xAI Chat Completions.
+/// Maps WarMachine's effort levels to values accepted by xAI Chat Completions.
 pub fn xai_reasoning_effort_for_thinking(
     model_name: &str,
     effort: ThinkingEffort,
@@ -3141,7 +3141,7 @@ mod tests {
     #[test]
     fn test_create_request_omits_max_tokens_when_unset() -> anyhow::Result<()> {
         // Unknown models on OpenAI-compatible local providers (llama_swap,
-        // lmstudio) have no canonical record and no GOOSE_MAX_TOKENS, so the
+        // lmstudio) have no canonical record and no WARMACHINE_MAX_TOKENS, so the
         // request must not pin the legacy 4096 default. See issue #9007.
         let model_config = test_model_config("some-unknown-local-model");
         let request = create_request(
@@ -3333,7 +3333,7 @@ mod tests {
     fn test_openai_reasoning_effort_gpt6_does_not_support_none() {
         for model in [
             "gpt-6-astra",
-            "data_workflow_tools.goose.goose-gpt-6-astra",
+            "data_workflow_tools.warmachine.warmachine-gpt-6-astra",
             "openrouter/openai/gpt-6-astra",
         ] {
             assert_eq!(
@@ -5388,7 +5388,7 @@ data: [DONE]"#;
             "databricks-gpt-5.4",
             "goose-gpt-5.4-high",
             "gpt-6-astra",
-            "data_workflow_tools.goose.goose-gpt-6-astra",
+            "data_workflow_tools.warmachine.warmachine-gpt-6-astra",
             "headless-goose-o3-mini",
         ] {
             assert!(is_openai_responses_model(model), "{model} should match");
@@ -5736,7 +5736,7 @@ data: [DONE]"#;
             format!(
                 "<turn-context>\n\
                  <current-time>{time}</current-time>\n\
-                 <working-directory>/Users/me/code/goose</working-directory>\n\
+                 <working-directory>/Users/me/code/warmachine</working-directory>\n\
                  <turn-budget>{turn_budget}</turn-budget>\n\
                  </turn-context>"
             )

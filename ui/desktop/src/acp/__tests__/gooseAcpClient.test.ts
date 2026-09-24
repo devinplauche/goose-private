@@ -49,7 +49,7 @@ async function waitForWrites(stream: { writes: AnyMessage[] }, count: number): P
   });
 }
 
-describe('Goose ACP client composition', () => {
+describe('WarMachine ACP client composition', () => {
   it('registers standard and Goose-specific handlers on a live ACP connection', async () => {
     const stream = createTestStream();
     const handlers = callbacks();
@@ -113,7 +113,7 @@ describe('Goose ACP client composition', () => {
       result: { action: 'submit', values: { name: 'Ada' } },
     });
 
-    const toolsRequest = client.goose.toolsList_unstable({ sessionId: 'session-1' });
+    const toolsRequest = client.warmachine.toolsList_unstable({ sessionId: 'session-1' });
     await waitForWrites(stream, 3);
     const outboundRequest = stream.writes[2] as { id: number; method: string };
     expect(outboundRequest.method).toBe('_goose/unstable/tools/list');

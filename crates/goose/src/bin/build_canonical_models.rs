@@ -9,7 +9,7 @@
 ///
 use anyhow::{Context, Result};
 use clap::Parser;
-use goose::providers::create_with_named_model;
+use warmachine::providers::create_with_named_model;
 use goose_providers::canonical::{
     canonical_name, CanonicalModel, CanonicalModelRegistry, Limit, Modalities, Modality,
     ModelMapping, Pricing, ThinkingMode,
@@ -331,7 +331,7 @@ async fn fetch_models_dev() -> Result<Value> {
     let client = reqwest::Client::new();
     let response = client
         .get(MODELS_DEV_API_URL)
-        .header("User-Agent", "goose/canonical-builder")
+        .header("User-Agent", "warmachine/canonical-builder")
         .send()
         .await
         .context("Failed to fetch from models.dev API")?;

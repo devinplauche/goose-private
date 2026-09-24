@@ -292,7 +292,7 @@ fn sanitize_reference_path(
 }
 
 fn find_file_references(content: &str) -> Vec<FileReference> {
-    // Keep size limits for ReDoS protection - .goosehints should be reasonably sized
+    // Keep size limits for ReDoS protection - .warmachinehints should be reasonably sized
     const MAX_CONTENT_LENGTH: usize = 131_072; // 128KB limit
 
     if content.len() > MAX_CONTENT_LENGTH {

@@ -53,8 +53,8 @@ use uuid::Uuid;
 
 /// Default model to use for tool interpretation
 pub const DEFAULT_INTERPRETER_MODEL_OLLAMA: &str = "mistral-nemo";
-pub const TOOLSHIM_BACKEND_ENV_VAR: &str = "GOOSE_TOOLSHIM_BACKEND";
-pub const TOOLSHIM_LOCAL_MODEL_ENV_VAR: &str = "GOOSE_TOOLSHIM_MODEL";
+pub const TOOLSHIM_BACKEND_ENV_VAR: &str = "WARMACHINE_TOOLSHIM_BACKEND";
+pub const TOOLSHIM_LOCAL_MODEL_ENV_VAR: &str = "WARMACHINE_TOOLSHIM_MODEL";
 #[cfg(not(feature = "local-inference"))]
 const LOCAL_LLM_MODEL_CONFIG_KEY: &str = "LOCAL_LLM_MODEL";
 
@@ -128,7 +128,7 @@ fn resolve_tool_name(raw_tool_name: &str, tools: &[Tool]) -> Option<String> {
         .unwrap_or(without_functions_prefix)
         .trim();
 
-    // Also try replacing dots with double-underscores (goose tool name convention)
+    // Also try replacing dots with double-underscores (warmachine tool name convention)
     let with_dunder = without_functions_prefix.replace('.', "__");
 
     let mut candidates = vec![
@@ -858,8 +858,8 @@ pub fn sanitize_residual_markers(mut message: Message) -> Message {
 }
 
 /// Environment variables that affect behavior:
-/// - GOOSE_TOOLSHIM: When set to "true" or "1", enables using the tool shim in the standard OllamaProvider (default: false)
-/// - GOOSE_TOOLSHIM_OLLAMA_MODEL: Ollama model to use as the tool interpreter (default: DEFAULT_INTERPRETER_MODEL)
+/// - WARMACHINE_TOOLSHIM: When set to "true" or "1", enables using the tool shim in the standard OllamaProvider (default: false)
+/// - WARMACHINE_TOOLSHIM_OLLAMA_MODEL: Ollama model to use as the tool interpreter (default: DEFAULT_INTERPRETER_MODEL)
 /// A trait for models that can interpret text into structured tool call JSON format
 #[async_trait::async_trait]
 pub trait ToolInterpreter {
@@ -1141,7 +1141,7 @@ Otherwise, if no JSON tool requests are provided, use the no-op tool:
         let format_schema = OllamaInterpreter::tool_structured_output_format_schema();
 
         // Determine which model to use for interpretation (from env var or default)
-        let interpreter_model = std::env::var("GOOSE_TOOLSHIM_OLLAMA_MODEL")
+        let interpreter_model = std::env::var("WARMACHINE_TOOLSHIM_OLLAMA_MODEL")
             .unwrap_or_else(|_| DEFAULT_INTERPRETER_MODEL_OLLAMA.to_string());
 
         // Make a call to ollama with structured output

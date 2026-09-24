@@ -1,4 +1,4 @@
-import { Goose, Rain } from './icons/Goose';
+import { WarMachine, Rain } from './icons/WarMachine';
 import { cn } from '../utils';
 
 interface GooseLogoProps {
@@ -16,12 +16,12 @@ export default function GooseLogo({
     default: {
       frame: 'w-16 h-16',
       rain: 'w-[275px] h-[275px]',
-      goose: 'w-16 h-16',
+      warmachine: 'w-16 h-16',
     },
     small: {
       frame: 'w-8 h-8',
       rain: 'w-[150px] h-[150px]',
-      goose: 'w-8 h-8',
+      warmachine: 'w-8 h-8',
     },
   } as const;
 
@@ -43,7 +43,7 @@ export default function GooseLogo({
           hover && 'opacity-0 group-hover/with-hover:opacity-100'
         )}
       />
-      <Goose className={cn(currentSize.goose, 'absolute left-0 bottom-0 z-2')} />
+      <WarMachine className={cn(currentSize.warmachine, 'absolute left-0 bottom-0 z-2')} />
     </div>
   );
 }

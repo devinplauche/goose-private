@@ -88,7 +88,7 @@ impl SnowflakeProvider {
         if let Some(request_builder) = request_builder {
             api_client = api_client.with_request_builder(request_builder);
         }
-        let api_client = api_client.with_header("User-Agent", "goose")?;
+        let api_client = api_client.with_header("User-Agent", "warmachine")?;
 
         Ok(Self {
             api_client,

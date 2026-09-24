@@ -262,9 +262,9 @@ mod tests {
         F: FnOnce(),
     {
         let root = TempDir::new().unwrap();
-        std::env::set_var("GOOSE_PATH_ROOT", root.path());
+        std::env::set_var("WARMACHINE_PATH_ROOT", root.path());
         test();
-        std::env::remove_var("GOOSE_PATH_ROOT");
+        std::env::remove_var("WARMACHINE_PATH_ROOT");
     }
 
     #[test]

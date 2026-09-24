@@ -222,8 +222,8 @@ async fn resume_saved_provider_session(
     }
 }
 
-pub(super) const DEFAULT_PROVIDER_ID: &str = "goose";
-pub(super) const DEFAULT_PROVIDER_LABEL: &str = "Goose (Default)";
+pub(super) const DEFAULT_PROVIDER_ID: &str = "warmachine";
+pub(super) const DEFAULT_PROVIDER_LABEL: &str = "WarMachine (Default)";
 const PROVIDER_CONFIG_STATUS_CHECK_CONCURRENCY: usize = 16;
 
 /// In-memory state for an active ACP session.
@@ -231,7 +231,7 @@ const PROVIDER_CONFIG_STATUS_CHECK_CONCURRENCY: usize = 16;
 /// ## Terminology (temporary, until all clients migrate to ACP)
 ///
 /// The ACP protocol uses "session" to mean the conversation as the human sees it —
-/// a durable, append-only exchange of messages. Internally, goose also has a concept
+/// a durable, append-only exchange of messages. Internally, warmachine also has a concept
 /// called "Session" (the `sessions` DB table) which represents the agent's working
 /// state: the message list the LLM sees, compaction state, provider binding, etc.
 ///
@@ -365,14 +365,14 @@ fn meta_string(
 }
 
 fn agent_capabilities_meta() -> Option<Meta> {
-    let mut goose = serde_json::Map::new();
-    goose.insert("recipeParameterScopes".to_string(), serde_json::json!({}));
+    let mut warmachine = serde_json::Map::new();
+    warmachine.insert("recipeParameterScopes".to_string(), serde_json::json!({}));
     if cfg!(feature = "local-inference") {
-        goose.insert("localInference".to_string(), serde_json::json!({}));
+        warmachine.insert("localInference".to_string(), serde_json::json!({}));
     }
 
     let mut meta = serde_json::Map::new();
-    meta.insert("goose".to_string(), serde_json::Value::Object(goose));
+    meta.insert("warmachine".to_string(), serde_json::Value::Object(warmachine));
     Some(meta)
 }
 
@@ -419,8 +419,8 @@ fn extract_timeout_from_meta(meta: &Option<Meta>) -> Option<u64> {
 }
 
 fn use_state_machine_from_meta(meta: Option<&Meta>) -> bool {
-    meta.and_then(|meta| meta.get("goose"))
-        .and_then(|goose| goose.get("unrolledAgentLoop"))
+    meta.and_then(|meta| meta.get("warmachine"))
+        .and_then(|warmachine| warmachine.get("unrolledAgentLoop"))
         .and_then(|value| value.as_bool())
         .unwrap_or_else(crate::agents::state_machine::enabled)
 }
@@ -428,7 +428,7 @@ fn use_state_machine_from_meta(meta: Option<&Meta>) -> bool {
 #[derive(Debug, Default, Deserialize)]
 struct ClientCapabilitiesMeta {
     #[serde(default)]
-    goose: Option<GooseClientCapabilities>,
+    warmachine: Option<GooseClientCapabilities>,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -461,7 +461,7 @@ fn extract_client_mcp_host_info(
     goose_client_capabilities: Option<&GooseClientCapabilities>,
 ) -> GooseMcpHostInfo {
     let host_capabilities =
-        goose_client_capabilities.and_then(|goose| goose.mcp_host_capabilities.as_ref());
+        goose_client_capabilities.and_then(|warmachine| warmachine.mcp_host_capabilities.as_ref());
     let explicit_extensions = host_capabilities
         .as_ref()
         .and_then(|capabilities| capabilities.extensions.as_ref())
@@ -481,7 +481,7 @@ fn extract_client_mcp_host_info(
 fn extract_use_login_shell_path(args: &InitializeRequest) -> bool {
     args.meta
         .as_ref()
-        .and_then(|meta| meta.get("goose/useLoginShellPath"))
+        .and_then(|meta| meta.get("warmachine/useLoginShellPath"))
         .and_then(|v| v.as_bool())
         .unwrap_or(false)
 }
@@ -1632,7 +1632,7 @@ fn extract_client_supports_goose_custom_notifications(
     goose_client_capabilities: Option<&GooseClientCapabilities>,
 ) -> bool {
     goose_client_capabilities
-        .and_then(|goose| goose.custom_notifications)
+        .and_then(|warmachine| warmachine.custom_notifications)
         .unwrap_or(false)
 }
 
@@ -1640,7 +1640,7 @@ fn extract_client_supports_recipe_param_requests(
     goose_client_capabilities: Option<&GooseClientCapabilities>,
 ) -> bool {
     goose_client_capabilities
-        .and_then(|goose| goose.recipe_parameter_requests)
+        .and_then(|warmachine| warmachine.recipe_parameter_requests)
         .unwrap_or(false)
 }
 
@@ -1796,7 +1796,7 @@ impl GooseAcpAgent {
             .set(args.client_capabilities.fs.clone());
         let _ = self.client_terminal.set(args.client_capabilities.terminal);
         let goose_client_capabilities =
-            extract_client_capabilities_meta(&args).and_then(|meta| meta.goose);
+            extract_client_capabilities_meta(&args).and_then(|meta| meta.warmachine);
         let _ = self.client_mcp_host_info.set(extract_client_mcp_host_info(
             &args,
             goose_client_capabilities.as_ref(),
@@ -1809,7 +1809,7 @@ impl GooseAcpAgent {
         );
         let client_requests_tool_call_label_enrichment = goose_client_capabilities
             .as_ref()
-            .and_then(|goose| goose.tool_call_label_enrichment)
+            .and_then(|warmachine| warmachine.tool_call_label_enrichment)
             .unwrap_or(false);
         let _ = self
             .client_requests_tool_call_label_enrichment
@@ -1838,11 +1838,11 @@ impl GooseAcpAgent {
             .mcp_capabilities(McpCapabilities::new().http(true))
             .meta(agent_capabilities_meta());
         Ok(InitializeResponse::new(args.protocol_version)
-            .agent_info(Implementation::new("goose", env!("CARGO_PKG_VERSION")))
+            .agent_info(Implementation::new("warmachine", env!("CARGO_PKG_VERSION")))
             .agent_capabilities(capabilities)
             .auth_methods(vec![AuthMethod::Agent(
                 AuthMethodAgent::new("goose-provider", "Configure Provider")
-                    .description("Run `goose configure` to set up your AI provider and API key"),
+                    .description("Run `warmachine configure` to set up your AI provider and API key"),
             )]))
     }
 
@@ -1973,8 +1973,8 @@ impl GooseAcpAgent {
     }
 
     fn active_run_meta(active_run_id: Option<&str>) -> Meta {
-        let mut goose = serde_json::Map::new();
-        goose.insert(
+        let mut warmachine = serde_json::Map::new();
+        warmachine.insert(
             "activeRunId".to_string(),
             active_run_id
                 .map(|run_id| serde_json::Value::String(run_id.to_string()))
@@ -1982,7 +1982,7 @@ impl GooseAcpAgent {
         );
 
         let mut meta = serde_json::Map::new();
-        meta.insert("goose".to_string(), serde_json::Value::Object(goose));
+        meta.insert("warmachine".to_string(), serde_json::Value::Object(warmachine));
         meta
     }
 
@@ -2005,8 +2005,8 @@ impl GooseAcpAgent {
         message_id: &str,
         run_id: &str,
     ) -> Result<(), agent_client_protocol::Error> {
-        let mut goose = serde_json::Map::new();
-        goose.insert(
+        let mut warmachine = serde_json::Map::new();
+        warmachine.insert(
             "queuedSteer".to_string(),
             serde_json::json!({
                 "messageId": message_id,
@@ -2014,7 +2014,7 @@ impl GooseAcpAgent {
             }),
         );
         let mut meta = serde_json::Map::new();
-        meta.insert("goose".to_string(), serde_json::Value::Object(goose));
+        meta.insert("warmachine".to_string(), serde_json::Value::Object(warmachine));
 
         cx.send_notification(SessionNotification::new(
             session_id.clone(),
@@ -2674,7 +2674,7 @@ where
 /// A lazily-initialized agent connection used by the HTTP/WebSocket transport.
 ///
 /// The `agent-client-protocol-http` server takes a synchronous factory that
-/// yields a [`ConnectTo<Client>`] per connection, but creating a goose agent is
+/// yields a [`ConnectTo<Client>`] per connection, but creating a warmachine agent is
 /// async. Agent creation is therefore deferred into [`ConnectTo::connect_to`],
 /// which runs as the connection's serving future.
 pub struct GooseAgentConnection {
@@ -3509,7 +3509,7 @@ print(\"hello, world\")
     fn test_goose_custom_notifications_capability_defaults_to_false() {
         let request = InitializeRequest::new(agent_client_protocol::schema::ProtocolVersion::V1);
         let goose_client_capabilities =
-            extract_client_capabilities_meta(&request).and_then(|meta| meta.goose);
+            extract_client_capabilities_meta(&request).and_then(|meta| meta.warmachine);
 
         assert!(!extract_client_supports_goose_custom_notifications(
             goose_client_capabilities.as_ref()
@@ -3520,8 +3520,8 @@ print(\"hello, world\")
     fn test_agent_capabilities_advertise_recipe_parameter_scopes() {
         assert_eq!(
             agent_capabilities_meta()
-                .and_then(|meta| meta.get("goose").cloned())
-                .and_then(|goose| goose.get("recipeParameterScopes").cloned()),
+                .and_then(|meta| meta.get("warmachine").cloned())
+                .and_then(|warmachine| warmachine.get("recipeParameterScopes").cloned()),
             Some(serde_json::json!({}))
         );
     }
@@ -3534,14 +3534,14 @@ print(\"hello, world\")
             serde_json::Value::Bool(true),
         );
         let mut meta = serde_json::Map::new();
-        meta.insert("goose".to_string(), serde_json::Value::Object(goose_meta));
+        meta.insert("warmachine".to_string(), serde_json::Value::Object(goose_meta));
 
         let request = InitializeRequest::new(agent_client_protocol::schema::ProtocolVersion::V1)
             .client_capabilities(
                 agent_client_protocol::schema::v1::ClientCapabilities::new().meta(meta),
             );
         let goose_client_capabilities =
-            extract_client_capabilities_meta(&request).and_then(|meta| meta.goose);
+            extract_client_capabilities_meta(&request).and_then(|meta| meta.warmachine);
 
         assert!(extract_client_supports_goose_custom_notifications(
             goose_client_capabilities.as_ref()
@@ -3552,9 +3552,9 @@ print(\"hello, world\")
     fn test_tool_call_label_enrichment_capability() {
         let request = InitializeRequest::new(agent_client_protocol::schema::ProtocolVersion::V1);
         let goose_client_capabilities =
-            extract_client_capabilities_meta(&request).and_then(|meta| meta.goose);
+            extract_client_capabilities_meta(&request).and_then(|meta| meta.warmachine);
         assert!(!goose_client_capabilities
-            .and_then(|goose| goose.tool_call_label_enrichment)
+            .and_then(|warmachine| warmachine.tool_call_label_enrichment)
             .unwrap_or(false));
 
         let mut goose_meta = serde_json::Map::new();
@@ -3563,15 +3563,15 @@ print(\"hello, world\")
             serde_json::Value::Bool(true),
         );
         let mut meta = serde_json::Map::new();
-        meta.insert("goose".to_string(), serde_json::Value::Object(goose_meta));
+        meta.insert("warmachine".to_string(), serde_json::Value::Object(goose_meta));
         let request = InitializeRequest::new(agent_client_protocol::schema::ProtocolVersion::V1)
             .client_capabilities(
                 agent_client_protocol::schema::v1::ClientCapabilities::new().meta(meta),
             );
         let goose_client_capabilities =
-            extract_client_capabilities_meta(&request).and_then(|meta| meta.goose);
+            extract_client_capabilities_meta(&request).and_then(|meta| meta.warmachine);
         assert!(goose_client_capabilities
-            .and_then(|goose| goose.tool_call_label_enrichment)
+            .and_then(|warmachine| warmachine.tool_call_label_enrichment)
             .unwrap_or(false));
     }
 

@@ -87,7 +87,7 @@ pub(crate) fn goose_tool_call_meta(tool_request: &ToolRequest) -> Option<Meta> {
     );
 
     let mut meta = serde_json::Map::new();
-    meta.insert("goose".to_string(), serde_json::Value::Object(goose_meta));
+    meta.insert("warmachine".to_string(), serde_json::Value::Object(goose_meta));
     Some(meta)
 }
 
@@ -222,7 +222,7 @@ pub(crate) fn trusted_update_meta(tool_response: &ToolResponse) -> Option<Meta> 
         .get(TRUSTED_TOOL_UPDATE_META_KEY)?
         .clone();
     let mut meta_map = serde_json::Map::new();
-    meta_map.insert("goose".to_string(), goose_meta);
+    meta_map.insert("warmachine".to_string(), goose_meta);
     Some(meta_map)
 }
 
@@ -428,7 +428,7 @@ mod tests {
                 Some(serde_json::Value::Object(arguments))
             );
             assert_eq!(
-                tool_call.meta.as_ref().and_then(|meta| meta.get("goose")),
+                tool_call.meta.as_ref().and_then(|meta| meta.get("warmachine")),
                 Some(&serde_json::json!({
                     "toolCall": {
                         "toolName": "edit",
@@ -510,7 +510,7 @@ mod tests {
 
             let tool_call = build_initial_tool_call_with_message_meta(&request, &message, false);
             assert_eq!(
-                tool_call.meta.as_ref().and_then(|meta| meta.get("goose")),
+                tool_call.meta.as_ref().and_then(|meta| meta.get("warmachine")),
                 Some(&serde_json::json!({
                     "created": 1_700_000_000,
                     "messageId": "msg_live",
@@ -529,7 +529,7 @@ mod tests {
                 limited_tool_call
                     .meta
                     .as_ref()
-                    .and_then(|meta| meta.get("goose")),
+                    .and_then(|meta| meta.get("warmachine")),
                 Some(&serde_json::json!({
                     "created": 1_700_000_000,
                     "messageId": "msg_live",
@@ -593,7 +593,7 @@ mod tests {
             let meta = goose_tool_call_meta(&request).expect("expected metadata");
 
             assert_eq!(
-                meta.get("goose"),
+                meta.get("warmachine"),
                 Some(&serde_json::json!({
                     "toolCall": {
                         "toolName": "other__query-docs",
@@ -726,7 +726,7 @@ mod tests {
         #[test]
         fn ignores_untrusted_goose_meta() {
             let response = response_with_meta(Some(serde_json::json!({
-                "goose": {
+                "warmachine": {
                     "mcpApp": {
                         "resourceUri": "ui://spoofed/app",
                     },
@@ -739,7 +739,7 @@ mod tests {
         #[test]
         fn uses_trusted_meta_only() {
             let response = response_with_meta(Some(serde_json::json!({
-                "goose": {
+                "warmachine": {
                     "mcpApp": {
                         "resourceUri": "ui://spoofed/app",
                     },
@@ -755,7 +755,7 @@ mod tests {
 
             let extracted = trusted_update_meta(&response).expect("expected trusted meta");
             assert_eq!(
-                extracted.get("goose"),
+                extracted.get("warmachine"),
                 Some(&serde_json::json!({
                     "mcpApp": {
                         "resourceUri": "ui://trusted/app",

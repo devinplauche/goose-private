@@ -464,7 +464,7 @@ fn is_global_agent_file(path: &Path) -> bool {
     global_roots.push(Paths::agents_dir());
     if let Some(home) = dirs::home_dir() {
         global_roots.push(home.join(".agents").join("agents"));
-        global_roots.push(home.join(".goose").join("agents"));
+        global_roots.push(home.join(".warmachine").join("agents"));
         global_roots.push(home.join(".claude").join("agents"));
     }
     global_roots.push(Paths::config_dir().join("agents"));
@@ -498,7 +498,7 @@ fn resolve_agent_file_with_roots(
     let in_agent_dir = parent_name == Some("agents")
         && matches!(
             grandparent_name,
-            Some(".goose") | Some(".claude") | Some(".agents")
+            Some(".warmachine") | Some(".claude") | Some(".agents")
         );
     let in_additional_root = additional_roots
         .iter()
@@ -531,14 +531,14 @@ fn list_agent_dirs(
         };
         if let Some(working_dir) = working_dir {
             push(working_dir.join(".agents").join("agents"), false);
-            push(working_dir.join(".goose").join("agents"), false);
+            push(working_dir.join(".warmachine").join("agents"), false);
             push(working_dir.join(".claude").join("agents"), false);
         }
 
         push(Paths::agents_dir(), true);
         if let Some(home) = dirs::home_dir() {
             push(home.join(".agents").join("agents"), true);
-            push(home.join(".goose").join("agents"), true);
+            push(home.join(".warmachine").join("agents"), true);
             push(home.join(".claude").join("agents"), true);
         }
         push(Paths::config_dir().join("agents"), true);
@@ -1280,7 +1280,7 @@ mod tests {
 
         let tmp = TempDir::new().unwrap();
         let project = tmp.path().join("project");
-        for source_dir in [".agents", ".goose", ".claude"] {
+        for source_dir in [".agents", ".warmachine", ".claude"] {
             let external_root = tmp.path().join(format!("external-{source_dir}"));
             write_agent(
                 &external_root.join(format!("{source_dir}.md")),
@@ -1301,7 +1301,7 @@ mod tests {
 
         assert!(!listed
             .iter()
-            .any(|source| { matches!(source.name.as_str(), ".agents" | ".goose" | ".claude") }));
+            .any(|source| { matches!(source.name.as_str(), ".agents" | ".warmachine" | ".claude") }));
     }
 
     #[cfg(unix)]
@@ -1311,7 +1311,7 @@ mod tests {
 
         let tmp = TempDir::new().unwrap();
         let project = tmp.path().join("project");
-        for source_dir in [".agents", ".goose", ".claude"] {
+        for source_dir in [".agents", ".warmachine", ".claude"] {
             let external_agent = tmp.path().join(format!("external-{source_dir}.md"));
             write_agent(&external_agent, source_dir, "external");
             let agent_root = project.join(source_dir).join("agents");
@@ -1328,7 +1328,7 @@ mod tests {
 
         assert!(!listed
             .iter()
-            .any(|source| { matches!(source.name.as_str(), ".agents" | ".goose" | ".claude") }));
+            .any(|source| { matches!(source.name.as_str(), ".agents" | ".warmachine" | ".claude") }));
     }
 
     #[cfg(unix)]
@@ -1434,7 +1434,7 @@ mod tests {
         let project = tmp.path().join("project");
         for (source_dir, unique_name) in [
             (".agents", "Agents unique"),
-            (".goose", "Goose unique"),
+            (".warmachine", "WarMachine unique"),
             (".claude", "Claude unique"),
         ] {
             let agent_root = project.join(source_dir).join("agents");
@@ -1453,7 +1453,7 @@ mod tests {
         )
         .unwrap();
 
-        for name in ["Agents unique", "Goose unique", "Claude unique"] {
+        for name in ["Agents unique", "WarMachine unique", "Claude unique"] {
             let source = listed.iter().find(|source| source.name == name).unwrap();
             assert!(!source.global);
         }
@@ -1783,7 +1783,7 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let missing_dir = tmp
             .path()
-            .join(".goose")
+            .join(".warmachine")
             .join("skills")
             .join("no-such-skill");
         let err = update_source_with_roots(
@@ -1806,7 +1806,7 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let missing_dir = tmp
             .path()
-            .join(".goose")
+            .join(".warmachine")
             .join("skills")
             .join("no-such-skill");
         let err = delete_source(SourceType::Skill, missing_dir.to_str().unwrap()).unwrap_err();
@@ -2025,7 +2025,7 @@ mod tests {
             .join("shared-skill");
         let legacy_skill_dir = tmp
             .path()
-            .join(".goose")
+            .join(".warmachine")
             .join("skills")
             .join("shared-skill");
         std::fs::create_dir_all(&agents_skill_dir).unwrap();
@@ -2037,7 +2037,7 @@ mod tests {
         .unwrap();
         std::fs::write(
             legacy_skill_dir.join("SKILL.md"),
-            build_skill_md("shared-skill", "legacy", "Goose", &HashMap::new()),
+            build_skill_md("shared-skill", "legacy", "WarMachine", &HashMap::new()),
         )
         .unwrap();
 
@@ -2138,7 +2138,7 @@ mod tests {
     fn update_rejects_path_traversal() {
         let tmp = TempDir::new().unwrap();
         let project = tmp.path();
-        let escaped_dir = project.join(".goose").join("escaped");
+        let escaped_dir = project.join(".warmachine").join("escaped");
         std::fs::create_dir_all(&escaped_dir).unwrap();
         std::fs::write(
             escaped_dir.join("SKILL.md"),
@@ -2146,7 +2146,7 @@ mod tests {
         )
         .unwrap();
 
-        let attempted_escape = project.join(".goose").join("escaped");
+        let attempted_escape = project.join(".warmachine").join("escaped");
         let err = update_source_with_roots(
             SourceType::Skill,
             attempted_escape.to_str().unwrap(),

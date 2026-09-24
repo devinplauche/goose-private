@@ -20,16 +20,16 @@ describe('resolveGoosePathRoot', () => {
   });
 
   it('removes a rejected value from the child-process environment', () => {
-    const env = { GOOSE_PATH_ROOT: 'relative/root' };
+    const env = { WARMACHINE_PATH_ROOT: 'relative/root' };
     expect(sanitizeGoosePathRoot(env)).toBeUndefined();
-    expect(env).not.toHaveProperty('GOOSE_PATH_ROOT');
+    expect(env).not.toHaveProperty('WARMACHINE_PATH_ROOT');
   });
 
   it('matches Rust absolute-path handling on Windows', () => {
-    expect(isAbsoluteGoosePath('C:\\goose\\root', 'win32')).toBe(true);
-    expect(isAbsoluteGoosePath('\\\\server\\share\\goose', 'win32')).toBe(true);
-    expect(isAbsoluteGoosePath('C:goose\\root', 'win32')).toBe(false);
-    expect(isAbsoluteGoosePath('\\goose\\root', 'win32')).toBe(false);
-    expect(isAbsoluteGoosePath('/goose/root', 'win32')).toBe(false);
+    expect(isAbsoluteGoosePath('C:\\warmachine\\root', 'win32')).toBe(true);
+    expect(isAbsoluteGoosePath('\\\\server\\share\\warmachine', 'win32')).toBe(true);
+    expect(isAbsoluteGoosePath('C:warmachine\\root', 'win32')).toBe(false);
+    expect(isAbsoluteGoosePath('\\warmachine\\root', 'win32')).toBe(false);
+    expect(isAbsoluteGoosePath('/warmachine/root', 'win32')).toBe(false);
   });
 });

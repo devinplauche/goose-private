@@ -1,7 +1,7 @@
 // Example of Tetrate Agent Router Service PKCE authentication
 // Run with: cargo run --example tetrate_auth
 
-use goose::config::signup_tetrate::TetrateAuth;
+use warmachine::config::signup_tetrate::TetrateAuth;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

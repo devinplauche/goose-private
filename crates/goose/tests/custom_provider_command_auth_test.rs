@@ -3,9 +3,9 @@
 //! instead of a static `api_key_env`, and the credential is refreshed
 //! reactively when the upstream API returns a 401.
 
-use goose::conversation::message::Message;
-use goose::providers::base::Provider;
-use goose::providers::openai_def;
+use warmachine::conversation::message::Message;
+use warmachine::providers::base::Provider;
+use warmachine::providers::openai_def;
 use goose_providers::declarative::{AuthConfig, DeclarativeProviderConfig, ProviderEngine};
 use goose_providers::model::ModelConfig;
 use serde_json::json;

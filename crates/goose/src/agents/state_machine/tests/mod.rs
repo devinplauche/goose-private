@@ -82,7 +82,7 @@ async fn state_machine_trace_omits_content_without_capture() -> Result<()> {
         assert!(!fields.contains_key("trace_input"));
         assert!(!fields.contains_key("trace_output"));
         assert!(!fields.contains_key("gen_ai.output.messages"));
-        assert_eq!(fields["gen_ai.agent.name"], "goose");
+        assert_eq!(fields["gen_ai.agent.name"], "warmachine");
     }
     Ok(())
 }

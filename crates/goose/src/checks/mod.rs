@@ -3,7 +3,7 @@
 //! [`crate::sources`] so all source-style files share one YAML pipeline.
 //!
 //! User-facing CRUD lives in `crate::sources` for parity with skills and
-//! projects; `goose review` consumes [`Check`] and [`discover`] directly.
+//! projects; `warmachine review` consumes [`Check`] and [`discover`] directly.
 
 use crate::sources::parse_frontmatter;
 use anyhow::{anyhow, bail, Context, Result};
@@ -15,7 +15,7 @@ use std::path::{Path, PathBuf};
 
 /// Default maximum number of turns a check subagent may take.
 ///
-/// Mirrors `goose::agents::subagent_task_config::DEFAULT_SUBAGENT_MAX_TURNS`,
+/// Mirrors `warmachine::agents::subagent_task_config::DEFAULT_SUBAGENT_MAX_TURNS`,
 /// duplicated here to keep the checks module self-contained for parsing.
 pub const DEFAULT_CHECK_TURN_LIMIT: usize = 25;
 
@@ -300,7 +300,7 @@ fn read_review_md(path: &Path, canonical_repo_root: &Path) -> Result<Option<Stri
 pub fn global_checks_dirs() -> Vec<PathBuf> {
     let mut dirs = Vec::new();
     if let Some(home) = dirs_home() {
-        dirs.push(home.join(".config").join("goose").join("checks"));
+        dirs.push(home.join(".config").join("warmachine").join("checks"));
         dirs.push(home.join(".config").join("agents").join("checks"));
     }
     dirs
@@ -453,7 +453,7 @@ fn read_checks_dir(
             Err(e) => match mode {
                 LoadMode::Strict => return Err(e),
                 LoadMode::Lenient => {
-                    eprintln!("goose review: skipping {}: {e}", path.display());
+                    eprintln!("warmachine review: skipping {}: {e}", path.display());
                 }
             },
         }

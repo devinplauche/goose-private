@@ -22,7 +22,7 @@ const updateConfig = fs.readFileSync(updateConfigPath, 'utf8');
 const requiredLines = [
   'provider: github',
   'owner: aaif-goose',
-  'repo: goose',
+  'repo: warmachine',
   'updaterCacheDirName: goose-updater',
 ];
 

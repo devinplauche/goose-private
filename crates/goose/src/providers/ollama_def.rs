@@ -126,12 +126,12 @@ pub fn from_custom_config(
 pub fn options_from_config() -> OllamaOptions {
     let config = crate::config::Config::global();
 
-    let input_limit = match config.get_param::<usize>("GOOSE_INPUT_LIMIT") {
+    let input_limit = match config.get_param::<usize>("WARMACHINE_INPUT_LIMIT") {
         Ok(limit) if limit > 0 => Some(limit),
         Ok(_) => None,
         Err(crate::config::ConfigError::NotFound(_)) => None,
         Err(e) => {
-            tracing::warn!("Invalid GOOSE_INPUT_LIMIT value: {}", e);
+            tracing::warn!("Invalid WARMACHINE_INPUT_LIMIT value: {}", e);
             None
         }
     };
@@ -161,7 +161,7 @@ pub fn options_from_config() -> OllamaOptions {
 }
 
 /// Resolve the per-chunk stream timeout from config.
-/// Priority: OLLAMA_STREAM_TIMEOUT > GOOSE_STREAM_TIMEOUT > OLLAMA_TIMEOUT > default (120s).
+/// Priority: OLLAMA_STREAM_TIMEOUT > WARMACHINE_STREAM_TIMEOUT > OLLAMA_TIMEOUT > default (120s).
 /// Zero values are treated as invalid and skipped, since a zero timeout would
 /// cause every chunk after the first to be treated as a stall.
 fn resolve_ollama_chunk_timeout(config: &crate::config::Config) -> u64 {
@@ -170,7 +170,7 @@ fn resolve_ollama_chunk_timeout(config: &crate::config::Config) -> u64 {
             return val;
         }
     }
-    if let Ok(val) = config.get_param::<u64>("GOOSE_STREAM_TIMEOUT") {
+    if let Ok(val) = config.get_param::<u64>("WARMACHINE_STREAM_TIMEOUT") {
         if val > 0 {
             return val;
         }
@@ -189,7 +189,7 @@ mod tests {
     fn test_resolve_ollama_chunk_timeout_defaults_to_ollama_timeout() {
         let _guard = env_lock::lock_env([
             ("OLLAMA_STREAM_TIMEOUT", None::<&str>),
-            ("GOOSE_STREAM_TIMEOUT", None::<&str>),
+            ("WARMACHINE_STREAM_TIMEOUT", None::<&str>),
             ("OLLAMA_TIMEOUT", Some("300")),
         ]);
         let config = crate::config::Config::global();
@@ -200,7 +200,7 @@ mod tests {
     fn test_resolve_ollama_chunk_timeout_prefers_stream_override() {
         let _guard = env_lock::lock_env([
             ("OLLAMA_STREAM_TIMEOUT", Some("60")),
-            ("GOOSE_STREAM_TIMEOUT", Some("90")),
+            ("WARMACHINE_STREAM_TIMEOUT", Some("90")),
             ("OLLAMA_TIMEOUT", Some("300")),
         ]);
         let config = crate::config::Config::global();
@@ -211,7 +211,7 @@ mod tests {
     fn test_resolve_ollama_chunk_timeout_uses_goose_stream_fallback() {
         let _guard = env_lock::lock_env([
             ("OLLAMA_STREAM_TIMEOUT", None::<&str>),
-            ("GOOSE_STREAM_TIMEOUT", Some("90")),
+            ("WARMACHINE_STREAM_TIMEOUT", Some("90")),
             ("OLLAMA_TIMEOUT", Some("300")),
         ]);
         let config = crate::config::Config::global();
@@ -222,7 +222,7 @@ mod tests {
     fn test_resolve_ollama_chunk_timeout_uses_default_when_unset() {
         let _guard = env_lock::lock_env([
             ("OLLAMA_STREAM_TIMEOUT", None::<&str>),
-            ("GOOSE_STREAM_TIMEOUT", None::<&str>),
+            ("WARMACHINE_STREAM_TIMEOUT", None::<&str>),
             ("OLLAMA_TIMEOUT", None::<&str>),
         ]);
         let config = crate::config::Config::global();
@@ -236,7 +236,7 @@ mod tests {
     fn test_resolve_ollama_chunk_timeout_skips_zero_values() {
         let _guard = env_lock::lock_env([
             ("OLLAMA_STREAM_TIMEOUT", Some("0")),
-            ("GOOSE_STREAM_TIMEOUT", Some("0")),
+            ("WARMACHINE_STREAM_TIMEOUT", Some("0")),
             ("OLLAMA_TIMEOUT", Some("300")),
         ]);
         let config = crate::config::Config::global();
@@ -247,7 +247,7 @@ mod tests {
     fn test_resolve_ollama_chunk_timeout_skips_all_zero_to_default() {
         let _guard = env_lock::lock_env([
             ("OLLAMA_STREAM_TIMEOUT", Some("0")),
-            ("GOOSE_STREAM_TIMEOUT", Some("0")),
+            ("WARMACHINE_STREAM_TIMEOUT", Some("0")),
             ("OLLAMA_TIMEOUT", Some("0")),
         ]);
         let config = crate::config::Config::global();

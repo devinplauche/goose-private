@@ -380,8 +380,8 @@ mod tests {
     async fn duplicate_schedule_does_not_overwrite_existing_recipe() {
         let root = tempfile::tempdir().unwrap();
         let _guard = env_lock::lock_env([
-            ("GOOSE_DISABLE_KEYRING", Some("true")),
-            ("GOOSE_PATH_ROOT", root.path().to_str()),
+            ("WARMACHINE_DISABLE_KEYRING", Some("true")),
+            ("WARMACHINE_PATH_ROOT", root.path().to_str()),
         ]);
         let server = AcpServer::new(AcpServerFactoryConfig {
             builtins: AcpBuiltinSelection::default(),
@@ -417,8 +417,8 @@ mod tests {
     async fn disabled_scheduler_rejects_schedule_operations_without_recipe_writes() {
         let root = tempfile::tempdir().unwrap();
         let _guard = env_lock::lock_env([
-            ("GOOSE_DISABLE_KEYRING", Some("true")),
-            ("GOOSE_PATH_ROOT", root.path().to_str()),
+            ("WARMACHINE_DISABLE_KEYRING", Some("true")),
+            ("WARMACHINE_PATH_ROOT", root.path().to_str()),
         ]);
         let server = AcpServer::new(AcpServerFactoryConfig {
             builtins: AcpBuiltinSelection::default(),

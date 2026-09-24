@@ -19,24 +19,13 @@ const POSTHOG_CAPTURE_URL: &str = "https://us.i.posthog.com/capture/";
 /// Config key for telemetry opt-out preference
 pub const TELEMETRY_ENABLED_KEY: &str = "GOOSE_TELEMETRY_ENABLED";
 
-static TELEMETRY_DISABLED_BY_ENV: Lazy<AtomicBool> = Lazy::new(|| {
-    std::env::var("GOOSE_TELEMETRY_OFF")
-        .map(|v| v == "1" || v.to_lowercase() == "true")
-        .unwrap_or(false)
-        .into()
-});
-
 /// Check if the user has made a telemetry choice.
 ///
-/// Returns Some(true) if telemetry is enabled, Some(false) if disabled,
-/// or None if the user hasn't made a choice yet.
+/// Private fork: telemetry is permanently disabled in this build. Reporting
+/// Some(false) means the app treats telemetry as declined by the user, so the
+/// consent prompt never appears and nothing is ever reported to anyone.
 pub fn get_telemetry_choice() -> Option<bool> {
-    if TELEMETRY_DISABLED_BY_ENV.load(Ordering::Relaxed) {
-        return Some(false);
-    }
-
-    let config = Config::global();
-    config.get_param::<bool>(TELEMETRY_ENABLED_KEY).ok()
+    Some(false)
 }
 
 /// Check if telemetry is enabled.
@@ -69,22 +58,16 @@ async fn posthog_capture(
     distinct_id: &str,
     properties: HashMap<String, serde_json::Value>,
 ) -> Result<(), String> {
-    let payload = CaptureEvent {
+    // Private fork: telemetry is permanently disabled. The payload is built
+    // for type-checking but never leaves this process — no reporting to anyone.
+    let _payload = CaptureEvent {
         api_key: POSTHOG_API_KEY,
         event: event_name.to_string(),
         distinct_id: distinct_id.to_string(),
         properties,
         timestamp: Some(Utc::now().to_rfc3339()),
     };
-
-    let client = reqwest::Client::new();
-    client
-        .post(POSTHOG_CAPTURE_URL)
-        .header("Content-Type", "application/json")
-        .json(&payload)
-        .send()
-        .await
-        .map_err(|e| format!("{e}"))?;
+    let _url = POSTHOG_CAPTURE_URL;
 
     Ok(())
 }
@@ -535,70 +518,15 @@ fn sanitize_string(s: &str) -> String {
     result
 }
 
-fn sanitize_value(value: serde_json::Value) -> serde_json::Value {
-    match value {
-        serde_json::Value::String(s) => serde_json::Value::String(sanitize_string(&s)),
-        serde_json::Value::Array(arr) => {
-            serde_json::Value::Array(arr.into_iter().map(sanitize_value).collect())
-        }
-        serde_json::Value::Object(obj) => serde_json::Value::Object(
-            obj.into_iter()
-                .map(|(k, v)| (k, sanitize_value(v)))
-                .collect(),
-        ),
-        other => other,
-    }
-}
-
 // ============================================================================
 // Generic Event API (for frontend)
 // ============================================================================
 pub async fn emit_event(
     event_name: &str,
-    mut properties: HashMap<String, serde_json::Value>,
+    properties: HashMap<String, serde_json::Value>,
 ) -> Result<(), String> {
-    // Only onboarding events are enabled for now. These bypass the telemetry
-    // check so we can track the funnel before the user makes their choice.
-    let is_onboarding_event =
-        event_name.starts_with("onboarding_") || event_name == "telemetry_preference_set";
-    if !is_onboarding_event {
-        return Ok(());
-    }
-
-    let installation = load_or_create_installation();
-
-    insert(&mut properties, "os", std::env::consts::OS);
-    insert(&mut properties, "arch", std::env::consts::ARCH);
-    insert(&mut properties, "version", env!("CARGO_PKG_VERSION"));
-    insert(&mut properties, "interface", "desktop");
-    insert(&mut properties, "source", "ui");
-
-    if let Some(platform_version) = get_platform_version() {
-        insert(&mut properties, "platform_version", platform_version);
-    }
-
-    if event_name == "error_occurred" || event_name == "app_crashed" {
-        if let Some(serde_json::Value::String(error_type)) = properties.get("error_type") {
-            let classified = classify_error(error_type);
-            properties.insert(
-                "error_category".to_string(),
-                serde_json::Value::String(classified.to_string()),
-            );
-        }
-    }
-
-    let sanitized: HashMap<String, serde_json::Value> = properties
-        .into_iter()
-        .filter(|(key, _)| {
-            let key_lower = key.to_lowercase();
-            !key_lower.contains("key")
-                && !key_lower.contains("token")
-                && !key_lower.contains("secret")
-                && !key_lower.contains("password")
-                && !key_lower.contains("credential")
-        })
-        .map(|(k, v)| (k, sanitize_value(v)))
-        .collect();
-
-    posthog_capture(event_name, &installation.installation_id, sanitized).await
+    // Private fork: telemetry is permanently disabled. Upstream sent
+    // onboarding_* events even when telemetry was off; that bypass is gone.
+    let _ = (event_name, &properties);
+    Ok(())
 }

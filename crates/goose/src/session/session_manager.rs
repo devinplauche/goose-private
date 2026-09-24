@@ -1628,7 +1628,7 @@ impl SessionStorage {
         let mut tx = pool.begin_with("BEGIN IMMEDIATE").await?;
 
         let today = chrono::Utc::now().format("%Y%m%d").to_string();
-        let session = sqlx::query_as(
+        let session: Session = sqlx::query_as(
             r#"
                 INSERT INTO sessions (id, name, user_set_name, session_type, working_dir, extension_data, goose_mode)
                 VALUES (
@@ -2217,7 +2217,7 @@ impl SessionStorage {
             tx.commit().await?;
             sessions
         } else {
-            q.fetch_all(pool).await.map_err(Into::into)?
+            q.fetch_all(pool).await?
         };
         // Sealed payloads could not be keyword-matched in SQL; filter the
         // candidates in Rust after decryption, preserving cursor/limit

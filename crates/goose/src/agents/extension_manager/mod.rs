@@ -600,7 +600,6 @@ impl ExtensionManager {
             ExtensionConfig::Platform { .. } => "platform",
             ExtensionConfig::Stdio { .. } => "stdio",
             ExtensionConfig::StreamableHttp { .. } => "streamable_http",
-            _ => "unknown",
         };
 
         let mut extensions = self.extensions.lock().await;

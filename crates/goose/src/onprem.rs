@@ -74,7 +74,7 @@ fn session_dek() -> Result<[u8; 32]> {
             // concurrent first-run writer winning the race still leaves every
             // process using the same stored key.
             let mut dek = [0u8; 32];
-            rand::TryRngCore::try_fill_bytes(&mut rand::rngs::OsRng, &mut dek)
+            rand::TryRng::try_fill_bytes(&mut rand::rngs::SysRng, &mut dek)
                 .map_err(|e| anyhow::anyhow!("OS RNG failure generating session key: {e}"))?;
             entry
                 .set_password(&base64::engine::general_purpose::STANDARD.encode(dek))
@@ -103,7 +103,7 @@ pub fn seal_payload(plaintext_json: &str) -> Result<String> {
 
     let dek = session_dek()?;
     let mut nonce_bytes = [0u8; 12];
-    rand::TryRngCore::try_fill_bytes(&mut rand::rngs::OsRng, &mut nonce_bytes)
+    rand::TryRng::try_fill_bytes(&mut rand::rngs::SysRng, &mut nonce_bytes)
         .map_err(|e| anyhow::anyhow!("OS RNG failure: {e}"))?;
 
     let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&dek));

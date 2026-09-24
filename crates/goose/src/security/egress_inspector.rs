@@ -339,8 +339,9 @@ impl ToolInspector for EgressInspector {
             // On-prem default-deny: every shell/web tool call needs explicit
             // human approval before it runs. Destination-pattern matching is
             // bypassable (obfuscation, novel exfil paths); approval is not.
-            #[cfg(feature = "onprem")]
-            {
+            // `cfg!` (not `#[cfg]`) so the tail of the loop stays reachable in
+            // both build variants.
+            if cfg!(feature = "onprem") {
                 results.push(InspectionResult {
                     tool_request_id: tool_request.id.clone(),
                     action: InspectionAction::RequireApproval(Some(format!(
@@ -349,6 +350,8 @@ impl ToolInspector for EgressInspector {
                     reason: "On-prem builds require human approval for every shell/web tool call"
                         .to_string(),
                     confidence: 1.0,
+                    inspector_name: self.name().to_string(),
+                    finding_id: None,
                 });
                 continue;
             }

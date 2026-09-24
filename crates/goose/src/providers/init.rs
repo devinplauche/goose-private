@@ -1,5 +1,7 @@
 use std::path::PathBuf;
-use std::sync::{Arc, RwLock};
+#[cfg(not(feature = "onprem"))]
+use std::sync::Arc;
+use std::sync::RwLock;
 
 #[cfg(feature = "aws-providers")]
 use super::bedrock::BedrockProvider;
@@ -7,11 +9,12 @@ use super::bedrock::BedrockProvider;
 use super::local_inference::LocalInferenceProvider;
 #[cfg(feature = "aws-providers")]
 use super::sagemaker_tgi::SageMakerTgiProvider;
+use super::base::{Provider, ProviderMetadata};
+#[cfg(not(feature = "onprem"))]
 use super::{
     amp_acp::AmpAcpProvider,
     avian::AvianProvider,
     azure::AzureProvider,
-    base::{Provider, ProviderMetadata},
     chatgpt_codex::ChatGptCodexProvider,
     claude_acp::ClaudeAcpProvider,
     claude_code::ClaudeCodeProvider,
@@ -36,19 +39,25 @@ use super::{
     xai_oauth::XaiOAuthProvider,
 };
 use crate::config::ExtensionConfig;
+#[cfg(not(feature = "onprem"))]
 use crate::providers::anthropic_def::AnthropicProviderDef;
+#[cfg(not(feature = "onprem"))]
 use crate::providers::azure_foundry_def::AzureFoundryProviderDef;
 use crate::providers::base::ProviderType;
+#[cfg(not(feature = "onprem"))]
 use crate::providers::databricks_def::{self, DatabricksProviderDef};
+#[cfg(not(feature = "onprem"))]
 use crate::providers::databricks_v2_def::{self, DatabricksV2ProviderDef};
+#[cfg(not(feature = "onprem"))]
 use crate::providers::google_def::GoogleProviderDef;
+#[cfg(not(feature = "onprem"))]
 use crate::providers::ollama_def::OllamaProviderDef;
 use crate::providers::openai_def::OpenAiProviderDef;
+#[cfg(not(feature = "onprem"))]
 use crate::providers::openrouter_def::OpenRouterProviderDef;
-use crate::{
-    config::declarative_providers::register_declarative_providers,
-    providers::provider_registry::ProviderEntry,
-};
+#[cfg(not(feature = "onprem"))]
+use crate::config::declarative_providers::register_declarative_providers;
+use crate::providers::provider_registry::ProviderEntry;
 use anyhow::Result;
 use tokio::sync::OnceCell;
 
@@ -61,155 +70,57 @@ async fn init_registry() -> RwLock<ProviderRegistry> {
     let mut registry = ProviderRegistry::new(tls_config).with_providers(|registry| {
         use super::inventory::registrations;
 
-        registry.register_with_inventory::<AmpAcpProvider>(
-            false,
-            Some(registrations::amp_acp_inventory()),
-        );
-        registry.register_with_inventory::<AnthropicProviderDef>(
-            true,
-            Some(registrations::anthropic_inventory()),
-        );
-        registry.register::<AvianProvider>(false);
-        registry.register::<AzureProvider>(false);
-        registry.register_with_inventory::<AzureFoundryProviderDef>(
-            true,
-            Some(registrations::azure_foundry_inventory()),
-        );
-        #[cfg(feature = "aws-providers")]
-        registry.register::<BedrockProvider>(false);
-        #[cfg(feature = "local-inference")]
-        registry.register::<LocalInferenceProvider>(false);
-        registry.register_with_inventory::<ChatGptCodexProvider>(
-            true,
-            Some(registrations::chatgpt_codex_inventory()),
-        );
-        registry.register_with_inventory::<ClaudeAcpProvider>(
-            false,
-            Some(registrations::claude_acp_inventory()),
-        );
-        registry.register::<ClaudeCodeProvider>(true);
-        registry.register_with_inventory::<CodexAcpProvider>(
-            false,
-            Some(registrations::codex_acp_inventory()),
-        );
-        registry.register_with_inventory::<CopilotAcpProvider>(
-            false,
-            Some(registrations::copilot_acp_inventory()),
-        );
-        registry.register::<CodexProvider>(true);
-        registry.register_with_inventory::<CursorAgentProvider>(
-            false,
-            Some(registrations::refresh_only()),
-        );
-        registry.register_with_inventory::<DatabricksProviderDef>(
-            true,
-            Some(registrations::refresh_only()),
-        );
-        registry.register_with_inventory::<DatabricksV2ProviderDef>(
-            false,
-            Some(registrations::refresh_only()),
-        );
-        registry.register_with_inventory::<GcpVertexAIProvider>(
-            false,
-            Some(registrations::refresh_only()),
-        );
-        registry.register::<GeminiCliProvider>(false);
-        registry.register_with_inventory::<GeminiOAuthProvider>(
-            false,
-            Some(registrations::gemini_oauth_inventory()),
-        );
-        registry.register_with_inventory::<GithubCopilotProvider>(
-            false,
-            Some(registrations::refresh_only()),
-        );
-        registry.register::<GondolaProvider>(false);
-        registry.register_with_inventory::<GoogleProviderDef>(
-            true,
-            Some(registrations::google_inventory()),
-        );
-        registry.register_with_inventory::<HuggingFaceProvider>(
-            true,
-            Some(registrations::huggingface_inventory()),
-        );
-        registry.register_with_inventory::<KimiCodeProvider>(
-            true,
-            Some(registrations::kimi_code_inventory()),
-        );
-        registry.register_with_inventory::<LiteLLMProvider>(
-            false,
-            Some(registrations::refresh_only().with_configured(|| {
-                let config = crate::config::Config::global();
-                config
-                    .get_param::<serde_json::Value>("LITELLM_HOST")
-                    .is_ok()
-                    || config
-                        .get_secret::<serde_json::Value>("LITELLM_API_KEY")
-                        .is_ok()
-            })),
-        );
-        registry
-            .register_with_inventory::<NanoGptProvider>(true, Some(registrations::refresh_only()));
-        registry.register_with_inventory::<OllamaProviderDef>(
-            true,
-            Some(registrations::ollama_inventory()),
-        );
+        // On-prem builds expose exactly one provider: the OpenAI-compatible
+        // provider locked to the compile-time endpoint. Cloud providers, ACP
+        // CLIs, and custom/declarative providers are not registered at all, so
+        // no configuration can redirect CUI/ITAR data outside the enclave.
+        #[cfg(feature = "onprem")]
         registry.register_with_inventory::<OpenAiProviderDef>(
             true,
             Some(registrations::openai_inventory()),
         );
-        registry.register_with_inventory::<OpenRouterProviderDef>(
-            true,
-            Some(registrations::refresh_only().with_configured(|| {
-                let config = crate::config::Config::global();
-                config
-                    .get_secret::<serde_json::Value>("OPENROUTER_API_KEY")
-                    .is_ok()
-            })),
-        );
-        registry.register_with_inventory::<PiAcpProvider>(
-            false,
-            Some(registrations::pi_acp_inventory()),
-        );
-        #[cfg(feature = "aws-providers")]
-        registry.register::<SageMakerTgiProvider>(false);
-        registry.register::<SnowflakeProviderDef>(false);
-        registry
-            .register_with_inventory::<TetrateProvider>(true, Some(registrations::refresh_only()));
-        registry.register_with_inventory::<XaiProvider>(false, Some(registrations::refresh_only()));
-        registry.register_with_inventory::<XaiOAuthProvider>(
-            true,
-            Some(registrations::xai_oauth_inventory()),
-        );
+
+        #[cfg(not(feature = "onprem"))]
+        register_standard_providers(registry);
     });
+
     // Register cleanup functions for providers with cached state
+    #[cfg(not(feature = "onprem"))]
     registry.set_cleanup(
         "github_copilot",
         Arc::new(|| Box::pin(GithubCopilotProvider::cleanup())),
     );
+    #[cfg(not(feature = "onprem"))]
     registry.set_cleanup(
         "databricks",
         Arc::new(|| Box::pin(databricks_def::cleanup())),
     );
+    #[cfg(not(feature = "onprem"))]
     registry.set_cleanup(
         "databricks_v2",
         Arc::new(|| Box::pin(databricks_v2_def::cleanup())),
     );
+    #[cfg(not(feature = "onprem"))]
     registry.set_cleanup(
         "kimi_code",
         Arc::new(|| Box::pin(KimiCodeProvider::cleanup())),
     );
+    #[cfg(not(feature = "onprem"))]
     registry.set_cleanup(
         "chatgpt_codex",
         Arc::new(|| Box::pin(ChatGptCodexProvider::cleanup())),
     );
+    #[cfg(not(feature = "onprem"))]
     registry.set_cleanup(
         "gemini_oauth",
         Arc::new(|| Box::pin(GeminiOAuthProvider::cleanup())),
     );
+    #[cfg(not(feature = "onprem"))]
     registry.set_cleanup(
         "xai_oauth",
         Arc::new(|| Box::pin(XaiOAuthProvider::cleanup())),
     );
+    #[cfg(not(feature = "onprem"))]
     registry.set_cleanup(
         "huggingface",
         Arc::new(|| Box::pin(HuggingFaceProvider::cleanup())),
@@ -221,7 +132,141 @@ async fn init_registry() -> RwLock<ProviderRegistry> {
     RwLock::new(registry)
 }
 
+/// Registers every provider available in standard (non-on-prem) builds.
+#[cfg(not(feature = "onprem"))]
+fn register_standard_providers(registry: &mut ProviderRegistry) {
+    use super::inventory::registrations;
+
+    registry.register_with_inventory::<AmpAcpProvider>(
+        false,
+        Some(registrations::amp_acp_inventory()),
+    );
+    registry.register_with_inventory::<AnthropicProviderDef>(
+        true,
+        Some(registrations::anthropic_inventory()),
+    );
+    registry.register::<AvianProvider>(false);
+    registry.register::<AzureProvider>(false);
+    registry.register_with_inventory::<AzureFoundryProviderDef>(
+        true,
+        Some(registrations::azure_foundry_inventory()),
+    );
+    #[cfg(feature = "aws-providers")]
+    registry.register::<BedrockProvider>(false);
+    #[cfg(feature = "local-inference")]
+    registry.register::<LocalInferenceProvider>(false);
+    registry.register_with_inventory::<ChatGptCodexProvider>(
+        true,
+        Some(registrations::chatgpt_codex_inventory()),
+    );
+    registry.register_with_inventory::<ClaudeAcpProvider>(
+        false,
+        Some(registrations::claude_acp_inventory()),
+    );
+    registry.register::<ClaudeCodeProvider>(true);
+    registry.register_with_inventory::<CodexAcpProvider>(
+        false,
+        Some(registrations::codex_acp_inventory()),
+    );
+    registry.register_with_inventory::<CopilotAcpProvider>(
+        false,
+        Some(registrations::copilot_acp_inventory()),
+    );
+    registry.register::<CodexProvider>(true);
+    registry.register_with_inventory::<CursorAgentProvider>(
+        false,
+        Some(registrations::refresh_only()),
+    );
+    registry.register_with_inventory::<DatabricksProviderDef>(
+        true,
+        Some(registrations::refresh_only()),
+    );
+    registry.register_with_inventory::<DatabricksV2ProviderDef>(
+        false,
+        Some(registrations::refresh_only()),
+    );
+    registry.register_with_inventory::<GcpVertexAIProvider>(
+        false,
+        Some(registrations::refresh_only()),
+    );
+    registry.register::<GeminiCliProvider>(false);
+    registry.register_with_inventory::<GeminiOAuthProvider>(
+        false,
+        Some(registrations::gemini_oauth_inventory()),
+    );
+    registry.register_with_inventory::<GithubCopilotProvider>(
+        false,
+        Some(registrations::refresh_only()),
+    );
+    registry.register::<GondolaProvider>(false);
+    registry.register_with_inventory::<GoogleProviderDef>(
+        true,
+        Some(registrations::google_inventory()),
+    );
+    registry.register_with_inventory::<HuggingFaceProvider>(
+        true,
+        Some(registrations::huggingface_inventory()),
+    );
+    registry.register_with_inventory::<KimiCodeProvider>(
+        true,
+        Some(registrations::kimi_code_inventory()),
+    );
+    registry.register_with_inventory::<LiteLLMProvider>(
+        false,
+        Some(registrations::refresh_only().with_configured(|| {
+            let config = crate::config::Config::global();
+            config
+                .get_param::<serde_json::Value>("LITELLM_HOST")
+                .is_ok()
+                || config
+                    .get_secret::<serde_json::Value>("LITELLM_API_KEY")
+                    .is_ok()
+        })),
+    );
+    registry
+        .register_with_inventory::<NanoGptProvider>(true, Some(registrations::refresh_only()));
+    registry.register_with_inventory::<OllamaProviderDef>(
+        true,
+        Some(registrations::ollama_inventory()),
+    );
+    registry.register_with_inventory::<OpenAiProviderDef>(
+        true,
+        Some(registrations::openai_inventory()),
+    );
+    registry.register_with_inventory::<OpenRouterProviderDef>(
+        true,
+        Some(registrations::refresh_only().with_configured(|| {
+            let config = crate::config::Config::global();
+            config
+                .get_secret::<serde_json::Value>("OPENROUTER_API_KEY")
+                .is_ok()
+        })),
+    );
+    registry.register_with_inventory::<PiAcpProvider>(
+        false,
+        Some(registrations::pi_acp_inventory()),
+    );
+    #[cfg(feature = "aws-providers")]
+    registry.register::<SageMakerTgiProvider>(false);
+    registry.register::<SnowflakeProviderDef>(false);
+    registry
+        .register_with_inventory::<TetrateProvider>(true, Some(registrations::refresh_only()));
+    registry.register_with_inventory::<XaiProvider>(false, Some(registrations::refresh_only()));
+    registry.register_with_inventory::<XaiOAuthProvider>(
+        true,
+        Some(registrations::xai_oauth_inventory()),
+    );
+}
+
 fn load_custom_providers_into_registry(registry: &mut ProviderRegistry) -> Result<()> {
+    // On-prem builds register no custom/declarative providers: only the
+    // compile-time endpoint may be contacted.
+    #[cfg(feature = "onprem")]
+    {
+        let _ = registry;
+        Ok(())
+    }
+    #[cfg(not(feature = "onprem"))]
     register_declarative_providers(registry)
 }
 

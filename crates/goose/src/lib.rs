@@ -30,6 +30,8 @@ pub mod logging;
 pub mod mcp_utils;
 pub mod model_config;
 pub mod oauth;
+#[cfg(feature = "onprem")]
+pub mod onprem;
 #[cfg(feature = "otel")]
 pub mod otel;
 pub mod permission;

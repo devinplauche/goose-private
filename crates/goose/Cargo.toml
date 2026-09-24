@@ -10,6 +10,7 @@ description.workspace = true
 
 [features]
 default = []
+onprem = ["goose-providers/onprem"]
 telemetry = []
 otel = [
     "dep:tracing-opentelemetry",

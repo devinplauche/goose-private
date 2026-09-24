@@ -171,6 +171,14 @@ pub fn create_langfuse_observer() -> Option<ObservationLayer> {
         .or_else(|_| env::var("LANGFUSE_HOST"))
         .unwrap_or_else(|_| DEFAULT_LANGFUSE_URL.to_string());
 
+    // On-prem builds only allow observability endpoints on the compile-time
+    // allowlist; anything else would exfiltrate trace data (including prompts).
+    #[cfg(feature = "onprem")]
+    if let Err(e) = crate::onprem::check_url_allowed(&base_url) {
+        tracing::warn!("langfuse observer disabled in on-prem build: {e:#}");
+        return None;
+    }
+
     let batch_manager = Arc::new(Mutex::new(LangfuseBatchManager::new(
         public_key, secret_key, base_url,
     )));

@@ -143,6 +143,17 @@ pub fn resolve_relays(cli_relays: Vec<String>, config: &Config) -> Vec<String> {
 }
 
 pub async fn publish_session_json(session_json: &str, relays: Vec<String>) -> Result<NostrShare> {
+    // On-prem builds must never publish sessions: the default relays are
+    // public and the payload can contain CUI/ITAR data.
+    #[cfg(feature = "onprem")]
+    {
+        let _ = (session_json, relays);
+        anyhow::bail!(
+            "session sharing is disabled in on-prem builds: publishing would \
+             exfiltrate session data outside the controlled environment"
+        );
+    }
+    #[cfg(not(feature = "onprem"))]
     publish_session_json_with(session_json, relays, &LiveNostrClient).await
 }
 

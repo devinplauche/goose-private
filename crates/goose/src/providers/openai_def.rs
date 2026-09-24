@@ -69,6 +69,13 @@ pub async fn from_env(
     // otherwise "chat/completions" to match the OpenAI SDK convention.
     //
     // OPENAI_BASE_PATH always wins when set explicitly.
+    //
+    // On-prem builds ignore every runtime endpoint override and use the
+    // compile-time endpoint instead; the lockdown cannot be disabled without
+    // rebuilding.
+    #[cfg(feature = "onprem")]
+    let parsed = parse_base_url(crate::onprem::primary_base_url())?;
+    #[cfg(not(feature = "onprem"))]
     let parsed = resolve_base_url(config)?;
 
     // When the host was derived from OPENAI_BASE_URL, read
@@ -263,6 +270,7 @@ fn parse_base_url(raw_url: &str) -> Result<ParsedBaseUrl> {
 ///   2. OPENAI_BASE_URL (env or config) — ecosystem-standard
 ///   3. OPENAI_HOST from config file — persisted by `warmachine configure`
 ///   4. Default "https://api.openai.com"
+#[cfg(not(feature = "onprem"))]
 fn resolve_base_url(config: &crate::config::Config) -> Result<ParsedBaseUrl> {
     if let Ok(h) = std::env::var("OPENAI_HOST") {
         return Ok(ParsedBaseUrl {

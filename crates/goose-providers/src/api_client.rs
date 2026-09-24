@@ -276,6 +276,11 @@ impl ApiClient {
         timeout: Duration,
         tls_config: Option<TlsConfig>,
     ) -> Result<Self> {
+        // On-prem builds refuse to construct a client for any host outside the
+        // compile-time allowlist, so no provider path can exfiltrate CUI/ITAR data.
+        #[cfg(feature = "onprem")]
+        crate::onprem::check_url_allowed(&host)?;
+
         let mut client_builder = Self::client_builder(timeout);
 
         if let Some(ref config) = tls_config {

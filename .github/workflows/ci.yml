@@ -240,6 +240,38 @@ jobs:
         env:
           RUST_MIN_STACK: 8388608
 
+  rust-check-onprem:
+    name: Check On-Prem Build Variant
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.code == 'true' || github.event_name != 'pull_request'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: actions-rust-lang/setup-rust-toolchain@ecabd13d1c56bd1345c230e542e9144811ad706f # v2.0.0
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update -y
+          sudo apt install -y libdbus-1-dev gnome-keyring libxcb1-dev
+
+      - name: Cache Cargo artifacts
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6  # v2.9.2
+        with:
+          key: onprem
+
+      - name: Check and lint on-prem feature build
+        run: |
+          export CARGO_INCREMENTAL=0
+          cargo check -p goose-providers --features onprem --all-targets
+          cargo check -p warmachine --features onprem,nostr,otel --all-targets
+          cargo check -p goose-cli --features onprem --all-targets
+          cargo clippy -p warmachine --features onprem,nostr,otel --all-targets -- -D warnings
+        env:
+          WARMACHINE_ONPREM_BASE_URL: "https://llm.internal.example/v1"
+          RUST_MIN_STACK: 8388608
+
   rust-build-windows:
     name: Build Rust Project on Windows
     runs-on: windows-latest

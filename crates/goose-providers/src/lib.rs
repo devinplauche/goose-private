@@ -26,6 +26,8 @@ pub mod live_voice_provider;
 #[cfg(feature = "local-inference")]
 pub mod local_inference;
 pub mod ollama;
+#[cfg(feature = "onprem")]
+pub mod onprem;
 pub mod openai;
 pub mod openai_compatible;
 pub mod openai_live;

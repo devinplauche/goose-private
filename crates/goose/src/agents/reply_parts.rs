@@ -410,6 +410,18 @@ pub(crate) async fn stream_response_from_provider(
         }
     };
 
+    // On-prem builds keep a tamper-evident audit log of every model request
+    // (CUI/ITAR audit trail). Best-effort: a logging failure must not break the request.
+    #[cfg(feature = "onprem")]
+    if let Err(e) = crate::onprem::audit_model_request(
+        &session_id,
+        &model_config.model_name,
+        crate::onprem::primary_base_url(),
+        &serde_json::to_string(messages_for_provider.messages()).unwrap_or_default(),
+    ) {
+        warn!("on-prem audit log write failed: {e:#}");
+    }
+
     Ok(Box::pin(try_stream! {
         if !provider.manages_own_context() {
             let retry_config = provider.retry_config().transient_only();

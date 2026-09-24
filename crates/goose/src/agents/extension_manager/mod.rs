@@ -518,6 +518,13 @@ impl ExtensionManager {
                 scopes,
                 ..
             } => {
+                // On-prem builds only allow remote MCP servers on the
+                // compile-time allowlist. A unix `socket` transport is local
+                // IPC, not network egress, so it is exempt.
+                #[cfg(feature = "onprem")]
+                if socket.is_none() {
+                    crate::onprem::check_url_allowed(uri)?;
+                }
                 let static_oauth_client = streamable_http::resolve_static_oauth_client(
                     client_id.as_deref(),
                     client_secret_key.as_deref(),

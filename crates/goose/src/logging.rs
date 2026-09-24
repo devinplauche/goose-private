@@ -94,7 +94,7 @@ pub fn build_logging_subscriber(
         layers.push(console_layer.with_filter(env_filter).boxed());
     }
 
-    #[cfg(feature = "otel")]
+    #[cfg(all(feature = "otel", not(feature = "onprem")))]
     layers.extend(crate::otel::otlp::init_otlp_layers(
         crate::config::Config::global(),
     ));

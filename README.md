@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="logo.png" width="200" alt="WarMachine logo">
+
 # warmachine
 
 _your native open source AI agent — desktop app, CLI, and API — for code, workflows, and everything in between_

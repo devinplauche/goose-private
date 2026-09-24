@@ -523,7 +523,8 @@ impl ExtensionManager {
                 // IPC, not network egress, so it is exempt.
                 #[cfg(feature = "onprem")]
                 if socket.is_none() {
-                    crate::onprem::check_url_allowed(uri)?;
+                    crate::onprem::check_url_allowed(uri)
+                        .map_err(|e| ExtensionError::ConfigError(format!("{e:#}")))?;
                 }
                 let static_oauth_client = streamable_http::resolve_static_oauth_client(
                     client_id.as_deref(),

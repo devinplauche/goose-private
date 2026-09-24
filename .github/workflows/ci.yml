@@ -262,12 +262,16 @@ jobs:
           key: onprem
 
       - name: Check and lint on-prem feature build
+        # Mirror the feature set of the "Build and Test TLS Backend" jobs (a
+        # known-good configuration) plus onprem, and add nostr + otel so the
+        # onprem-gated code in nostr_share.rs, langfuse_layer.rs and logging.rs
+        # is compiled too.
         run: |
           export CARGO_INCREMENTAL=0
-          cargo check -p goose-providers --features onprem --all-targets
-          cargo check -p warmachine --features onprem,nostr,otel --all-targets
+          cargo check -p goose-providers --features onprem,rustls-tls --all-targets
+          cargo check -p warmachine --no-default-features --features onprem,rustls-tls,code-mode,tree-sitter,live-voice,scheduler,platform-apps,chat-recall,acp-http,nostr,otel --all-targets
           cargo check -p goose-cli --features onprem --all-targets
-          cargo clippy -p warmachine --features onprem,nostr,otel --all-targets -- -D warnings
+          cargo clippy -p warmachine --no-default-features --features onprem,rustls-tls,code-mode,tree-sitter,live-voice,scheduler,platform-apps,chat-recall,acp-http,nostr,otel --all-targets -- -D warnings
         env:
           WARMACHINE_ONPREM_BASE_URL: "https://llm.internal.example/v1"
           RUST_MIN_STACK: 8388608

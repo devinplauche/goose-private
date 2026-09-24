@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-#[cfg(not(feature = "onprem"))]
 use std::sync::Arc;
 use std::sync::RwLock;
 
@@ -10,6 +9,7 @@ use super::local_inference::LocalInferenceProvider;
 #[cfg(feature = "aws-providers")]
 use super::sagemaker_tgi::SageMakerTgiProvider;
 use super::base::{Provider, ProviderMetadata};
+use super::provider_registry::ProviderRegistry;
 #[cfg(not(feature = "onprem"))]
 use super::{
     amp_acp::AmpAcpProvider,
@@ -32,7 +32,6 @@ use super::{
     litellm::LiteLLMProvider,
     nanogpt::NanoGptProvider,
     pi_acp::PiAcpProvider,
-    provider_registry::ProviderRegistry,
     snowflake_def::SnowflakeProviderDef,
     tetrate::TetrateProvider,
     xai::XaiProvider,

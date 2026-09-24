@@ -1,4 +1,5 @@
 use crate::conversation::message::MessageContent;
+use crate::session::payload_seal;
 use crate::session::session_manager::SessionType;
 use anyhow::Result;
 use chrono::{DateTime, Utc};
@@ -88,6 +89,10 @@ impl<'a> ChatHistorySearch<'a> {
         }
 
         let rows = self.fetch_rows(&keywords).await?;
+        // Under onprem the keyword filter could not run in SQL; filter the
+        // decrypted candidates in Rust instead.
+        #[cfg(feature = "onprem")]
+        let rows = self.filter_rows_decrypted(rows, &keywords);
         let session_messages = self.process_rows(rows);
         let session_totals = self.get_session_totals(&session_messages).await?;
         let results = self.convert_to_results(session_messages, session_totals);
@@ -99,6 +104,7 @@ impl<'a> ChatHistorySearch<'a> {
         let sql = self.build_sql(keywords);
         let mut query_builder = sqlx::query_as::<_, SqlQueryRow>(AssertSqlSafe(sql));
 
+        #[cfg(not(feature = "onprem"))]
         for keyword in keywords {
             query_builder = query_builder.bind(keyword);
         }
@@ -118,9 +124,47 @@ impl<'a> ChatHistorySearch<'a> {
             query_builder = query_builder.bind(before);
         }
 
-        query_builder = query_builder.bind(self.limit as i64);
+        #[cfg(not(feature = "onprem"))]
+        {
+            query_builder = query_builder.bind(self.limit as i64);
+        }
 
         Ok(query_builder.fetch_all(self.pool).await?)
+    }
+
+    /// On-prem keyword filter over sealed payloads: decrypt each candidate row
+    /// and keep those whose assistant-audience text matches any keyword
+    /// (case-insensitive substring, mirroring the SQL predicate this replaces).
+    /// Rows arrive newest-first; `take(self.limit)` preserves LIMIT semantics.
+    #[cfg(feature = "onprem")]
+    fn filter_rows_decrypted(
+        &self,
+        rows: Vec<SqlQueryRow>,
+        keywords: &[String],
+    ) -> Vec<SqlQueryRow> {
+        let needles: Vec<String> = keywords
+            .iter()
+            .map(|k| k.trim_matches('%').to_lowercase())
+            .filter(|k| !k.is_empty())
+            .collect();
+        rows.into_iter()
+            .filter(|row| {
+                let Ok(content_vec) = payload_seal::open::<Vec<MessageContent>>(&row.5) else {
+                    return false;
+                };
+                content_vec
+                    .into_iter()
+                    .filter_map(|c| c.filter_for_audience(Role::Assistant))
+                    .any(|c| match c {
+                        MessageContent::Text(t) => {
+                            let haystack = t.text.to_lowercase();
+                            needles.iter().any(|n| haystack.contains(n))
+                        }
+                        _ => false,
+                    })
+            })
+            .take(self.limit)
+            .collect()
     }
 
     fn parse_keywords(&self) -> Vec<String> {
@@ -131,6 +175,8 @@ impl<'a> ChatHistorySearch<'a> {
     }
 
     fn build_sql(&self, keywords: &[String]) -> String {
+        #[cfg(feature = "onprem")]
+        let _ = keywords; // keywords are filtered in Rust after decryption
         let mut sql = String::from(
             r#"
             SELECT 
@@ -157,6 +203,15 @@ impl<'a> ChatHistorySearch<'a> {
                 END,
                 0
             ) = 0
+        "#,
+        );
+
+        // Sealed payloads cannot be keyword-matched in SQL; under onprem the
+        // filter runs in Rust after decryption (filter_rows_decrypted).
+        #[cfg(not(feature = "onprem"))]
+        {
+            sql.push_str(
+                r#"
             AND EXISTS (
                 SELECT 1 FROM json_each(m.content_json) AS content
                 WHERE json_extract(content.value, '$.type') = 'text'
@@ -169,22 +224,23 @@ impl<'a> ChatHistorySearch<'a> {
                     )
                 )
                 AND (
-        "#,
-        );
+                "#,
+            );
 
-        for (i, _) in keywords.iter().enumerate() {
-            if i > 0 {
-                sql.push_str(" OR ");
+            for (i, _) in keywords.iter().enumerate() {
+                if i > 0 {
+                    sql.push_str(" OR ");
+                }
+                sql.push_str("LOWER(json_extract(content.value, '$.text')) LIKE ?");
             }
-            sql.push_str("LOWER(json_extract(content.value, '$.text')) LIKE ?");
-        }
 
-        sql.push_str(
-            r#"
+            sql.push_str(
+                r#"
                 )
             )
-        "#,
-        );
+                "#,
+            );
+        }
 
         if self.exclude_session_id.is_some() {
             sql.push_str(" AND s.id != ?");
@@ -207,7 +263,12 @@ impl<'a> ChatHistorySearch<'a> {
             sql.push_str(" AND m.timestamp <= ?");
         }
 
+        // Under onprem there is no SQL keyword filter, so the SQL must not
+        // limit either: filtering and limiting happen in Rust after decryption.
+        #[cfg(not(feature = "onprem"))]
         sql.push_str(" ORDER BY m.timestamp DESC LIMIT ?");
+        #[cfg(feature = "onprem")]
+        sql.push_str(" ORDER BY m.timestamp DESC");
 
         sql
     }
@@ -225,7 +286,7 @@ impl<'a> ChatHistorySearch<'a> {
             timestamp,
         ) in rows
         {
-            if let Ok(content_vec) = serde_json::from_str::<Vec<MessageContent>>(&content_json) {
+            if let Ok(content_vec) = payload_seal::open::<Vec<MessageContent>>(&content_json) {
                 let agent_visible_content = content_vec
                     .into_iter()
                     .filter_map(|content| content.filter_for_audience(Role::Assistant))

@@ -24,6 +24,7 @@ rmcp = { version = "3.2.0", default-features = false, features = ["schemars", "a
 agent-client-protocol-schema = { version = "=1.9.1", default-features = false }
 agent-client-protocol = { version = "2.2.0", default-features = false }
 agent-client-protocol-http = { version = "2.2.0", default-features = false }
+aes-gcm = "0.10"
 arboard = { version = "3", default-features = false }
 anyhow = { version = "1.0.102", default-features = false, features = ["std"] }
 async-stream = { version = "0.3.6", default-features = false }

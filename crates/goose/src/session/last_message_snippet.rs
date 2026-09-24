@@ -102,7 +102,7 @@ fn message_from_recent_row(row: RecentMessageRow) -> Result<Option<Message>> {
         _ => return Ok(None),
     };
 
-    let content = match serde_json::from_str(&row.content_json) {
+    let content = match crate::session::payload_seal::open(&row.content_json) {
         Ok(content) => content,
         Err(_) => return Ok(None),
     };

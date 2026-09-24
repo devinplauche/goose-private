@@ -30,7 +30,10 @@ The `onprem` cargo feature (in the `warmachine`, `goose-providers`, and
 | Session sharing | Nostr session publishing is disabled (default relays are public). |
 | Remote MCP servers | `StreamableHttp` extension URIs must be on the allowlist. Unix-socket transports are local IPC and exempt. |
 | Voice dictation | Cloud STT endpoints are not allowlisted, so dictation fails closed. |
-| Audit log | Every model request appends a hash-chained entry (see below). |
+| Audit log | Every model request appends a hash-chained entry; session start/end and extension installs are logged too (see below). |
+| At-rest encryption | Session message payloads in `sessions.db` are sealed with AES-256-GCM (see below). |
+| Secret storage | The OS keychain is mandatory: `WARMACHINE_DISABLE_KEYRING` is ignored and an unreachable keychain fails closed. |
+| Tool approvals | Every shell/web tool call requires explicit human approval (see below). |
 
 ## Server requirements
 
@@ -72,26 +75,95 @@ Notes:
 
 Location: `~/.config/warmachine/audit.log` (one JSON object per line).
 
-Each entry records `ts`, `session_id`, `model`, `endpoint`, `request_chars`,
-`request_sha256` (SHA-256 of the serialized request payload), `prev_hash`,
-and `entry_hash`, where
+Two entry shapes, both hash-chained:
 
-```
-entry_hash = sha256(prev_hash | ts | session_id | model | endpoint | request_sha256)
+- **Model requests** (as before): `ts`, `session_id`, `model`, `endpoint`,
+  `request_chars`, `request_sha256` (SHA-256 of the serialized request
+  payload), `prev_hash`, `entry_hash`, where
+
+  ```
+  entry_hash = sha256(prev_hash | ts | session_id | model | endpoint | request_sha256)
+  ```
+
+- **Events**: `ts`, `event` (`session_start`, `session_end`,
+  `extension_added`), `session_id`, `details` (small metadata, e.g.
+  `{"name": ..., "kind": "stdio"}` for extensions), `prev_hash`,
+  `entry_hash`, where
+
+  ```
+  entry_hash = sha256(prev_hash | ts | event | session_id | details_json)
+  ```
+
+The chain makes tampering or deletion detectable: each `prev_hash` must match
+the previous `entry_hash`. Request *content* lives in the session database
+(`sessions.db`); the audit log proves the sequence without duplicating
+content. Audit writes are best-effort — a logging failure warns but never
+breaks a request.
+
+Verify the chain locally:
+
+```bash
+warmachine audit verify
+# audit log verified: 128 entries, hash chain intact
 ```
 
-The chain makes tampering or deletion detectable: recompute the hashes over
-the file and confirm each `prev_hash` matches the previous `entry_hash`.
-Request *content* lives in the session database (`sessions.db`); the audit
-log proves the sequence without duplicating content. Audit writes are
-best-effort — a logging failure warns but never breaks a request.
+**SIEM forwarding:** the client creates no new egress path — forward the
+JSONL file with your existing log shipper (e.g. Filebeat, Splunk Universal
+Forwarder, or `rsyslog` imfile) to your SIEM. Each line is a self-contained
+JSON event; the `entry_hash`/`prev_hash` fields let the SIEM (or a later
+`warmachine audit verify` run) detect gaps or tampering in transit.
 
 ## Session data
 
-Conversation history stays in the local `sessions.db` on the laptop, exactly
-as in the standard build. For CUI/ITAR handling, combine with full-disk
-encryption on the laptops and your organization's device policy — WarMachine
-does not add at-rest encryption to the session database itself.
+Conversation history stays in the local `sessions.db` on the laptop, but
+message payloads are **encrypted at rest** in the on-prem build:
+
+- Each `content_json` row is sealed with **AES-256-GCM** under a per-install
+  256-bit data-encryption key (DEK). The sealed value is a self-describing
+  JSON envelope (`{"enc":"aes-256-gcm","v":1,"nonce":..,"ct":..}`), so no
+  schema migration was needed.
+- The DEK is generated on first run and held in the **OS keychain** — it never
+  touches disk. If the keychain is unreachable, session writes fail closed
+  rather than writing plaintext.
+- Databases written before sealing was introduced still read: legacy
+  plaintext rows are parsed as-is and re-sealed on their next write, so
+  plaintext ages out through normal use. GCM also integrity-protects each
+  row: tampered rows fail to open instead of decrypting to garbage.
+- Because payloads are sealed, keyword search (`session list --match`,
+  chat-recall) decrypts candidates in memory and matches in Rust instead of
+  in SQL. Results are identical; large histories are somewhat slower.
+
+Combine with full-disk encryption on the laptops and your organization's
+device policy for defense in depth.
+
+## Keychain requirement
+
+The on-prem build treats the OS keychain as mandatory infrastructure:
+
+- `WARMACHINE_DISABLE_KEYRING` (env var or config) is **ignored**.
+- API keys and the session-encryption DEK are stored only in the keychain.
+- If the keychain daemon is unreachable, secret reads/writes **fail closed**
+  with an error — the build will not silently fall back to the plaintext
+  `secrets.yaml` file. On a fresh laptop image, make sure the Secret Service
+  (Linux) / Keychain (macOS) / Credential Manager (Windows) is functional
+  before first run.
+
+## Tool approvals
+
+On-prem builds are **default-deny** for tool execution: every shell or web
+tool call requires explicit human approval in the CLI before it runs.
+Pattern-based egress detection is bypassable (obfuscation, novel exfil
+paths); approval is not.
+
+Operational notes:
+
+- Approvals are per tool call, in the interactive CLI. There is no
+  pre-approval list or "allow always" escape hatch in the on-prem build.
+- Headless use (recipes, `warmachine run`, scheduled jobs) will stall at the
+  approval prompt with no one to answer it. If you run unattended workflows,
+  route them through a supervised session or accept that tool calls block.
+- A denied call is reported to the model as a tool error, not a crash — the
+  session continues.
 
 ## CI
 

@@ -1,6 +1,8 @@
 use crate::config::paths::Paths;
 use crate::config::GooseMode;
-use crate::conversation::message::{Message, MessageMetadata, MessageUsage, TokenState};
+use crate::conversation::message::{
+    Message, MessageContent, MessageMetadata, MessageUsage, TokenState,
+};
 use crate::conversation::Conversation;
 use crate::providers::base::CostSource;
 use crate::providers::base::Provider;
@@ -360,6 +362,7 @@ fn keyword_terms(query: Option<&str>) -> Vec<String> {
         .collect()
 }
 
+#[cfg(not(feature = "onprem"))]
 fn message_keyword_clause(keyword_count: usize) -> String {
     let keyword_clauses = (0..keyword_count)
         .map(|_| "instr(LOWER(json_extract(value, '$.text')), ?) > 0")
@@ -1656,6 +1659,13 @@ impl SessionStorage {
         tx.commit().await?;
         #[cfg(feature = "telemetry")]
         crate::posthog::emit_session_started();
+        // Best-effort: a failed audit write must not fail session creation.
+        #[cfg(feature = "onprem")]
+        let _ = crate::onprem::audit_event(
+            "session_start",
+            Some(&session.id),
+            &serde_json::json!({"session_type": session_type.to_string()}),
+        );
         Ok(session)
     }
 
@@ -1900,7 +1910,7 @@ impl SessionStorage {
                 _ => continue,
             };
 
-            let content = serde_json::from_str(&content_json)?;
+            let content: Vec<MessageContent> = super::payload_seal::open(&content_json)?;
             let metadata = metadata_json
                 .and_then(|json| serde_json::from_str(&json).ok())
                 .unwrap_or_default();
@@ -1946,7 +1956,9 @@ impl SessionStorage {
         .bind(message_id)
         .bind(session_id)
         .bind(role_to_string(&message.role))
-        .bind(serde_json::to_string(&message.content)?)
+        .bind(super::payload_seal::seal(
+            &serde_json::to_string(&message.content)?,
+        )?)
         .bind(created)
         .bind(metadata_json)
         .execute(&mut *tx)
@@ -1990,7 +2002,9 @@ impl SessionStorage {
             .bind(message_id)
             .bind(session_id)
             .bind(role_to_string(&message.role))
-            .bind(serde_json::to_string(&message.content)?)
+            .bind(super::payload_seal::seal(
+                &serde_json::to_string(&message.content)?,
+            )?)
             .bind(message.created)
             .bind(metadata_json)
             .execute(&mut *tx)
@@ -2050,7 +2064,9 @@ impl SessionStorage {
                 .bind(message_id)
                 .bind(session_id)
                 .bind(role_to_string(&message.role))
-                .bind(serde_json::to_string(&message.content)?)
+                .bind(super::payload_seal::seal(
+                    &serde_json::to_string(&message.content)?,
+                )?)
                 .bind(message.created)
                 .bind(serde_json::to_string(&message.metadata)?)
                 .execute(&mut *tx)
@@ -2074,6 +2090,14 @@ impl SessionStorage {
 
         let has_limit = query.limit.is_some();
         let keywords = keyword_terms(filters.keyword);
+        // Sealed payloads cannot be matched in SQL; under onprem the keyword
+        // filter is applied in Rust after decryption (see the tail of this
+        // function), so the SQL keeps every other filter but drops the keyword
+        // predicate, cursor, and limit.
+        #[cfg(feature = "onprem")]
+        let filter_keywords_in_rust = !keywords.is_empty();
+        #[cfg(not(feature = "onprem"))]
+        let filter_keywords_in_rust = false;
         let mut where_clauses = Vec::new();
         let mut having_clauses = Vec::new();
         let normalized_message_timestamp = normalized_message_timestamp_sql("m.created_timestamp");
@@ -2086,10 +2110,11 @@ impl SessionStorage {
         if filters.working_dir.is_some() {
             where_clauses.push("s.working_dir = ?".to_string());
         }
+        #[cfg(not(feature = "onprem"))]
         if !keywords.is_empty() {
             where_clauses.push(message_keyword_clause(keywords.len()));
         }
-        if query.cursor.is_some() {
+        if query.cursor.is_some() && !filter_keywords_in_rust {
             having_clauses.push(format!(
                 "({sort_timestamp_sql} < ? OR ({sort_timestamp_sql} = ? AND s.id < ?))"
             ));
@@ -2111,7 +2136,11 @@ impl SessionStorage {
             "LEFT JOIN messages m ON s.id = m.session_id"
         };
         let order_by = "ORDER BY sort_timestamp DESC, s.id DESC";
-        let limit_clause = if query.limit.is_some() { "LIMIT ?" } else { "" };
+        let limit_clause = if query.limit.is_some() && !filter_keywords_in_rust {
+            "LIMIT ?"
+        } else {
+            ""
+        };
 
         let message_count_sql = if has_limit {
             "0".to_string()
@@ -2162,29 +2191,89 @@ impl SessionStorage {
         if let Some(working_dir) = filters.working_dir {
             q = q.bind(working_dir.to_string_lossy().to_string());
         }
+        #[cfg(not(feature = "onprem"))]
         for term in keywords {
             q = q.bind(term);
         }
         if let Some(cursor) = query.cursor {
-            let sort_at = cursor.sort_at.timestamp();
-            q = q.bind(sort_at);
-            q = q.bind(sort_at);
-            q = q.bind(&cursor.session_id);
+            if !filter_keywords_in_rust {
+                let sort_at = cursor.sort_at.timestamp();
+                q = q.bind(sort_at);
+                q = q.bind(sort_at);
+                q = q.bind(&cursor.session_id);
+            }
         }
         if let Some(limit) = query.limit {
-            q = q.bind(limit as i64);
+            if !filter_keywords_in_rust {
+                q = q.bind(limit as i64);
+            }
         }
 
         let pool = self.pool().await?;
-        if has_limit {
+        let mut sessions = if has_limit {
             let mut tx = pool.begin().await?;
             let mut sessions = q.fetch_all(&mut *tx).await?;
             Self::populate_visible_message_counts(&mut tx, &mut sessions).await?;
             tx.commit().await?;
-            Ok(sessions)
+            sessions
         } else {
-            q.fetch_all(pool).await.map_err(Into::into)
+            q.fetch_all(pool).await.map_err(Into::into)?
+        };
+        // Sealed payloads could not be keyword-matched in SQL; filter the
+        // candidates in Rust after decryption, preserving cursor/limit
+        // pagination semantics.
+        #[cfg(feature = "onprem")]
+        if !keywords.is_empty() {
+            sessions = self
+                .filter_sessions_by_keywords(sessions, &keywords, query.cursor, query.limit)
+                .await?;
         }
+        Ok(sessions)
+    }
+
+    /// On-prem keyword search over sealed payloads.
+    ///
+    /// `sessions` arrives ordered by (sort_timestamp DESC, id DESC). Keeps the
+    /// sessions whose user-visible message text matches any keyword
+    /// (case-insensitive substring, mirroring the SQL predicate this replaces),
+    /// then applies the cursor and limit in Rust to preserve pagination.
+    #[cfg(feature = "onprem")]
+    async fn filter_sessions_by_keywords(
+        &self,
+        sessions: Vec<Session>,
+        keywords: &[String],
+        cursor: Option<&SessionListCursor>,
+        limit: Option<usize>,
+    ) -> Result<Vec<Session>> {
+        let mut kept = Vec::new();
+        'sessions: for session in sessions {
+            if let Some(c) = cursor {
+                let sort_at = session_sort_at(&session);
+                if !(sort_at < c.sort_at || (sort_at == c.sort_at && session.id < c.session_id)) {
+                    continue;
+                }
+            }
+            let conversation = self.get_conversation(&session.id).await?;
+            for message in conversation.messages() {
+                if !message.is_user_visible() {
+                    continue;
+                }
+                for block in &message.content {
+                    let MessageContent::Text(t) = block else {
+                        continue;
+                    };
+                    let haystack = t.text.to_lowercase();
+                    if keywords.iter().any(|kw| haystack.contains(kw)) {
+                        kept.push(session);
+                        continue 'sessions;
+                    }
+                }
+            }
+        }
+        if let Some(limit) = limit {
+            kept.truncate(limit);
+        }
+        Ok(kept)
     }
 
     async fn populate_visible_message_counts(
@@ -2312,6 +2401,13 @@ impl SessionStorage {
             .await?;
 
         tx.commit().await?;
+        // Best-effort: a failed audit write must not fail session deletion.
+        #[cfg(feature = "onprem")]
+        let _ = crate::onprem::audit_event(
+            "session_end",
+            Some(session_id),
+            &serde_json::json!({}),
+        );
         Ok(())
     }
 
@@ -2744,7 +2840,7 @@ impl SessionStorage {
         .await?;
 
         for (message_id, content_json) in rows {
-            let content: Vec<MessageContent> = serde_json::from_str(&content_json)?;
+            let content: Vec<MessageContent> = super::payload_seal::open(&content_json)?;
             let contains_tool_request = content.iter().any(|block| {
                 matches!(
                     block,
@@ -2798,7 +2894,7 @@ impl SessionStorage {
         .await?;
 
         for (row_id, content_json) in rows {
-            let mut content: Vec<MessageContent> = serde_json::from_str(&content_json)?;
+            let mut content: Vec<MessageContent> = super::payload_seal::open(&content_json)?;
             let mut found = false;
             for block in &mut content {
                 if let MessageContent::ToolRequest(tr) = block {
@@ -2813,7 +2909,7 @@ impl SessionStorage {
                 continue;
             }
 
-            let updated_json = serde_json::to_string(&content)?;
+            let updated_json = super::payload_seal::seal(&serde_json::to_string(&content)?)?;
             sqlx::query("UPDATE messages SET content_json = ? WHERE id = ?")
                 .bind(updated_json)
                 .bind(row_id)

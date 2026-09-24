@@ -592,13 +592,35 @@ impl ExtensionManager {
 
         let server_info = client.get_info().cloned();
 
+        // Classify the extension before `config` is moved into the map; the
+        // audit trail records what was added to the agent's tool surface.
+        #[cfg(feature = "onprem")]
+        let extension_kind = match &config {
+            ExtensionConfig::Builtin { .. } => "builtin",
+            ExtensionConfig::Platform { .. } => "platform",
+            ExtensionConfig::Stdio { .. } => "stdio",
+            ExtensionConfig::StreamableHttp { .. } => "streamable_http",
+            _ => "unknown",
+        };
+
         let mut extensions = self.extensions.lock().await;
+        // Clone before the insert moves the name; only needed for the audit entry.
+        #[cfg(feature = "onprem")]
+        let audit_name = sanitized_name.clone();
         extensions.insert(
             sanitized_name,
             Extension::new(config, resolved_config, Arc::from(client), server_info),
         );
         drop(extensions);
         self.invalidate_tools_cache_and_bump_version().await;
+
+        // Best-effort: a failed audit write must not fail the extension load.
+        #[cfg(feature = "onprem")]
+        let _ = crate::onprem::audit_event(
+            "extension_added",
+            session_id,
+            &serde_json::json!({"name": audit_name, "kind": extension_kind}),
+        );
 
         Ok(())
     }

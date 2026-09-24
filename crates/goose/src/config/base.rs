@@ -396,6 +396,9 @@ fn secrets_file_path_in(config_dir: &Path) -> PathBuf {
 
 #[cfg(feature = "system-keyring")]
 fn secret_storage(config_dir: &Path, keyring_disabled: bool, service: &str) -> SecretStorage {
+    // On-prem builds handling CUI never honor the keyring disable switch:
+    // secrets must not fall back to a plaintext file.
+    let keyring_disabled = keyring_disabled && !cfg!(feature = "onprem");
     if keyring_disabled {
         SecretStorage::File {
             path: secrets_file_path_in(config_dir),
@@ -452,11 +455,23 @@ impl Config {
         config_path: P1,
         secrets_path: P2,
     ) -> Result<Self, ConfigError> {
+        // On-prem builds never persist secrets to a file; they use the OS
+        // keychain instead. The path argument is accepted for API
+        // compatibility but not used for secret storage.
+        #[cfg(feature = "onprem")]
+        let secrets = {
+            let _ = secrets_path.as_ref();
+            SecretStorage::Keyring {
+                service: default_keyring_service().to_string(),
+            }
+        };
+        #[cfg(not(feature = "onprem"))]
+        let secrets = SecretStorage::File {
+            path: secrets_path.as_ref().to_path_buf(),
+        };
         Ok(Config {
             config_paths: vec![config_path.as_ref().to_path_buf()],
-            secrets: SecretStorage::File {
-                path: secrets_path.as_ref().to_path_buf(),
-            },
+            secrets,
             guard: Mutex::new(()),
             secrets_cache: Arc::new(Mutex::new(None)),
         })
@@ -466,11 +481,23 @@ impl Config {
         config_paths: Vec<PathBuf>,
         secrets_path: P1,
     ) -> Result<Self, ConfigError> {
+        // On-prem builds never persist secrets to a file; they use the OS
+        // keychain instead. The path argument is accepted for API
+        // compatibility but not used for secret storage.
+        #[cfg(feature = "onprem")]
+        let secrets = {
+            let _ = secrets_path.as_ref();
+            SecretStorage::Keyring {
+                service: default_keyring_service().to_string(),
+            }
+        };
+        #[cfg(not(feature = "onprem"))]
+        let secrets = SecretStorage::File {
+            path: secrets_path.as_ref().to_path_buf(),
+        };
         Ok(Config {
             config_paths,
-            secrets: SecretStorage::File {
-                path: secrets_path.as_ref().to_path_buf(),
-            },
+            secrets,
             guard: Mutex::new(()),
             secrets_cache: Arc::new(Mutex::new(None)),
         })
@@ -1213,6 +1240,11 @@ impl Config {
         fallback_values: Option<&HashMap<String, Value>>,
     ) -> Result<T, ConfigError> {
         if self.is_keyring_availability_error(&keyring_err.to_string()) {
+            if cfg!(feature = "onprem") {
+                // Fail closed: an on-prem build that cannot reach the keychain
+                // must not silently persist secrets to disk.
+                return Err(ConfigError::KeyringError(keyring_err.to_string()));
+            }
             std::env::set_var("WARMACHINE_DISABLE_KEYRING", "1");
             tracing::warn!("Keyring unavailable. Using file storage for secrets.");
 

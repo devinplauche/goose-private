@@ -612,6 +612,15 @@ enum SessionCommand {
     },
 }
 
+/// On-prem audit log commands (only compiled in the on-prem build).
+#[cfg(feature = "onprem")]
+#[derive(Subcommand)]
+enum AuditCommand {
+    /// Verify the audit log's hash chain end to end
+    #[command(about = "Verify the on-prem audit log hash chain")]
+    Verify,
+}
+
 #[cfg(feature = "scheduler")]
 #[derive(Subcommand, Debug)]
 enum SchedulerCommand {
@@ -981,6 +990,14 @@ enum Command {
 
         #[command(flatten)]
         model_opts: ModelOptions,
+    },
+
+    /// Verify the on-prem audit log (only in the on-prem build)
+    #[cfg(feature = "onprem")]
+    #[command(about = "Inspect the on-prem audit log")]
+    Audit {
+        #[command(subcommand)]
+        command: AuditCommand,
     },
 
     /// Execute commands from an instruction file
@@ -1400,6 +1417,8 @@ fn get_command_name(command: &Option<Command>) -> &'static str {
         #[cfg(feature = "acp-http")]
         Some(Command::Serve { .. }) => "serve",
         Some(Command::Session { .. }) => "session",
+        #[cfg(feature = "onprem")]
+        Some(Command::Audit { .. }) => "audit",
         Some(Command::Run { .. }) => "run",
         Some(Command::Gateway { .. }) => "gateway",
         #[cfg(feature = "scheduler")]
@@ -1924,6 +1943,18 @@ async fn handle_serve_command(args: ServeCommandArgs) -> Result<()> {
     }
 
     Ok(())
+}
+
+/// Handle `warmachine audit ...` (on-prem builds only).
+#[cfg(feature = "onprem")]
+async fn handle_audit_command(command: AuditCommand) -> Result<()> {
+    match command {
+        AuditCommand::Verify => {
+            let count = warmachine::onprem::verify_audit_log()?;
+            println!("audit log verified: {count} entries, hash chain intact");
+            Ok(())
+        }
+    }
 }
 
 async fn handle_session_subcommand(command: SessionCommand) -> Result<()> {
@@ -2860,6 +2891,8 @@ pub async fn cli() -> anyhow::Result<()> {
         Some(Command::Session {
             command: Some(cmd), ..
         }) => handle_session_subcommand(cmd).await,
+        #[cfg(feature = "onprem")]
+        Some(Command::Audit { command }) => handle_audit_command(command).await,
         Some(Command::Session {
             command: None,
             identifier,

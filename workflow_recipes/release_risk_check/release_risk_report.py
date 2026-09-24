@@ -24,12 +24,12 @@ DOC_PATTERNS = [
 
 # Paths considered high-risk core code
 CORE_PATHS = [
-    "crates/warmachine/src/agents/",
-    "crates/warmachine/src/providers/",
-    "crates/warmachine/src/acp/",
+    "crates/goose/src/agents/",
+    "crates/goose/src/providers/",
+    "crates/goose/src/acp/",
     "crates/goose-cli/",
-    "crates/warmachine/src/session",
-    "crates/warmachine/src/permission",
+    "crates/goose/src/session",
+    "crates/goose/src/permission",
 ]
 
 # Dependency lock files (safe to skip — lock files only, not manifests)

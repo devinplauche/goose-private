@@ -25,7 +25,7 @@ path = "src/bin/mcp_conformance_driver.rs"
 
 [dependencies]
 clap_mangen = { version = "0.3", default-features = false }
-warmachine = { path = "../warmachine", default-features = false }
+warmachine = { path = "../goose", default-features = false }
 agent-client-protocol = { workspace = true, features = ["unstable"], optional = true }
 goose-mcp = { path = "../goose-mcp", default-features = false, optional = true }
 goose-providers = { path = "../goose-providers", default-features = false }

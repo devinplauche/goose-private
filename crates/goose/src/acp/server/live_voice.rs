@@ -40,7 +40,7 @@ impl GooseAcpAgent {
         let mode = match req.session_id.as_deref() {
             Some(session_id) => self.load_live_voice_session(session_id).await?.goose_mode,
             None => crate::config::Config::global()
-                .get_goose_mode()
+                .get_warmachine_mode()
                 .unwrap_or_default(),
         };
         Ok(

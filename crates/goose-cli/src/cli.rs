@@ -1513,7 +1513,7 @@ async fn handle_mcp_probe(extension_command: String, script_path: Option<String>
         std::sync::Arc::new(SessionManager::instance()),
         warmachine::config::permission::PermissionManager::instance(),
         None,
-        config.get_goose_mode().unwrap_or_default(),
+        config.get_warmachine_mode().unwrap_or_default(),
         true,
         GoosePlatform::GooseCli,
     );
@@ -2058,7 +2058,7 @@ async fn handle_interactive_session(args: InteractiveSessionArgs) -> Result<()> 
         }
     }
 
-    let goose_mode = Config::global().get_goose_mode().unwrap_or_default();
+    let goose_mode = Config::global().get_warmachine_mode().unwrap_or_default();
     let mut session_id = get_or_create_session_id(identifier, resume, false, goose_mode).await?;
 
     if edit || fork {
@@ -2295,7 +2295,7 @@ async fn handle_run_command(
         }
     }
 
-    let goose_mode = Config::global().get_goose_mode().unwrap_or_default();
+    let goose_mode = Config::global().get_warmachine_mode().unwrap_or_default();
     let session_id = get_or_create_session_id(
         identifier,
         run_behavior.resume,
@@ -2766,7 +2766,7 @@ async fn handle_default_session() -> Result<()> {
         configure_telemetry_consent_dialog()?;
     }
 
-    let goose_mode = Config::global().get_goose_mode().unwrap_or_default();
+    let goose_mode = Config::global().get_warmachine_mode().unwrap_or_default();
     let session_id = get_or_create_session_id(None, false, false, goose_mode).await?;
 
     let mut session = build_session(SessionBuilderConfig {

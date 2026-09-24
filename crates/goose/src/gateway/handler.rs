@@ -319,7 +319,7 @@ impl GatewayHandler {
                 working_dir,
                 session_name,
                 SessionType::Gateway,
-                config.get_goose_mode().unwrap_or_default(),
+                config.get_warmachine_mode().unwrap_or_default(),
             )
             .await?;
 
@@ -394,7 +394,7 @@ impl GatewayHandler {
         current_extensions.extend(crate::plugins::mcp_servers::enabled_plugin_mcp_servers(
             Some(&session.working_dir),
         ));
-        let current_mode = config.get_goose_mode().unwrap_or_default();
+        let current_mode = config.get_warmachine_mode().unwrap_or_default();
 
         // --- what the session has ---
         let session_extensions: Vec<ExtensionConfig> =

@@ -200,7 +200,7 @@ pub async fn handle_term_init(
                     working_dir,
                     "WarMachine Term Session".to_string(),
                     SessionType::Terminal,
-                    Config::global().get_goose_mode().unwrap_or_default(),
+                    Config::global().get_warmachine_mode().unwrap_or_default(),
                 )
                 .await?;
 

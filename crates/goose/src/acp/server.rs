@@ -959,7 +959,7 @@ impl GooseAcpAgent {
             Arc::clone(&session_manager),
             Arc::clone(&permission_manager),
             options.scheduler,
-            Config::global().get_goose_mode().unwrap_or_default(),
+            Config::global().get_warmachine_mode().unwrap_or_default(),
             options.disable_session_naming,
             options.goose_platform.clone(),
         );

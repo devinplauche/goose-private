@@ -393,8 +393,8 @@ impl Agent {
             Arc::new(SessionManager::instance()),
             PermissionManager::instance(),
             None,
-            config.get_goose_mode().unwrap_or_default(),
-            config.get_goose_disable_session_naming().unwrap_or(false),
+            config.get_warmachine_mode().unwrap_or_default(),
+            config.get_warmachine_disable_session_naming().unwrap_or(false),
             GoosePlatform::GooseCli,
         ))
     }

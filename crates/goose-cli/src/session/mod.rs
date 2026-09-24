@@ -874,7 +874,7 @@ impl CliSession {
             }
         };
         self.agent.update_goose_mode(mode, &self.session_id).await?;
-        config.set_goose_mode(mode)?;
+        config.set_warmachine_mode(mode)?;
         output::goose_mode_message(&format!("WarMachine mode set to '{mode}'"));
         Ok(())
     }
@@ -1361,7 +1361,7 @@ impl CliSession {
                                     // Approve/SmartApprove modes since auto-allowing would
                                     // bypass the safety contract those modes are meant to enforce.
                                     let config = Config::global();
-                                    let goose_mode = config.get_goose_mode().unwrap_or(GooseMode::Auto);
+                                    let goose_mode = config.get_warmachine_mode().unwrap_or(GooseMode::Auto);
                                     if goose_mode == GooseMode::Approve || goose_mode == GooseMode::SmartApprove {
                                         cancel_token_clone.cancel();
                                         drop(stream);

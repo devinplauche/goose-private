@@ -1544,7 +1544,7 @@ pub fn configure_goose_mode_dialog() -> anyhow::Result<()> {
         )
         .interact()?;
 
-    config.set_goose_mode(mode)?;
+    config.set_warmachine_mode(mode)?;
     let msg = match mode {
         GooseMode::Auto => "Set to Auto Mode - full file modification enabled",
         GooseMode::Approve => "Set to Approve Mode - all tools and modifications require approval",

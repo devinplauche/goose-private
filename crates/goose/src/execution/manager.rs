@@ -67,16 +67,16 @@ impl AgentManager {
             .get_or_try_init(|| async {
                 let config = Config::global();
                 let max_sessions = config
-                    .get_goose_max_active_agents()
+                    .get_warmachine_max_active_agents()
                     .unwrap_or(DEFAULT_MAX_SESSION);
-                let default_mode = config.get_goose_mode().unwrap_or_default();
+                let default_mode = config.get_warmachine_mode().unwrap_or_default();
                 let session_manager = Arc::new(SessionManager::instance());
                 let agent_config = AgentConfig::new(
                     session_manager,
                     PermissionManager::instance(),
                     None,
                     default_mode,
-                    config.get_goose_disable_session_naming().unwrap_or(false),
+                    config.get_warmachine_disable_session_naming().unwrap_or(false),
                     GoosePlatform::GooseDesktop,
                 );
                 let manager = Self::new(agent_config, Some(max_sessions)).await?;

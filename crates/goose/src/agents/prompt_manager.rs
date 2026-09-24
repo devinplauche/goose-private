@@ -121,7 +121,7 @@ impl<'a> SystemPromptBuilder<'a, PromptManager> {
 
         let goose_mode = self
             .goose_mode
-            .unwrap_or_else(|| Config::global().get_goose_mode().unwrap_or_default());
+            .unwrap_or_else(|| Config::global().get_warmachine_mode().unwrap_or_default());
 
         let context = SystemPromptContext {
             extensions: sanitized_extensions_info,

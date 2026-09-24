@@ -118,12 +118,12 @@ pub fn get_input(
     conversation_messages: Option<&Vec<String>>,
 ) -> Result<InputResult> {
     let config = Config::global();
-    let prompt_editor = config.get_goose_prompt_editor().ok().flatten();
-    let editor_always_override = config.get_goose_prompt_editor_always().ok().flatten();
+    let prompt_editor = config.get_warmachine_prompt_editor().ok().flatten();
+    let editor_always_override = config.get_warmachine_prompt_editor_always().ok().flatten();
     let editor_always = should_use_editor_always(prompt_editor.as_deref(), editor_always_override);
 
     if editor_always {
-        if let Ok(Some(editor_cmd)) = config.get_goose_prompt_editor() {
+        if let Ok(Some(editor_cmd)) = config.get_warmachine_prompt_editor() {
             if !editor_cmd.is_empty() {
                 let messages = extract_recent_messages(conversation_messages);
                 let message_refs: Vec<&str> = messages.iter().map(|s| s.as_str()).collect();

@@ -67,8 +67,6 @@ async fn init_registry() -> RwLock<ProviderRegistry> {
         crate::config::tls::provider_tls_config_from_config(crate::config::Config::global())
             .expect("failed to load provider TLS config");
     let mut registry = ProviderRegistry::new(tls_config).with_providers(|registry| {
-        use super::inventory::registrations;
-
         // On-prem builds expose exactly one provider: the OpenAI-compatible
         // provider locked to the compile-time endpoint. Cloud providers, ACP
         // CLIs, and custom/declarative providers are not registered at all, so
@@ -76,7 +74,7 @@ async fn init_registry() -> RwLock<ProviderRegistry> {
         #[cfg(feature = "onprem")]
         registry.register_with_inventory::<OpenAiProviderDef>(
             true,
-            Some(registrations::openai_inventory()),
+            Some(super::inventory::registrations::openai_inventory()),
         );
 
         #[cfg(not(feature = "onprem"))]

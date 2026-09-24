@@ -18,9 +18,10 @@ use tracing::warn;
 
 use super::container::Container;
 use super::extension::{
-    ExtensionConfig, ExtensionError, ExtensionInfo, ExtensionResult, PlatformExtensionContext,
-    PLATFORM_EXTENSIONS,
+    ExtensionConfig, ExtensionInfo, ExtensionResult, PlatformExtensionContext, PLATFORM_EXTENSIONS,
 };
+#[cfg(feature = "onprem")]
+use super::extension::ExtensionError;
 use super::tool_execution::{ToolCallContext, ToolCallNotificationEmitter, ToolCallResult};
 use super::types::SharedProvider;
 use crate::action_required_manager::ActionRequiredManager;

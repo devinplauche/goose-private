@@ -5163,6 +5163,7 @@ dependencies = [
 name = "goose"
 version = "1.52.0"
 dependencies = [
+ "aes-gcm",
  "agent-client-protocol",
  "agent-client-protocol-http",
  "agent-client-protocol-schema",

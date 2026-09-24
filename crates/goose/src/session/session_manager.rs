@@ -2210,7 +2210,7 @@ impl SessionStorage {
         }
 
         let pool = self.pool().await?;
-        let mut sessions = if has_limit {
+        let sessions = if has_limit {
             let mut tx = pool.begin().await?;
             let mut sessions = q.fetch_all(&mut *tx).await?;
             Self::populate_visible_message_counts(&mut tx, &mut sessions).await?;
@@ -2223,11 +2223,12 @@ impl SessionStorage {
         // candidates in Rust after decryption, preserving cursor/limit
         // pagination semantics.
         #[cfg(feature = "onprem")]
-        if !keywords.is_empty() {
-            sessions = self
-                .filter_sessions_by_keywords(sessions, &keywords, query.cursor, query.limit)
-                .await?;
-        }
+        let sessions = if !keywords.is_empty() {
+            self.filter_sessions_by_keywords(sessions, &keywords, query.cursor, query.limit)
+                .await?
+        } else {
+            sessions
+        };
         Ok(sessions)
     }
 

@@ -67,150 +67,15 @@ export function registerUpdateIpcHandlers() {
 
   // IPC handlers for renderer process
   ipcMain.handle('check-for-updates', async () => {
-    const currentVersion = autoUpdater.currentVersion?.version || app.getVersion();
-    const checkStartTime = Date.now();
-
-    try {
-      log.info('=== MANUAL UPDATE CHECK INITIATED ===');
-      log.info(`Manual check for updates requested at ${new Date().toISOString()}`);
-      log.info(`Current version: ${currentVersion}`);
-      trackUpdateCheckStarted('manual', currentVersion);
-
-      // Reset state for new update check
-      isUsingGitHubFallback = false;
-      githubUpdateInfo = {};
-      lastReportedProgress = 0; // Reset progress tracking
-
-      // Ensure auto-updater is properly initialized
-      if (!autoUpdater.currentVersion) {
-        log.error('Auto-updater currentVersion is null/undefined');
-        trackUpdateCheckCompleted('error', currentVersion, {
-          usingFallback: false,
-          errorType: 'auto_updater_not_initialized',
-        });
-        throw new Error('Auto-updater not initialized. Please restart the application.');
-      }
-
-      log.info(
-        `About to check for updates with currentVersion: ${JSON.stringify(autoUpdater.currentVersion)}`
-      );
-      log.info(`Feed URL: ${autoUpdater.getFeedURL()}`);
-
-      const result = await autoUpdater.checkForUpdates();
-      const duration = Date.now() - checkStartTime;
-      log.info(`=== MANUAL UPDATE CHECK COMPLETED in ${duration}ms ===`);
-      log.info('Auto-updater checkForUpdates result:', result);
-
-      return {
-        updateInfo: result?.updateInfo,
-        error: null,
-      };
-    } catch (error) {
-      const duration = Date.now() - checkStartTime;
-      log.error(`=== MANUAL UPDATE CHECK FAILED after ${duration}ms ===`);
-      log.error('Error checking for updates:', error);
-      log.error('Manual check error details:', {
-        message: errorMessage(error, 'Unknown error'),
-        stack: error instanceof Error ? error.stack : 'No stack',
-        name: error instanceof Error ? error.name : 'Unknown',
-        code:
-          error instanceof Error && 'code' in error
-            ? (error as Error & { code: unknown }).code
-            : undefined,
-        toString: error?.toString(),
-      });
-
-      // If electron-updater fails, try GitHub API fallback
-      if (
-        error instanceof Error &&
-        (error.message.includes('HttpError: 404') ||
-          error.message.includes('ERR_CONNECTION_REFUSED') ||
-          error.message.includes('ENOTFOUND') ||
-          error.message.includes('No published versions'))
-      ) {
-        log.info('Using GitHub API fallback in check-for-updates...');
-        log.info('Manual fallback triggered by error:', error.message);
-        isUsingGitHubFallback = true;
-
-        try {
-          const result = await githubUpdater.checkForUpdates();
-
-          if (result.error) {
-            trackUpdateCheckCompleted('error', currentVersion, {
-              usingFallback: true,
-              errorType: result.error,
-            });
-            return {
-              updateInfo: null,
-              error: result.error,
-            };
-          }
-
-          // Store GitHub update info
-          if (result.updateAvailable) {
-            githubUpdateInfo = {
-              latestVersion: result.latestVersion,
-              downloadUrl: result.downloadUrl,
-              releaseUrl: result.releaseUrl,
-            };
-
-            trackUpdateCheckCompleted('available', currentVersion, {
-              latestVersion: result.latestVersion,
-              usingFallback: true,
-            });
-
-            updateAvailable = true;
-            lastUpdateState = { updateAvailable: true, latestVersion: result.latestVersion };
-            updateTrayIcon(true);
-            sendStatusToWindow('update-available', { version: result.latestVersion });
-
-            if (!autoDownloadDisabled) {
-              log.info('Auto-downloading update via GitHub fallback...');
-              await githubAutoDownload(result.downloadUrl!, result.latestVersion!, 'manual check');
-            } else {
-              log.info('Auto-download disabled — skipping GitHub fallback download');
-            }
-          } else {
-            trackUpdateCheckCompleted('not_available', currentVersion, {
-              latestVersion: result.latestVersion,
-              usingFallback: true,
-            });
-
-            updateAvailable = false;
-            lastUpdateState = { updateAvailable: false };
-            updateTrayIcon(false);
-            sendStatusToWindow('update-not-available', {
-              version: autoUpdater.currentVersion.version,
-            });
-          }
-
-          return {
-            updateInfo: null,
-            error: null,
-          };
-        } catch (fallbackError) {
-          log.error('GitHub fallback also failed:', fallbackError);
-          trackUpdateCheckCompleted('error', currentVersion, {
-            usingFallback: true,
-            errorType: 'github_fallback_failed',
-          });
-          return {
-            updateInfo: null,
-            error: 'Unable to check for updates. Please check your internet connection.',
-          };
-        }
-      }
-
-      trackUpdateCheckCompleted('error', currentVersion, {
-        usingFallback: false,
-        errorType: errorMessage(error, 'unknown'),
-      });
-
-      return {
-        updateInfo: null,
-        error: errorMessage(error, 'Unknown error'),
-      };
-    }
+    // Private fork: update checks are permanently disabled for zero network
+    // egress. Report "no update available" so the settings UI settles instead
+    // of spinning, and never contact any update server or the GitHub API.
+    log.info('Update check requested, but auto-updates are disabled in this build.');
+    sendStatusToWindow('update-not-available', { version: app.getVersion() });
+    return {
+      updateInfo: null,
+      error: null,
+    };
   });
 
   ipcMain.handle('download-update', async () => {
@@ -843,3 +708,4 @@ export function setTrayRef(tray: Tray) {
 export function getUpdateAvailable(): boolean {
   return updateAvailable;
 }
+

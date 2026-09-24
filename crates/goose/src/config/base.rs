@@ -2553,7 +2553,7 @@ mod tests {
         // Base (system) config
         std::fs::write(
             base_file.path(),
-            "WARMACHINE_PROVIDER: openai\nGOOSE_MODEL: gpt-4\n",
+            "WARMACHINE_PROVIDER: openai\nWARMACHINE_MODEL: gpt-4\n",
         )
         .unwrap();
 

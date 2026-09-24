@@ -363,7 +363,7 @@ pub async fn spawn_acp_server_in_process(
         fs::write(
             &config_path,
             format!(
-                "WARMACHINE_MODEL: {current_model}\nGOOSE_PROVIDER: openai\nGOOSE_MODE: {}\nGOOSE_TOOL_PAIR_SUMMARIZATION: false\n",
+                "WARMACHINE_MODEL: {current_model}\nWARMACHINE_PROVIDER: openai\nWARMACHINE_MODE: {}\nWARMACHINE_TOOL_PAIR_SUMMARIZATION: false\n",
                 goose_mode
             ),
         )

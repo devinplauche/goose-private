@@ -36,7 +36,7 @@ fn acp_catalog_and_custom_provider_methods_use_core_provider_store() {
         let config_dir = Paths::config_dir();
         write_config(
             &config_dir,
-            "WARMACHINE_MODEL: gpt-4o\nGOOSE_PROVIDER: openai\nGOOSE_DISABLE_KEYRING: true\nXAI_HOST: https://api.x.ai/v1\n",
+            "WARMACHINE_MODEL: gpt-4o\nWARMACHINE_PROVIDER: openai\nWARMACHINE_DISABLE_KEYRING: true\nXAI_HOST: https://api.x.ai/v1\n",
         );
         write_secrets(&config_dir, "XAI_API_KEY: xai-configured-key\n");
         Config::global().invalidate_secrets_cache();

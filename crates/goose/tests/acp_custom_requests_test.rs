@@ -24,7 +24,7 @@ use std::time::Duration;
 use common_tests::fixtures::OpenAiFixture;
 
 const DEFAULT_ACP_TEST_CONFIG: &str =
-    "WARMACHINE_MODEL: gpt-4o\nGOOSE_PROVIDER: openai\nGOOSE_DISABLE_KEYRING: true\n";
+    "WARMACHINE_MODEL: gpt-4o\nWARMACHINE_PROVIDER: openai\nWARMACHINE_DISABLE_KEYRING: true\n";
 
 static ACP_CONFIG_ROOT: LazyLock<tempfile::TempDir> =
     LazyLock::new(|| tempfile::tempdir().unwrap());
@@ -792,7 +792,7 @@ fn test_custom_provider_inventory_includes_metadata() {
 #[serial]
 fn test_custom_preferences_read_save() {
     let config_dir = write_acp_global_config(
-        "WARMACHINE_MODEL: gpt-4o\nGOOSE_PROVIDER: openai\nGOOSE_AUTO_COMPACT_THRESHOLD: 0.7\nGOOSE_THINKING_EFFORT: high\nVOICE_AUTO_SUBMIT_PHRASES: send it\n",
+        "WARMACHINE_MODEL: gpt-4o\nWARMACHINE_PROVIDER: openai\nWARMACHINE_AUTO_COMPACT_THRESHOLD: 0.7\nWARMACHINE_THINKING_EFFORT: high\nVOICE_AUTO_SUBMIT_PHRASES: send it\n",
     );
 
     run_test(async move {
@@ -933,7 +933,7 @@ fn test_custom_preferences_save_rejects_invalid_values() {
 #[serial]
 fn test_custom_defaults_read() {
     let config_dir = write_acp_global_config(
-        "WARMACHINE_MODEL: claude-3-5-haiku-latest\nGOOSE_PROVIDER: anthropic\n",
+        "WARMACHINE_MODEL: claude-3-5-haiku-latest\nWARMACHINE_PROVIDER: anthropic\n",
     );
 
     run_test(async move {
@@ -970,7 +970,7 @@ fn test_custom_defaults_read() {
 fn test_custom_defaults_save_allows_unlisted_model() {
     let _env = env_lock::lock_env([("ANTHROPIC_API_KEY", Some("test-key"))]);
     let config_dir = write_acp_global_config(
-        "WARMACHINE_MODEL: claude-3-5-haiku-latest\nGOOSE_PROVIDER: anthropic\n",
+        "WARMACHINE_MODEL: claude-3-5-haiku-latest\nWARMACHINE_PROVIDER: anthropic\n",
     );
 
     run_test(async move {
@@ -1089,7 +1089,7 @@ fn test_developer_fs_requests_use_acp_session_id() {
         )
         .await;
         let config_dir = write_acp_global_config(&format!(
-            "WARMACHINE_MODEL: gpt-4.1\nGOOSE_PROVIDER: openai\nOPENAI_HOST: {}\n",
+            "WARMACHINE_MODEL: gpt-4.1\nWARMACHINE_PROVIDER: openai\nOPENAI_HOST: {}\n",
             openai.uri()
         ));
         let config = TestConnectionConfig {

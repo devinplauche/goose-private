@@ -60,7 +60,7 @@ fn write_config(config_dir: &std::path::Path) {
     std::fs::create_dir_all(config_dir).unwrap();
     std::fs::write(
         config_dir.join(warmachine::config::base::CONFIG_YAML_NAME),
-        "WARMACHINE_MODEL: gpt-4o\nGOOSE_PROVIDER: openai\nGOOSE_DISABLE_KEYRING: true\n",
+        "WARMACHINE_MODEL: gpt-4o\nWARMACHINE_PROVIDER: openai\nWARMACHINE_DISABLE_KEYRING: true\n",
     )
     .unwrap();
 }

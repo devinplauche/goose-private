@@ -215,7 +215,8 @@ fn append_entry(entry: serde_json::Value) -> Result<()> {
         .append(true)
         .open(&path)
         .with_context(|| format!("cannot open audit log {}", path.display()))?;
-    writeln!(file, "{entry}").with_context(|| format!("cannot write audit log {}", path.display()))?;
+    writeln!(file, "{entry}")
+        .with_context(|| format!("cannot write audit log {}", path.display()))?;
     Ok(())
 }
 
@@ -310,11 +311,8 @@ fn recompute_entry_hash(entry: &serde_json::Value) -> Result<String> {
 
     let event = get("event")?;
     let session_id = get("session_id")?;
-    let details_json = serde_json::to_string(
-        entry
-            .get("details")
-            .unwrap_or(&serde_json::Value::Null),
-    )?;
+    let details_json =
+        serde_json::to_string(entry.get("details").unwrap_or(&serde_json::Value::Null))?;
     Ok(sha256_hex(&format!(
         "{prev_hash}|{ts}|{event}|{session_id}|{details_json}"
     )))
@@ -333,8 +331,7 @@ pub fn verify_audit_log() -> Result<usize> {
     let mut count = 0usize;
     for (lineno, line) in BufReader::new(file).lines().enumerate() {
         let lineno = lineno + 1;
-        let line =
-            line.with_context(|| format!("cannot read audit log line {lineno}"))?;
+        let line = line.with_context(|| format!("cannot read audit log line {lineno}"))?;
         if line.trim().is_empty() {
             continue;
         }

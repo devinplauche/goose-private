@@ -17,11 +17,11 @@ use tokio_util::sync::CancellationToken;
 use tracing::warn;
 
 use super::container::Container;
+#[cfg(feature = "onprem")]
+use super::extension::ExtensionError;
 use super::extension::{
     ExtensionConfig, ExtensionInfo, ExtensionResult, PlatformExtensionContext, PLATFORM_EXTENSIONS,
 };
-#[cfg(feature = "onprem")]
-use super::extension::ExtensionError;
 use super::tool_execution::{ToolCallContext, ToolCallNotificationEmitter, ToolCallResult};
 use super::types::SharedProvider;
 use crate::action_required_manager::ActionRequiredManager;
@@ -495,7 +495,11 @@ impl ExtensionManager {
         }
 
         let working_dir = working_dir
-            .or_else(|| std::env::var("WARMACHINE_WORKING_DIR").ok().map(PathBuf::from))
+            .or_else(|| {
+                std::env::var("WARMACHINE_WORKING_DIR")
+                    .ok()
+                    .map(PathBuf::from)
+            })
             .unwrap_or_else(|| std::env::current_dir().unwrap_or_default());
         let ctx = |timeout: Option<u64>, working_dir: PathBuf| ConnectContext {
             timeout: Duration::from_secs(resolve_timeout(timeout)),

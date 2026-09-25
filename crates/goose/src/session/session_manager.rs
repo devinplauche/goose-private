@@ -2404,11 +2404,7 @@ impl SessionStorage {
         tx.commit().await?;
         // Best-effort: a failed audit write must not fail session deletion.
         #[cfg(feature = "onprem")]
-        let _ = crate::onprem::audit_event(
-            "session_end",
-            Some(session_id),
-            &serde_json::json!({}),
-        );
+        let _ = crate::onprem::audit_event("session_end", Some(session_id), &serde_json::json!({}));
         Ok(())
     }
 

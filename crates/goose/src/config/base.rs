@@ -376,7 +376,10 @@ fn keyring_disabled_in_config(config_path: &Path) -> bool {
     std::fs::read_to_string(config_path)
         .ok()
         .and_then(|s| parse_yaml_content(&s).ok())
-        .and_then(|m| m.get("WARMACHINE_DISABLE_KEYRING").map(keyring_disabled_value))
+        .and_then(|m| {
+            m.get("WARMACHINE_DISABLE_KEYRING")
+                .map(keyring_disabled_value)
+        })
         .unwrap_or(false)
 }
 
@@ -432,8 +435,8 @@ impl Config {
     /// to manage multiple configuration files.
     pub fn new<P: AsRef<Path>>(config_path: P, service: &str) -> Result<Self, ConfigError> {
         let config_path = config_path.as_ref().to_path_buf();
-        let keyring_disabled =
-            env::var("WARMACHINE_DISABLE_KEYRING").is_ok() || keyring_disabled_in_config(&config_path);
+        let keyring_disabled = env::var("WARMACHINE_DISABLE_KEYRING").is_ok()
+            || keyring_disabled_in_config(&config_path);
         let config_dir = config_path
             .parent()
             .map(Path::to_path_buf)
@@ -2823,7 +2826,9 @@ extensions:
     fn get_goose_context_limit_reads_quoted_yaml_value() {
         let _guard = env_lock::lock_env([("WARMACHINE_CONTEXT_LIMIT", None::<&str>)]);
         let config = new_test_config();
-        config.set_param("WARMACHINE_CONTEXT_LIMIT", "200000").unwrap();
+        config
+            .set_param("WARMACHINE_CONTEXT_LIMIT", "200000")
+            .unwrap();
 
         assert_eq!(config.get_goose_context_limit().unwrap(), Some(200_000));
     }

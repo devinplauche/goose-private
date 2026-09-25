@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.4
-# goose CLI and Server Docker Image
+# warmachine CLI and Server Docker Image
 # Multi-stage build for minimal final image size
 
 # Build stage
@@ -50,27 +50,27 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy binary from builder
-COPY --from=builder /build/target/release/goose /usr/local/bin/goose
+COPY --from=builder /build/target/release/warmachine /usr/local/bin/warmachine
 
 # Create non-root user
-RUN useradd -m -u 1000 -s /bin/bash goose && \
-    mkdir -p /home/goose/.config/goose && \
-    chown -R goose:goose /home/goose
+RUN useradd -m -u 1000 -s /bin/bash warmachine && \
+    mkdir -p /home/warmachine/.config/warmachine && \
+    chown -R warmachine:warmachine /home/warmachine
 
 # Set up environment
 ENV PATH="/usr/local/bin:${PATH}"
-ENV HOME="/home/goose"
+ENV HOME="/home/warmachine"
 
 # Switch to non-root user
-USER goose
-WORKDIR /home/goose
+USER warmachine
+WORKDIR /home/warmachine
 
-# Default to goose CLI
-ENTRYPOINT ["/usr/local/bin/goose"]
+# Default to warmachine CLI
+ENTRYPOINT ["/usr/local/bin/warmachine"]
 CMD ["--help"]
 
 # Labels for metadata
-LABEL org.opencontainers.image.title="goose"
-LABEL org.opencontainers.image.description="goose CLI"
-LABEL org.opencontainers.image.vendor="AAIF"
-LABEL org.opencontainers.image.source="https://github.com/aaif-goose/goose"
+LABEL org.opencontainers.image.title="warmachine"
+LABEL org.opencontainers.image.description="warmachine CLI"
+LABEL org.opencontainers.image.vendor="Devin Plauche"
+LABEL org.opencontainers.image.source="https://github.com/devinplauche/warmachine"

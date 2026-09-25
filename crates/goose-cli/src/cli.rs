@@ -1,9 +1,9 @@
 use anyhow::Result;
 use clap::{Args, CommandFactory, Parser, Subcommand};
-use clap_complete::{generate, Shell as ClapShell};
+use clap_complete::{Shell as ClapShell, generate};
 use clap_complete_nushell::Nushell as ClapNushell;
 #[cfg(feature = "bundled-mcp")]
-use goose_mcp::mcp_server_runner::{serve, McpCommand};
+use goose_mcp::mcp_server_runner::{McpCommand, serve};
 #[cfg(feature = "bundled-mcp")]
 use goose_mcp::{AutoVisualiserRouter, ComputerControllerServer, MemoryServer, TutorialServer};
 use warmachine::agents::GoosePlatform;
@@ -23,9 +23,9 @@ use crate::commands::info::handle_info;
 use crate::commands::plugin::{handle_plugin_install, handle_plugin_update};
 use crate::commands::recipe::{handle_deeplink, handle_list, handle_open, handle_validate};
 #[cfg(feature = "roaming")]
-use crate::commands::roam::{handle_roam_command, RoamCommand};
+use crate::commands::roam::{RoamCommand, handle_roam_command};
 use crate::commands::term::{
-    handle_term_info, handle_term_init, handle_term_log, handle_term_run, Shell,
+    Shell, handle_term_info, handle_term_init, handle_term_log, handle_term_run,
 };
 
 #[cfg(feature = "scheduler")]
@@ -38,12 +38,12 @@ use crate::commands::session::{handle_session_list, handle_session_remove};
 use crate::commands::skills::handle_skills_list;
 use crate::recipes::extract_from_cli::extract_recipe_info_from_cli;
 use crate::recipes::recipe::{explain_recipe, render_recipe_as_yaml};
-use crate::session::{build_session, SessionBuilderConfig};
+use crate::session::{SessionBuilderConfig, build_session};
 use std::io::Read;
 use std::path::PathBuf;
 use warmachine::agents::Container;
-use warmachine::session::session_manager::SessionType;
 use warmachine::session::SessionManager;
+use warmachine::session::session_manager::SessionType;
 #[cfg(feature = "acp-http")]
 const WARMACHINE_SERVER_SECRET_KEY_ENV: &str = "WARMACHINE_SERVER__SECRET_KEY";
 
@@ -610,6 +610,16 @@ enum SessionCommand {
         #[arg(short = 'o', long)]
         output: Option<PathBuf>,
     },
+    /// Purge sessions older than the retention cutoff (on-prem builds only).
+    ///
+    /// Retention is also enforced automatically on every session start; this
+    /// command exists for administrators who want to run it on demand.
+    #[cfg(feature = "onprem")]
+    #[command(
+        name = "purge-expired",
+        about = "Purge sessions older than the retention cutoff"
+    )]
+    PurgeExpired,
 }
 
 /// On-prem audit log commands (only compiled in the on-prem build).
@@ -1877,7 +1887,9 @@ async fn handle_serve_command(args: ServeCommandArgs) -> Result<()> {
         .collect::<Result<Vec<_>>>()?;
     let secret_key = env_secret.unwrap_or_else(generate_serve_secret_key);
     if let Err(error) = server.start_scheduler().await {
-        warn!("Scheduler failed to start; scheduled jobs will not run until a client connects: {error}");
+        warn!(
+            "Scheduler failed to start; scheduled jobs will not run until a client connects: {error}"
+        );
     }
     #[cfg(feature = "roaming")]
     let roam_share = if roam {
@@ -2035,6 +2047,14 @@ async fn handle_session_subcommand(command: SessionCommand) -> Result<()> {
                 }
             };
             crate::commands::session::handle_diagnostics(&session_id, output).await?;
+        }
+        #[cfg(feature = "onprem")]
+        SessionCommand::PurgeExpired => {
+            let cutoff = goose::onprem::session_retention_cutoff()?;
+            let purged = SessionManager::instance()
+                .purge_expired_sessions(cutoff)
+                .await?;
+            println!("Purged {purged} session(s) older than {cutoff}.");
         }
     }
     Ok(())
@@ -2569,7 +2589,7 @@ fn recommended_variant(
     model: &warmachine::providers::local_inference::hf_models::HfModelInfo,
     available_memory: u64,
 ) -> Option<&warmachine::providers::local_inference::hf_models::HfModelVariant> {
-    use warmachine::providers::local_inference::hf_models::{recommend_variant, HfQuantVariant};
+    use warmachine::providers::local_inference::hf_models::{HfQuantVariant, recommend_variant};
 
     let mut variant_indexes = Vec::new();
     let mut gguf_variants = Vec::new();
@@ -2980,7 +3000,7 @@ pub async fn cli() -> anyhow::Result<()> {
             summary_only,
             severity,
         }) => {
-            use crate::commands::review::{handle_review, ReviewOptions};
+            use crate::commands::review::{ReviewOptions, handle_review};
             handle_review(ReviewOptions {
                 range,
                 prompt_file: prompt,

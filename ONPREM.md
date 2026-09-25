@@ -34,6 +34,10 @@ The `onprem` cargo feature (in the `warmachine`, `goose-providers`, and
 | At-rest encryption | Session message payloads in `sessions.db` are sealed with AES-256-GCM (see below). |
 | Secret storage | The OS keychain is mandatory: `WARMACHINE_DISABLE_KEYRING` is ignored and an unreachable keychain fails closed. |
 | Tool approvals | Every shell/web tool call requires explicit human approval (see below). |
+| FIPS 140-3 | TLS uses the FIPS-validated AWS-LC module (cert #4816); the binary refuses to start if FIPS mode is not active (see below). |
+| Session retention | Sessions untouched for `WARMACHINE_SESSION_RETENTION_DAYS` (default 90) are purged automatically; retention cannot be disabled (see below). |
+| Egress sandbox test | CI runs an integration test proving the allowlist refuses public clouds, plaintext HTTP, and bypass attempts (see below). |
+| SBOM | Every CI run generates a CycloneDX SBOM for the on-prem dependency tree (see below). |
 
 ## Server requirements
 
@@ -169,4 +173,71 @@ Operational notes:
 
 `.github/workflows/ci.yml` includes a `rust-check-onprem` job that compiles
 (`cargo check --all-targets`) and lints (clippy, `-D warnings`) the on-prem
-feature combination on every push, so the gated code cannot rot.
+feature combination on every push, so the gated code cannot rot. The same job
+also runs the egress sandbox tests (below).
+
+## FIPS 140-3 validated cryptography
+
+The `onprem` feature implies the `fips` feature, which enables rustls's `fips`
+mode: the TLS crypto backend switches from stock aws-lc-rs to the
+FIPS-validated AWS-LC module (FIPS 140-3 certificate #4816).
+
+- At startup, the binary installs the FIPS provider as the process default
+  (`goose::onprem::init_fips_crypto`) before any TLS config is created.
+  reqwest — used by every provider HTTP client — picks up the process-default
+  provider, so all LLM traffic uses FIPS-approved algorithms.
+- The binary **refuses to start** if the FIPS provider is not active
+  (`is_fips_provider_active`), failing closed instead of silently running
+  with non-validated cryptography.
+- Scope note: FIPS validation covers the cryptographic module, not the whole
+  binary. The certificate (#4816) covers specific AWS-LC versions and
+  platforms — consult the
+  [AWS-LC FIPS security policy](https://github.com/aws/aws-lc/blob/main/docs/FIPS.md)
+  for the exact coverage. Running on a non-covered platform still gets
+  FIPS-approved algorithms but is outside the validated boundary.
+
+## Session retention
+
+Sessions are purged automatically once they go untouched longer than the
+retention period:
+
+- `WARMACHINE_SESSION_RETENTION_DAYS` (runtime env var, default **90**).
+- Enforcement runs on **every session start** (compiled in, not a cron job),
+  plus on demand via `warmachine session purge-expired`.
+- Retention **cannot be disabled**: `0` or an unparsable value fails closed
+  rather than keeping sessions forever.
+- Purged sessions are deleted with their messages and usage-ledger rows;
+  each purge batch is recorded in the audit log (`sessions_purged` event).
+
+## Egress sandbox test
+
+`crates/goose-providers/tests/onprem_egress_sandbox.rs` (compiled only with
+`--features onprem`) proves the network sandbox holds:
+
+- Public LLM endpoints (OpenAI, Anthropic, Google, Cohere, OpenRouter) are refused.
+- Plaintext HTTP to non-loopback hosts is refused.
+- Allowlist bypass attempts (wrong port, lookalike hosts, subdomains,
+  userinfo smuggling, non-HTTP schemes) are refused.
+- `ApiClient::new` — the enforcement point every provider funnels through —
+  fails for non-allowlisted hosts and succeeds for the primary endpoint.
+
+CI runs this plus the `onprem` unit tests in the `rust-check-onprem` job.
+
+## SBOM
+
+Every CI run generates a [CycloneDX](https://cyclonedx.org/) SBOM for the
+exact on-prem dependency tree (`onprem-sbom` job in `ci.yml`):
+
+- `cargo cyclonedx` runs with the on-prem feature set for both `warmachine`
+  and `goose-cli`.
+- The resulting `*.cdx.json` files are uploaded as the
+  `onprem-sbom-cyclonedx` artifact (90-day retention).
+
+To generate locally:
+
+```bash
+cargo install cargo-cyclonedx
+WARMACHINE_ONPREM_BASE_URL="https://llm.internal.example/v1" \
+  cargo cyclonedx --format json -p warmachine --no-default-features \
+  --features onprem,rustls-tls,code-mode,tree-sitter,live-voice,scheduler,platform-apps,chat-recall,acp-http,nostr,otel
+```

@@ -276,6 +276,55 @@ jobs:
           WARMACHINE_ONPREM_BASE_URL: "https://llm.internal.example/v1"
           RUST_MIN_STACK: 8388608
 
+      - name: Run on-prem sandbox egress tests
+        # The allowlist unit tests and the egress sandbox integration test
+        # only compile with the onprem feature and a base URL baked in.
+        # These prove the network sandbox refuses exfiltration: public clouds,
+        # plaintext HTTP, and allowlist bypass attempts are all refused, and
+        # ApiClient cannot be constructed for a non-allowlisted host.
+        run: |
+          export CARGO_INCREMENTAL=0
+          cargo test -p goose-providers --features onprem,rustls-tls --test onprem_egress_sandbox
+          cargo test -p goose-providers --features onprem,rustls-tls --lib onprem
+        env:
+          WARMACHINE_ONPREM_BASE_URL: "https://llm.internal.example/v1"
+          RUST_MIN_STACK: 8388608
+
+  onprem-sbom:
+    name: Generate On-Prem SBOM (CycloneDX)
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.code == 'true' || github.event_name != 'pull_request'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: actions-rust-lang/setup-rust-toolchain@ecabd13d1c56bd1345c230e542e9144811ad706f # v2.0.0
+
+      - name: Install cargo-cyclonedx
+        run: cargo install cargo-cyclonedx --locked
+
+      - name: Generate CycloneDX SBOM for the on-prem build
+        # Same feature set as the on-prem check job, so the SBOM reflects the
+        # exact dependency tree of the DoD build variant.
+        run: |
+          export CARGO_INCREMENTAL=0
+          cargo cyclonedx --format json \
+            -p warmachine --no-default-features \
+            --features onprem,rustls-tls,code-mode,tree-sitter,live-voice,scheduler,platform-apps,chat-recall,acp-http,nostr,otel
+          cargo cyclonedx --format json -p goose-cli --features onprem
+        env:
+          WARMACHINE_ONPREM_BASE_URL: "https://llm.internal.example/v1"
+
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: onprem-sbom-cyclonedx
+          path: |
+            crates/goose/warmachine.cdx.json
+            crates/goose-cli/goose-cli.cdx.json
+          retention-days: 90
+
   rust-build-windows:
     name: Build Rust Project on Windows
     runs-on: windows-latest

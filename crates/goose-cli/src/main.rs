@@ -35,6 +35,22 @@ fn main() -> Result<()> {
     #[cfg(windows)]
     enable_windows_vt_processing();
 
+    // On-prem builds require FIPS 140-3 validated cryptography. Install the
+    // FIPS provider before any TLS config is created (reqwest picks up the
+    // process-default provider for all provider HTTP clients). Fail fast if
+    // the FIPS provider did not take effect — running without it would
+    // silently violate the compliance posture.
+    #[cfg(feature = "onprem")]
+    {
+        goose::onprem::init_fips_crypto();
+        if !goose::onprem::is_fips_provider_active() {
+            eprintln!(
+                "FATAL: on-prem build requires the FIPS 140-3 validated crypto provider, but it is not active. Refusing to start."
+            );
+            std::process::exit(1);
+        }
+    }
+
     let handle = std::thread::Builder::new()
         .name("goose-cli-main".to_string())
         .stack_size(8 * 1024 * 1024)

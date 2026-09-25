@@ -1,5 +1,5 @@
 use crate::config::paths::Paths;
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use rcgen::{CertificateParams, DnType, KeyPair, SanType};
 use std::path::Path;
 
@@ -64,6 +64,9 @@ pub async fn from_pem_files(cert_path: &Path, key_path: &Path) -> Result<TlsSetu
 
     #[cfg(feature = "rustls-tls")]
     let config = {
+        #[cfg(feature = "fips")]
+        let _ = rustls::crypto::default_fips_provider().install_default();
+        #[cfg(not(feature = "fips"))]
         let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
         axum_server::tls_rustls::RustlsConfig::from_pem(cert_pem, key_pem.clone()).await?
     };
@@ -145,7 +148,9 @@ fn try_save_tls_to_cache(cert_pem: &str, key_pem: &str) {
 }
 
 pub async fn self_signed_config() -> Result<TlsSetup> {
-    #[cfg(feature = "rustls-tls")]
+    #[cfg(all(feature = "rustls-tls", feature = "fips"))]
+    let _ = rustls::crypto::default_fips_provider().install_default();
+    #[cfg(all(feature = "rustls-tls", not(feature = "fips")))]
     let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
 
     if let Some(cached) = load_cached_tls().await {

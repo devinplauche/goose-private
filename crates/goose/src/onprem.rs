@@ -358,3 +358,69 @@ pub fn verify_audit_log() -> Result<usize> {
     }
     Ok(count)
 }
+
+// ---------------------------------------------------------------------------
+// Session retention
+// ---------------------------------------------------------------------------
+
+/// Default session retention: sessions untouched for this long are purged.
+const DEFAULT_RETENTION_DAYS: u64 = 90;
+
+/// Retention cutoff from `WARMACHINE_SESSION_RETENTION_DAYS` (default 90).
+///
+/// The retention policy cannot be disabled in on-prem builds: a value of 0 or
+/// an unparsable value fails closed rather than silently keeping sessions
+/// forever, because unbounded retention of CUI/ITAR session data violates the
+/// data-minimization posture this build exists to enforce.
+pub fn session_retention_cutoff() -> Result<chrono::DateTime<chrono::Utc>> {
+    let days: u64 = match std::env::var("WARMACHINE_SESSION_RETENTION_DAYS") {
+        Ok(raw) => raw.parse().with_context(|| {
+            format!(
+                "WARMACHINE_SESSION_RETENTION_DAYS must be a positive number of days, got {raw:?}"
+            )
+        })?,
+        Err(_) => DEFAULT_RETENTION_DAYS,
+    };
+    if days == 0 {
+        anyhow::bail!(
+            "WARMACHINE_SESSION_RETENTION_DAYS=0 disables retention; \
+             on-prem builds require a positive retention period"
+        );
+    }
+    let cutoff = chrono::Utc::now()
+        .checked_sub_signed(chrono::Duration::days(days as i64))
+        .context("retention period out of range")?;
+    Ok(cutoff)
+}
+
+// ---------------------------------------------------------------------------
+// FIPS 140-3 validated cryptography
+// ---------------------------------------------------------------------------
+
+/// Install the FIPS 140-3 validated crypto provider as the process default.
+///
+/// Uses rustls's `fips` feature, which switches the crypto backend to the
+/// FIPS-validated AWS-LC module (FIPS 140-3 certificate #4816). Must be called
+/// before any TLS `ClientConfig`/`ServerConfig` is created — reqwest (used by
+/// all provider HTTP clients) picks up the process-default provider.
+///
+/// This is idempotent: if another part of the process already installed a
+/// provider, the FIPS install is skipped (the `let _ =` ignores the
+/// "already installed" error). Callers that need a hard guarantee should use
+/// `verify_fips_mode` on their TLS configs.
+#[cfg(feature = "fips")]
+pub fn init_fips_crypto() {
+    let _ = rustls::crypto::default_fips_provider().install_default();
+}
+
+/// Returns true if the FIPS-validated provider is the process default.
+///
+/// Used by startup checks to confirm the binary is actually running with
+/// FIPS-approved cryptography, not just compiled with the feature.
+#[cfg(feature = "fips")]
+pub fn is_fips_provider_active() -> bool {
+    use rustls::crypto::CryptoProvider;
+    CryptoProvider::get_default()
+        .map(|p| p.fips())
+        .unwrap_or(false)
+}

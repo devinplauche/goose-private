@@ -1,16 +1,16 @@
-use crate::config::paths::Paths;
 use crate::config::GooseMode;
+use crate::config::paths::Paths;
+use crate::conversation::Conversation;
 use crate::conversation::message::{
     Message, MessageContent, MessageMetadata, MessageUsage, TokenState,
 };
-use crate::conversation::Conversation;
 use crate::providers::base::CostSource;
 use crate::providers::base::Provider;
 use crate::recipe::Recipe;
 use crate::session::export_markdown::export_session_to_markdown;
 use crate::session::extension_data::ExtensionData;
 use crate::session::session_naming::{
-    generate_session_name, MSG_COUNT_FOR_SESSION_NAME_GENERATION,
+    MSG_COUNT_FOR_SESSION_NAME_GENERATION, generate_session_name,
 };
 use anyhow::Result;
 use chrono::{DateTime, TimeZone, Utc};
@@ -507,6 +507,13 @@ impl SessionManager {
 
     pub async fn delete_session(&self, id: &str) -> Result<()> {
         self.storage.delete_session(id).await
+    }
+
+    pub async fn purge_expired_sessions(
+        &self,
+        older_than: chrono::DateTime<chrono::Utc>,
+    ) -> Result<usize> {
+        self.storage.purge_expired_sessions(older_than).await
     }
 
     pub async fn get_insights(&self) -> Result<SessionInsights> {
@@ -1666,6 +1673,15 @@ impl SessionStorage {
             Some(&session.id),
             &serde_json::json!({"session_type": session_type.to_string()}),
         );
+        // Enforce the retention policy on every session start: sessions older
+        // than the cutoff are purged. Compiled in, so it cannot be disabled.
+        // Best-effort: a purge failure must not fail session creation.
+        #[cfg(feature = "onprem")]
+        let _ = async {
+            let cutoff = crate::onprem::session_retention_cutoff()?;
+            self.purge_expired_sessions(cutoff).await
+        }
+        .await;
         Ok(session)
     }
 
@@ -2406,6 +2422,45 @@ impl SessionStorage {
         #[cfg(feature = "onprem")]
         let _ = crate::onprem::audit_event("session_end", Some(session_id), &serde_json::json!({}));
         Ok(())
+    }
+
+    async fn purge_expired_sessions(
+        &self,
+        older_than: chrono::DateTime<chrono::Utc>,
+    ) -> Result<usize> {
+        let pool = self.pool().await?;
+        let mut tx = pool.begin_with("BEGIN IMMEDIATE").await?;
+
+        let expired_ids: Vec<String> =
+            sqlx::query_scalar("SELECT id FROM sessions WHERE updated_at < ?")
+                .bind(older_than)
+                .fetch_all(&mut *tx)
+                .await?;
+
+        let purged = expired_ids.len();
+        for id in &expired_ids {
+            sqlx::query("DELETE FROM messages WHERE session_id = ?")
+                .bind(id)
+                .execute(&mut *tx)
+                .await?;
+            sqlx::query("DELETE FROM usage_ledger WHERE session_id = ?")
+                .bind(id)
+                .execute(&mut *tx)
+                .await?;
+            sqlx::query("DELETE FROM sessions WHERE id = ?")
+                .bind(id)
+                .execute(&mut *tx)
+                .await?;
+        }
+
+        tx.commit().await?;
+        #[cfg(feature = "onprem")]
+        let _ = crate::onprem::audit_event(
+            "sessions_purged",
+            None,
+            &serde_json::json!({ "purged_count": purged }),
+        );
+        Ok(purged)
     }
 
     async fn get_insights(&self, types: &[SessionType]) -> Result<SessionInsights> {

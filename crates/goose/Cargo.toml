@@ -14,7 +14,16 @@ default = []
 # session-encryption key live there, never in plaintext files) and AES-GCM
 # (session payloads are encrypted at rest). These are implied, not optional,
 # so the lockdown cannot be weakened by forgetting a feature flag.
-onprem = ["goose-providers/onprem", "system-keyring", "dep:aes-gcm"]
+onprem = [
+    "goose-providers/onprem",
+    "system-keyring",
+    "dep:aes-gcm",
+    "fips",
+]
+# FIPS 140-3 validated cryptography via the AWS-LC FIPS module (rustls `fips`
+# feature). Implied by `onprem`; also available standalone for non-onprem
+# builds that need FIPS-approved TLS.
+fips = ["rustls/fips"]
 telemetry = []
 otel = [
     "dep:tracing-opentelemetry",

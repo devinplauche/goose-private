@@ -42,8 +42,8 @@ fn main() -> Result<()> {
     // silently violate the compliance posture.
     #[cfg(feature = "onprem")]
     {
-        goose::onprem::init_fips_crypto();
-        if !goose::onprem::is_fips_provider_active() {
+        warmachine::onprem::init_fips_crypto();
+        if !warmachine::onprem::is_fips_provider_active() {
             eprintln!(
                 "FATAL: on-prem build requires the FIPS 140-3 validated crypto provider, but it is not active. Refusing to start."
             );

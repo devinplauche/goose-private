@@ -1,16 +1,16 @@
-use crate::config::GooseMode;
 use crate::config::paths::Paths;
-use crate::conversation::Conversation;
+use crate::config::GooseMode;
 use crate::conversation::message::{
     Message, MessageContent, MessageMetadata, MessageUsage, TokenState,
 };
+use crate::conversation::Conversation;
 use crate::providers::base::CostSource;
 use crate::providers::base::Provider;
 use crate::recipe::Recipe;
 use crate::session::export_markdown::export_session_to_markdown;
 use crate::session::extension_data::ExtensionData;
 use crate::session::session_naming::{
-    MSG_COUNT_FOR_SESSION_NAME_GENERATION, generate_session_name,
+    generate_session_name, MSG_COUNT_FOR_SESSION_NAME_GENERATION,
 };
 use anyhow::Result;
 use chrono::{DateTime, TimeZone, Utc};

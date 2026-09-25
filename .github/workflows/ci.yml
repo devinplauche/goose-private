@@ -99,7 +99,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt update -y
-          sudo apt install -y libdbus-1-dev gnome-keyring libxcb1-dev
+          sudo apt install -y libdbus-1-dev gnome-keyring libxcb1-dev cmake golang-go
 
       - name: Build and Test
         run: |
@@ -300,6 +300,11 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - uses: actions-rust-lang/setup-rust-toolchain@ecabd13d1c56bd1345c230e542e9144811ad706f # v2.0.0
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update -y
+          sudo apt install -y cmake golang-go
 
       - name: Install cargo-cyclonedx
         run: cargo install cargo-cyclonedx --locked

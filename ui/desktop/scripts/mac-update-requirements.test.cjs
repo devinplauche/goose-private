@@ -104,7 +104,7 @@ for (const {
   test(name, { skip: process.platform !== 'darwin' }, async (t) => {
     const directory = workspace(t);
     recordBundle(directory, 'WarMachine.zip', appMinimum, backendMinimum);
-    recordBundle(directory, 'Goose_intel_mac.zip', intelMinimum, backendMinimum);
+    recordBundle(directory, 'WarMachine_intel_mac.zip', intelMinimum, backendMinimum);
     generateManifest(directory);
 
     const updateInfo = parseUpdateInfo(
@@ -133,7 +133,7 @@ test('does not publish a manifest if one architecture has no compatibility metad
     path.join(directory, 'WarMachine.zip.macos.json'),
     JSON.stringify({ minimumMacOSVersion: '12.0.0' })
   );
-  for (const name of ['WarMachine.zip', 'Goose_intel_mac.zip']) {
+  for (const name of ['WarMachine.zip', 'WarMachine_intel_mac.zip']) {
     fs.writeFileSync(path.join(directory, name), 'archive fixture');
   }
   assert.throws(() => generateManifest(directory));

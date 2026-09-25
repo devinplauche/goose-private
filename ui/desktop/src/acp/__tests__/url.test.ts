@@ -21,7 +21,7 @@ describe('httpBaseFromAcpWebSocketUrl', () => {
   });
 
   it('preserves path prefixes before the ACP endpoint', () => {
-    expect(httpBaseFromAcpWebSocketUrl('wss://example.com/warmachine/acp?token=secret')).toBe(
+    expect(httpBaseFromAcpWebSocketUrl('wss://example.com/goose/acp?token=secret')).toBe(
       'https://example.com/goose'
     );
   });

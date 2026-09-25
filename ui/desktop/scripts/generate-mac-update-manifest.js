@@ -70,7 +70,7 @@ function writeManifest({ directory, version }) {
       updateName: 'Goose-darwin-arm64.zip',
     },
     {
-      sourceName: 'Goose_intel_mac.zip',
+      sourceName: 'WarMachine_intel_mac.zip',
       updateName: 'Goose-darwin-x64.zip',
     },
   ];

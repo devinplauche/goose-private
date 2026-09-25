@@ -7,15 +7,15 @@ use agent_client_protocol::schema::v1::{
 };
 use agent_client_protocol::schema::ProtocolVersion;
 use agent_client_protocol::{on_receive_request, Agent as SacpAgent, ByteStreams};
-use warmachine::acp::{AcpProvider, AcpProviderConfig};
-use warmachine::config::GooseMode;
-use warmachine::providers::base::Provider;
 use goose_providers::thinking::ThinkingEffortSupport;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use tokio::sync::Notify;
 use tokio::time::{timeout, Duration};
 use tokio_util::compat::{TokioAsyncReadCompatExt, TokioAsyncWriteCompatExt};
+use warmachine::acp::{AcpProvider, AcpProviderConfig};
+use warmachine::config::GooseMode;
+use warmachine::providers::base::Provider;
 
 fn effort_option(current: &str, values: &[&str]) -> SessionConfigOption {
     SessionConfigOption::select(

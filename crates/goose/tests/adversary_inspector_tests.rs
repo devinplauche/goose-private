@@ -1,11 +1,11 @@
-use warmachine::config::GooseMode;
-use warmachine::conversation::message::{Message, MessageContent, ToolRequest};
-use warmachine::security::adversary_inspector::AdversaryInspector;
-use warmachine::tool_inspection::ToolInspector;
 use rmcp::model::CallToolRequestParams;
 use rmcp::object;
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use warmachine::config::GooseMode;
+use warmachine::conversation::message::{Message, MessageContent, ToolRequest};
+use warmachine::security::adversary_inspector::AdversaryInspector;
+use warmachine::tool_inspection::ToolInspector;
 
 fn make_request(
     id: &str,

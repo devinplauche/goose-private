@@ -2,16 +2,6 @@ use crate::session::builder::ExtensionFailure;
 use anstream::{adapter::strip_str, eprintln, println};
 use bat::WrappingMode;
 use console::{measure_text_width, style, Color, StyledObject, Term};
-use warmachine::agents::platform_extensions::todo::TODO_WRITE_TOOL_NAME_COMPLETE;
-use warmachine::config::Config;
-use warmachine::conversation::message::{
-    ActionRequiredData, Message, MessageContent, SystemNotificationContent, SystemNotificationType,
-    ToolNameParts, ToolRequest, ToolResponse,
-};
-use warmachine::providers::canonical_cost::estimate_model_cost;
-#[cfg(target_os = "windows")]
-use warmachine::subprocess::SubprocessExt;
-use warmachine::utils::safe_truncate;
 use goose_providers::conversation::token_usage::Usage;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use rmcp::model::{CallToolRequestParams, JsonObject, PromptArgument, Role};
@@ -22,6 +12,16 @@ use std::fmt::Display;
 use std::io::{Error, IsTerminal, Write};
 use std::path::Path;
 use std::time::Duration;
+use warmachine::agents::platform_extensions::todo::TODO_WRITE_TOOL_NAME_COMPLETE;
+use warmachine::config::Config;
+use warmachine::conversation::message::{
+    ActionRequiredData, Message, MessageContent, SystemNotificationContent, SystemNotificationType,
+    ToolNameParts, ToolRequest, ToolResponse,
+};
+use warmachine::providers::canonical_cost::estimate_model_cost;
+#[cfg(target_os = "windows")]
+use warmachine::subprocess::SubprocessExt;
+use warmachine::utils::safe_truncate;
 
 use super::streaming_buffer::MarkdownBuffer;
 

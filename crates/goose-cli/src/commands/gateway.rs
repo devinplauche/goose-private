@@ -1,7 +1,7 @@
 use anyhow::Result;
+use std::sync::Arc;
 use warmachine::execution::manager::AgentManager;
 use warmachine::gateway::manager::GatewayManager;
-use std::sync::Arc;
 
 pub async fn handle_gateway_status() -> Result<()> {
     let agent_manager = AgentManager::instance().await?;

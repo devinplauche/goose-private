@@ -394,7 +394,9 @@ impl Agent {
             PermissionManager::instance(),
             None,
             config.get_warmachine_mode().unwrap_or_default(),
-            config.get_warmachine_disable_session_naming().unwrap_or(false),
+            config
+                .get_warmachine_disable_session_naming()
+                .unwrap_or(false),
             GoosePlatform::GooseCli,
         ))
     }
@@ -865,7 +867,8 @@ impl Agent {
 
         let goose_mode = *self.current_goose_mode.lock().await;
 
-        let tool_call_cut_off = match Config::global().get_param::<usize>("WARMACHINE_TOOL_CALL_CUTOFF")
+        let tool_call_cut_off = match Config::global()
+            .get_param::<usize>("WARMACHINE_TOOL_CALL_CUTOFF")
         {
             Ok(v) => v,
             Err(_) => {

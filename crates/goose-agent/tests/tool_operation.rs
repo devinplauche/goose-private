@@ -149,8 +149,9 @@ async fn dispatches_calls_to_user_defined_tools() {
             )
             .with_tool_request(
                 "call-2",
-                Ok(CallToolRequestParams::new("greet")
-                    .with_arguments(serde_json::from_value(json!({"name": "WarMachine"})).unwrap())),
+                Ok(CallToolRequestParams::new("greet").with_arguments(
+                    serde_json::from_value(json!({"name": "WarMachine"})).unwrap(),
+                )),
             ),
     ]);
 

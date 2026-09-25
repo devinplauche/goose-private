@@ -3,14 +3,14 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
+use rmcp::model::{Annotations, ContentBlock, Role, TextContent};
+use tempfile::TempDir;
 use warmachine::agents::ScheduleTool;
 use warmachine::config::GooseMode;
 use warmachine::conversation::message::{Message, MessageContent};
 use warmachine::scheduler::{ScheduledJob, SchedulerError, ValidatedScheduleRecipe};
 use warmachine::scheduler_trait::SchedulerTrait;
 use warmachine::session::{Session, SessionManager, SessionType};
-use rmcp::model::{Annotations, ContentBlock, Role, TextContent};
-use tempfile::TempDir;
 
 struct MockScheduler {
     jobs: tokio::sync::Mutex<Vec<ScheduledJob>>,

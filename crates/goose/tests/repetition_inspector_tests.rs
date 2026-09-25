@@ -1,6 +1,6 @@
-use warmachine::tool_monitor::RepetitionInspector;
 use rmcp::model::CallToolRequestParams;
 use rmcp::object;
+use warmachine::tool_monitor::RepetitionInspector;
 
 // This test targets RepetitionInspector::check_tool_call
 // It verifies that:

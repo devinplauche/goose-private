@@ -76,7 +76,9 @@ impl AgentManager {
                     PermissionManager::instance(),
                     None,
                     default_mode,
-                    config.get_warmachine_disable_session_naming().unwrap_or(false),
+                    config
+                        .get_warmachine_disable_session_naming()
+                        .unwrap_or(false),
                     GoosePlatform::GooseDesktop,
                 );
                 let manager = Self::new(agent_config, Some(max_sessions)).await?;

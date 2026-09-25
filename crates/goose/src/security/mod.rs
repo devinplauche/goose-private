@@ -99,7 +99,9 @@ impl SecurityManager {
     ) -> Result<Vec<SecurityResult>> {
         if !self.is_prompt_injection_detection_enabled() {
             tracing::debug!(
-                monotonic_counter.warmachine.prompt_injection_scanner_disabled = 1,
+                monotonic_counter
+                    .warmachine
+                    .prompt_injection_scanner_disabled = 1,
                 "Security scanning disabled"
             );
             return Ok(vec![]);
@@ -234,7 +236,9 @@ impl SecurityManager {
         }
 
         tracing::info!(
-            monotonic_counter.warmachine.prompt_injection_analysis_performed = 1,
+            monotonic_counter
+                .warmachine
+                .prompt_injection_analysis_performed = 1,
             security_issues_found = results.len(),
             "Prompt injection detection: Security analysis complete"
         );

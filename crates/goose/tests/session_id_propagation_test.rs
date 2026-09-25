@@ -1,12 +1,12 @@
+use goose_providers::model::ModelConfig;
+use serde_json::json;
+use std::sync::Arc;
+use std::sync::Mutex;
 use warmachine::conversation::message::Message;
 use warmachine::providers::api_client::{ApiClient, AuthMethod};
 use warmachine::providers::base::Provider;
 use warmachine::providers::openai::OpenAiProvider;
 use warmachine::session_context::{session_id_request_builder, SESSION_ID_HEADER};
-use goose_providers::model::ModelConfig;
-use serde_json::json;
-use std::sync::Arc;
-use std::sync::Mutex;
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, Request, ResponseTemplate};
 

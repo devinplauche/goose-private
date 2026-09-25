@@ -1,12 +1,12 @@
 use anyhow::Result;
 use futures::StreamExt;
-use warmachine::conversation::message::{Message, MessageContent};
-use warmachine::providers::base::Provider;
-use warmachine::providers::tetrate::TetrateProvider;
 use goose_providers::model::ModelConfig;
 use rmcp::model::Tool;
 use rmcp::object;
 use serial_test::serial;
+use warmachine::conversation::message::{Message, MessageContent};
+use warmachine::providers::base::Provider;
+use warmachine::providers::tetrate::TetrateProvider;
 
 /// Test module for Tetrate Agent Router Service streaming functionality
 #[cfg(test)]

@@ -1133,8 +1133,8 @@ fn rebase_touched_to_scope(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use warmachine::checks::Check;
     use std::path::PathBuf;
+    use warmachine::checks::Check;
 
     fn open_test_untracked_root(path: &Path) -> std::io::Result<UntrackedRoot> {
         #[cfg(unix)]

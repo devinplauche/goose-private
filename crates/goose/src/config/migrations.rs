@@ -142,7 +142,9 @@ fn cleanup_legacy_provider_keys(config: &mut Mapping) -> bool {
         .filter(|k| {
             k.as_str()
                 .map(|s| {
-                    s == "WARMACHINE_PROVIDER" || s == "WARMACHINE_MODEL" || s.ends_with(configured_suffix)
+                    s == "WARMACHINE_PROVIDER"
+                        || s == "WARMACHINE_MODEL"
+                        || s.ends_with(configured_suffix)
                 })
                 .unwrap_or(false)
         })

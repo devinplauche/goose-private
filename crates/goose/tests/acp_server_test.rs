@@ -31,6 +31,8 @@ use common_tests::{
     run_shell_terminal_false, run_shell_terminal_true, GENERATED_SESSION_TITLE,
     OPENAI_SESSION_NAME_RESPONSE, TURN_CONTEXT_OPEN,
 };
+use goose_test_support::{McpFixture, FAKE_CODE};
+use std::path::Path;
 use warmachine::config::GooseMode;
 use warmachine::conversation::message::{Message, MessageMetadata};
 use warmachine::custom_requests::{
@@ -39,8 +41,6 @@ use warmachine::custom_requests::{
 use warmachine::recipe::{Recipe, Settings};
 use warmachine::recipe_deeplink;
 use warmachine::session::{SessionManager, SessionType};
-use goose_test_support::{McpFixture, FAKE_CODE};
-use std::path::Path;
 
 tests_config_option_set_error!(AcpServerConnection);
 tests_mode_set_error!(AcpServerConnection);
@@ -182,7 +182,10 @@ fn include_last_message_snippet_meta(
     warmachine.insert("includeLastMessageSnippet".to_string(), value);
 
     let mut meta = serde_json::Map::new();
-    meta.insert("warmachine".to_string(), serde_json::Value::Object(warmachine));
+    meta.insert(
+        "warmachine".to_string(),
+        serde_json::Value::Object(warmachine),
+    );
     meta
 }
 
@@ -1219,7 +1222,10 @@ struct AgentLoopOverride(Option<std::ffi::OsString>);
 impl AgentLoopOverride {
     fn new(state_machine: bool) -> Self {
         let previous = std::env::var_os("WARMACHINE_STATE_MACHINE");
-        std::env::set_var("WARMACHINE_STATE_MACHINE", if state_machine { "1" } else { "0" });
+        std::env::set_var(
+            "WARMACHINE_STATE_MACHINE",
+            if state_machine { "1" } else { "0" },
+        );
         Self(previous)
     }
 }

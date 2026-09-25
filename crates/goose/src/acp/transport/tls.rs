@@ -81,7 +81,9 @@ pub async fn setup_tls(cert_path: Option<&str>, key_path: Option<&str>) -> Resul
     match (cert_path, key_path) {
         (Some(cert), Some(key)) => from_pem_files(Path::new(cert), Path::new(key)).await,
         (None, None) => self_signed_config().await,
-        _ => bail!("Both WARMACHINE_TLS_CERT_PATH and WARMACHINE_TLS_KEY_PATH must be set, or neither"),
+        _ => bail!(
+            "Both WARMACHINE_TLS_CERT_PATH and WARMACHINE_TLS_KEY_PATH must be set, or neither"
+        ),
     }
 }
 

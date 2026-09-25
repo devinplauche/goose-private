@@ -85,7 +85,9 @@ fn include_last_message_snippet_from_meta(
     }
 
     let Some(goose_meta) = value.as_object() else {
-        return Err(agent_client_protocol::Error::invalid_params().data("warmachine must be an object"));
+        return Err(
+            agent_client_protocol::Error::invalid_params().data("warmachine must be an object")
+        );
     };
     let Some(value) = goose_meta.get("includeLastMessageSnippet") else {
         return Ok(false);

@@ -9,7 +9,6 @@
 ///
 use anyhow::{Context, Result};
 use clap::Parser;
-use warmachine::providers::create_with_named_model;
 use goose_providers::canonical::{
     canonical_name, CanonicalModel, CanonicalModelRegistry, Limit, Modalities, Modality,
     ModelMapping, Pricing, ThinkingMode,
@@ -18,6 +17,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::PathBuf;
+use warmachine::providers::create_with_named_model;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct ProviderMetadata {

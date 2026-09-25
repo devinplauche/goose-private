@@ -36,7 +36,8 @@ pub enum RetryResult {
 const WARMACHINE_RECIPE_RETRY_TIMEOUT_SECONDS: &str = "WARMACHINE_RECIPE_RETRY_TIMEOUT_SECONDS";
 
 /// Environment variable for configuring on_failure timeout globally
-const WARMACHINE_RECIPE_ON_FAILURE_TIMEOUT_SECONDS: &str = "WARMACHINE_RECIPE_ON_FAILURE_TIMEOUT_SECONDS";
+const WARMACHINE_RECIPE_ON_FAILURE_TIMEOUT_SECONDS: &str =
+    "WARMACHINE_RECIPE_ON_FAILURE_TIMEOUT_SECONDS";
 
 const MAX_COMMAND_STDERR_BYTES: usize = 8 * 1024;
 
@@ -160,7 +161,9 @@ fn get_retry_timeout(retry_config: &RetryConfig) -> Duration {
         .timeout_seconds
         .or_else(|| {
             let config = Config::global();
-            config.get_param(WARMACHINE_RECIPE_RETRY_TIMEOUT_SECONDS).ok()
+            config
+                .get_param(WARMACHINE_RECIPE_RETRY_TIMEOUT_SECONDS)
+                .ok()
         })
         .unwrap_or(DEFAULT_RETRY_TIMEOUT_SECONDS);
 

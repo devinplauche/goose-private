@@ -14,6 +14,9 @@ mod tests {
         use super::*;
         use async_trait::async_trait;
         use chrono::{DateTime, Utc};
+        use std::path::PathBuf;
+        use std::sync::Arc;
+        use tempfile::TempDir;
         use warmachine::agents::platform_extensions::scheduler::{
             EXTENSION_NAME as SCHEDULER_EXTENSION_NAME, MANAGE_SCHEDULE_TOOL_NAME_COMPLETE,
         };
@@ -24,9 +27,6 @@ mod tests {
         use warmachine::scheduler::{ScheduledJob, SchedulerError, ValidatedScheduleRecipe};
         use warmachine::scheduler_trait::SchedulerTrait;
         use warmachine::session::{Session, SessionManager};
-        use std::path::PathBuf;
-        use std::sync::Arc;
-        use tempfile::TempDir;
 
         struct MockScheduler {
             jobs: tokio::sync::Mutex<Vec<ScheduledJob>>,
@@ -506,6 +506,12 @@ mod tests {
     mod max_turns_tests {
         use super::*;
         use async_trait::async_trait;
+        use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
+        use goose_providers::errors::ProviderError;
+        use goose_providers::model::ModelConfig;
+        use rmcp::model::{CallToolRequestParams, Tool};
+        use rmcp::object;
+        use std::path::PathBuf;
         use warmachine::agents::SessionConfig;
         use warmachine::config::GooseMode;
         use warmachine::conversation::message::{Message, MessageContent};
@@ -513,12 +519,6 @@ mod tests {
             stream_from_single_message, MessageStream, Provider, ProviderDef, ProviderMetadata,
         };
         use warmachine::session::session_manager::SessionType;
-        use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
-        use goose_providers::errors::ProviderError;
-        use goose_providers::model::ModelConfig;
-        use rmcp::model::{CallToolRequestParams, Tool};
-        use rmcp::object;
-        use std::path::PathBuf;
 
         struct MockToolProvider {}
 
@@ -676,6 +676,13 @@ mod tests {
     mod unparseable_tool_call_tests {
         use super::*;
         use async_trait::async_trait;
+        use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
+        use goose_providers::errors::ProviderError;
+        use goose_providers::model::ModelConfig;
+        use rmcp::model::{ErrorCode, ErrorData, Tool};
+        use std::path::PathBuf;
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        use tempfile::TempDir;
         use warmachine::agents::{AgentConfig, SessionConfig};
         use warmachine::config::permission::PermissionManager;
         use warmachine::config::GooseMode;
@@ -685,13 +692,6 @@ mod tests {
         };
         use warmachine::session::session_manager::SessionType;
         use warmachine::session::SessionManager;
-        use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
-        use goose_providers::errors::ProviderError;
-        use goose_providers::model::ModelConfig;
-        use rmcp::model::{ErrorCode, ErrorData, Tool};
-        use std::path::PathBuf;
-        use std::sync::atomic::{AtomicUsize, Ordering};
-        use tempfile::TempDir;
 
         /// First turn returns a tool request that failed to parse (mirroring what
         /// the decoders emit for non-object arguments), subsequent turns return
@@ -862,6 +862,13 @@ mod tests {
     mod tool_pair_summarization_tests {
         use super::*;
         use async_trait::async_trait;
+        use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
+        use goose_providers::errors::ProviderError;
+        use goose_providers::model::ModelConfig;
+        use rmcp::model::{CallToolRequestParams, CallToolResult, ContentBlock, Tool};
+        use std::path::PathBuf;
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        use std::sync::Arc;
         use warmachine::agents::{AgentConfig, SessionConfig};
         use warmachine::config::permission::PermissionManager;
         use warmachine::config::GooseMode;
@@ -870,13 +877,6 @@ mod tests {
             stream_from_single_message, MessageStream, Provider, ProviderDef, ProviderMetadata,
         };
         use warmachine::session::{SessionManager, SessionType};
-        use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
-        use goose_providers::errors::ProviderError;
-        use goose_providers::model::ModelConfig;
-        use rmcp::model::{CallToolRequestParams, CallToolResult, ContentBlock, Tool};
-        use std::path::PathBuf;
-        use std::sync::atomic::{AtomicUsize, Ordering};
-        use std::sync::Arc;
 
         /// Mock provider that returns text for the main reply and summaries for
         /// summarization calls. Distinguishes by checking if tools are empty
@@ -1225,13 +1225,6 @@ mod tests {
     mod streaming_persistence_tests {
         use super::*;
         use async_trait::async_trait;
-        use warmachine::agents::{AgentConfig, SessionConfig};
-        use warmachine::config::permission::PermissionManager;
-        use warmachine::config::GooseMode;
-        use warmachine::conversation::message::Message;
-        use warmachine::providers::base::{MessageStream, Provider, ProviderDef, ProviderMetadata};
-        use warmachine::session::session_manager::SessionType;
-        use warmachine::session::SessionManager;
         use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
         use goose_providers::errors::ProviderError;
         use goose_providers::model::ModelConfig;
@@ -1240,6 +1233,13 @@ mod tests {
         use std::path::PathBuf;
         use std::sync::atomic::{AtomicUsize, Ordering};
         use tokio_util::sync::CancellationToken;
+        use warmachine::agents::{AgentConfig, SessionConfig};
+        use warmachine::config::permission::PermissionManager;
+        use warmachine::config::GooseMode;
+        use warmachine::conversation::message::Message;
+        use warmachine::providers::base::{MessageStream, Provider, ProviderDef, ProviderMetadata};
+        use warmachine::session::session_manager::SessionType;
+        use warmachine::session::SessionManager;
 
         struct MultiStepProvider {
             call_count: AtomicUsize,
@@ -1504,13 +1504,6 @@ mod tests {
     mod thinking_preservation_tests {
         use super::*;
         use async_trait::async_trait;
-        use warmachine::agents::{AgentConfig, SessionConfig};
-        use warmachine::config::permission::PermissionManager;
-        use warmachine::config::GooseMode;
-        use warmachine::conversation::message::{Message, MessageContent};
-        use warmachine::providers::base::{MessageStream, Provider, ProviderDef, ProviderMetadata};
-        use warmachine::session::session_manager::SessionType;
-        use warmachine::session::SessionManager;
         use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
         use goose_providers::errors::ProviderError;
         use goose_providers::model::ModelConfig;
@@ -1518,6 +1511,13 @@ mod tests {
         use rmcp::object;
         use std::path::PathBuf;
         use std::sync::atomic::{AtomicUsize, Ordering};
+        use warmachine::agents::{AgentConfig, SessionConfig};
+        use warmachine::config::permission::PermissionManager;
+        use warmachine::config::GooseMode;
+        use warmachine::conversation::message::{Message, MessageContent};
+        use warmachine::providers::base::{MessageStream, Provider, ProviderDef, ProviderMetadata};
+        use warmachine::session::session_manager::SessionType;
+        use warmachine::session::SessionManager;
 
         /// Simulates DeepSeek/Kimi streaming: reasoning_content arrives in an early
         /// chunk, the tool call arrives in a later chunk with no reasoning_content.
@@ -2121,10 +2121,10 @@ mod tests {
 
         #[tokio::test]
         async fn test_signed_thinking_leads_text_and_tool_calls_for_anthropic() -> Result<()> {
+            use goose_providers::formats::anthropic::format_messages as anthropic_format;
             use warmachine::conversation::{
                 fix_conversation, merge_consecutive_messages_for_request, Conversation,
             };
-            use goose_providers::formats::anthropic::format_messages as anthropic_format;
 
             let temp_dir = tempfile::tempdir()?;
             let session_manager = Arc::new(SessionManager::new(temp_dir.path().to_path_buf()));
@@ -2232,6 +2232,13 @@ mod tests {
     mod goal_checking_tests {
         use super::*;
         use async_trait::async_trait;
+        use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
+        use goose_providers::errors::ProviderError;
+        use goose_providers::model::ModelConfig;
+        use rmcp::model::Tool;
+        use std::path::PathBuf;
+        use std::sync::atomic::{AtomicU32, Ordering};
+        use tempfile::TempDir;
         use warmachine::agents::AgentConfig;
         use warmachine::agents::SessionConfig;
         use warmachine::config::permission::PermissionManager;
@@ -2242,13 +2249,6 @@ mod tests {
         };
         use warmachine::session::session_manager::SessionType;
         use warmachine::session::SessionManager;
-        use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
-        use goose_providers::errors::ProviderError;
-        use goose_providers::model::ModelConfig;
-        use rmcp::model::Tool;
-        use std::path::PathBuf;
-        use std::sync::atomic::{AtomicU32, Ordering};
-        use tempfile::TempDir;
 
         struct GoalTextProvider {
             call_count: AtomicU32,
@@ -2687,6 +2687,12 @@ mod tests {
     mod cumulative_token_tests {
         use super::*;
         use async_trait::async_trait;
+        use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
+        use goose_providers::errors::ProviderError;
+        use goose_providers::model::ModelConfig;
+        use rmcp::model::Tool;
+        use std::path::PathBuf;
+        use std::sync::Arc;
         use warmachine::agents::{AgentConfig, SessionConfig};
         use warmachine::config::permission::PermissionManager;
         use warmachine::config::GooseMode;
@@ -2694,12 +2700,6 @@ mod tests {
         use warmachine::providers::base::{stream_from_single_message, MessageStream, Provider};
         use warmachine::session::session_manager::SessionType;
         use warmachine::session::SessionManager;
-        use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
-        use goose_providers::errors::ProviderError;
-        use goose_providers::model::ModelConfig;
-        use rmcp::model::Tool;
-        use std::path::PathBuf;
-        use std::sync::Arc;
 
         struct FixedUsageProvider {
             input_tokens: i32,
@@ -2806,6 +2806,7 @@ mod tests {
 
     mod add_extensions_bulk_tests {
         use super::*;
+        use tempfile::TempDir;
         use warmachine::agents::extension::Envs;
         use warmachine::agents::{AgentConfig, ExtensionConfig};
         use warmachine::config::permission::PermissionManager;
@@ -2814,7 +2815,6 @@ mod tests {
         use warmachine::session::{
             EnabledExtensionsState, ExtensionData, ExtensionState, SessionManager,
         };
-        use tempfile::TempDir;
 
         fn platform_extension(name: &str) -> ExtensionConfig {
             ExtensionConfig::Platform {
@@ -3034,11 +3034,6 @@ mod tests {
     mod audience_tool_result_tests {
         use super::*;
         use async_trait::async_trait;
-        use warmachine::agents::{AgentConfig, SessionConfig};
-        use warmachine::config::{ExtensionConfig, GooseMode, PermissionManager};
-        use warmachine::conversation::message::{Message, MessageContent};
-        use warmachine::providers::base::{stream_from_single_message, MessageStream, Provider};
-        use warmachine::session::{SessionManager, SessionType};
         use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
         use goose_providers::errors::ProviderError;
         use goose_providers::model::ModelConfig;
@@ -3046,6 +3041,11 @@ mod tests {
         use rmcp::model::{CallToolRequestParams, Tool};
         use std::path::PathBuf;
         use std::sync::atomic::{AtomicUsize, Ordering};
+        use warmachine::agents::{AgentConfig, SessionConfig};
+        use warmachine::config::{ExtensionConfig, GooseMode, PermissionManager};
+        use warmachine::conversation::message::{Message, MessageContent};
+        use warmachine::providers::base::{stream_from_single_message, MessageStream, Provider};
+        use warmachine::session::{SessionManager, SessionType};
 
         struct AudienceToolProvider {
             call_count: AtomicUsize,
@@ -3192,6 +3192,14 @@ mod tests {
     mod empty_turn_tests {
         use super::*;
         use async_trait::async_trait;
+        use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
+        use goose_providers::errors::ProviderError;
+        use goose_providers::model::ModelConfig;
+        use rmcp::model::{CallToolRequestParams, Tool};
+        use rmcp::object;
+        use std::path::PathBuf;
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        use std::sync::Arc;
         use warmachine::agents::final_output_tool::FINAL_OUTPUT_TOOL_NAME;
         use warmachine::agents::{AgentConfig, AgentEvent, GoosePlatform, SessionConfig};
         use warmachine::config::permission::PermissionManager;
@@ -3202,14 +3210,6 @@ mod tests {
             stream_from_single_message, MessageStream, Provider, ProviderDef, ProviderMetadata,
         };
         use warmachine::session::session_manager::SessionType;
-        use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
-        use goose_providers::errors::ProviderError;
-        use goose_providers::model::ModelConfig;
-        use rmcp::model::{CallToolRequestParams, Tool};
-        use rmcp::object;
-        use std::path::PathBuf;
-        use std::sync::atomic::{AtomicUsize, Ordering};
-        use std::sync::Arc;
 
         fn usage() -> ProviderUsage {
             ProviderUsage::new(
@@ -3860,9 +3860,9 @@ mod tests {
 
         #[tokio::test]
         async fn test_final_output_result_id_matches_persisted_message() -> Result<()> {
+            use tempfile::TempDir;
             use warmachine::recipe::Response;
             use warmachine::session::SessionManager;
-            use tempfile::TempDir;
 
             let temp_dir = TempDir::new()?;
             let session_manager = Arc::new(SessionManager::new(temp_dir.path().join("data")));

@@ -2,6 +2,10 @@ use anyhow::Result;
 use clap::{Args, CommandFactory, Parser, Subcommand};
 use clap_complete::{generate, Shell as ClapShell};
 use clap_complete_nushell::Nushell as ClapNushell;
+#[cfg(feature = "bundled-mcp")]
+use goose_mcp::mcp_server_runner::{serve, McpCommand};
+#[cfg(feature = "bundled-mcp")]
+use goose_mcp::{AutoVisualiserRouter, ComputerControllerServer, MemoryServer, TutorialServer};
 use warmachine::agents::GoosePlatform;
 #[cfg(feature = "bundled-mcp")]
 use warmachine::builtin_extension::register_builtin_extensions;
@@ -11,10 +15,6 @@ use warmachine::posthog::get_telemetry_choice;
 use warmachine::recipe::Recipe;
 #[cfg(feature = "acp-http")]
 use warmachine::source_roots::SourceRoot;
-#[cfg(feature = "bundled-mcp")]
-use goose_mcp::mcp_server_runner::{serve, McpCommand};
-#[cfg(feature = "bundled-mcp")]
-use goose_mcp::{AutoVisualiserRouter, ComputerControllerServer, MemoryServer, TutorialServer};
 
 #[cfg(feature = "telemetry")]
 use crate::commands::configure::configure_telemetry_consent_dialog;
@@ -39,11 +39,11 @@ use crate::commands::skills::handle_skills_list;
 use crate::recipes::extract_from_cli::extract_recipe_info_from_cli;
 use crate::recipes::recipe::{explain_recipe, render_recipe_as_yaml};
 use crate::session::{build_session, SessionBuilderConfig};
+use std::io::Read;
+use std::path::PathBuf;
 use warmachine::agents::Container;
 use warmachine::session::session_manager::SessionType;
 use warmachine::session::SessionManager;
-use std::io::Read;
-use std::path::PathBuf;
 #[cfg(feature = "acp-http")]
 const WARMACHINE_SERVER_SECRET_KEY_ENV: &str = "WARMACHINE_SERVER__SECRET_KEY";
 
@@ -1116,7 +1116,11 @@ enum Command {
         #[arg(value_enum)]
         shell: CompletionShell,
 
-        #[arg(long, default_value = "warmachine", help = "Provide a custom binary name")]
+        #[arg(
+            long,
+            default_value = "warmachine",
+            help = "Provide a custom binary name"
+        )]
         bin_name: String,
     },
 
@@ -1473,10 +1477,10 @@ enum McpProbeElicitation {
 }
 
 async fn handle_mcp_probe(extension_command: String, script_path: Option<String>) -> Result<()> {
-    use warmachine::agents::{Agent, AgentConfig, ToolCallContext};
-    use warmachine::config::ExtensionConfig;
     use rmcp::model::{ElicitRequestParams, ElicitResult, ElicitationAction};
     use tokio_util::sync::CancellationToken;
+    use warmachine::agents::{Agent, AgentConfig, ToolCallContext};
+    use warmachine::config::ExtensionConfig;
 
     let script = if let Some(path) = script_path {
         let json = if path == "-" {
@@ -1524,7 +1528,10 @@ async fn handle_mcp_probe(extension_command: String, script_path: Option<String>
         std::env::set_var("WARMACHINE_MCP_OAUTH_CLIENT_SECRET", client_secret);
     }
     if let Some(client_metadata_url) = &script.oauth.client_metadata_url {
-        std::env::set_var("WARMACHINE_MCP_OAUTH_CLIENT_METADATA_URL", client_metadata_url);
+        std::env::set_var(
+            "WARMACHINE_MCP_OAUTH_CLIENT_METADATA_URL",
+            client_metadata_url,
+        );
     }
 
     let config = warmachine::config::Config::global();
@@ -1731,9 +1738,9 @@ async fn start_roam_share(
         directory_path, load_identity, resolve_relay_settings, trust_path,
     };
     use crate::commands::roam_full_bridge::FullAcpBridge;
-    use warmachine::config::paths::Paths;
     use goose_roaming::{RoamingConfig, RoamingNode, TrustBook};
     use std::sync::Arc;
+    use warmachine::config::paths::Paths;
 
     let status_path = Paths::data_dir().join("roam/serve.json");
     let _ = std::fs::remove_file(&status_path);
@@ -1796,13 +1803,13 @@ async fn start_roam_share(
 #[cfg(feature = "acp-http")]
 async fn handle_serve_command(args: ServeCommandArgs) -> Result<()> {
     use axum::http::HeaderValue;
+    use std::net::SocketAddr;
+    use std::sync::Arc;
+    use tracing::{info, warn};
     use warmachine::acp::server::AcpBuiltinSelection;
     use warmachine::acp::server_factory::{AcpServer, AcpServerFactoryConfig};
     use warmachine::acp::transport::create_router;
     use warmachine::config::paths::Paths;
-    use std::net::SocketAddr;
-    use std::sync::Arc;
-    use tracing::{info, warn};
 
     let ServeCommandArgs {
         host,
@@ -2470,11 +2477,9 @@ async fn handle_term_subcommand(command: TermCommand) -> Result<()> {
 
 #[cfg(feature = "local-inference")]
 fn print_download_progress(manager: &warmachine::download_manager::DownloadManager) {
-    let Some(progress) = manager
-        .list_progress()
-        .into_iter()
-        .find(|progress| progress.status == warmachine::download_manager::DownloadStatus::Downloading)
-    else {
+    let Some(progress) = manager.list_progress().into_iter().find(|progress| {
+        progress.status == warmachine::download_manager::DownloadStatus::Downloading
+    }) else {
         return;
     };
 
@@ -2542,7 +2547,9 @@ fn local_search_memory_limit(ram_gb: Option<f64>) -> Result<u64> {
 
     match warmachine::providers::local_inference::InferenceRuntime::get_or_init() {
         Ok(runtime) => Ok(
-            warmachine::providers::local_inference::available_inference_memory_bytes(runtime.as_ref()),
+            warmachine::providers::local_inference::available_inference_memory_bytes(
+                runtime.as_ref(),
+            ),
         ),
         Err(_) => gb_to_bytes(16.0),
     }
@@ -3018,7 +3025,8 @@ mod tests {
 
     #[test]
     fn completion_command_accepts_nushell_alias() {
-        let cli = Cli::try_parse_from(["warmachine", "completion", "nushell"]).expect("parse failed");
+        let cli =
+            Cli::try_parse_from(["warmachine", "completion", "nushell"]).expect("parse failed");
 
         match cli.command {
             Some(Command::Completion {

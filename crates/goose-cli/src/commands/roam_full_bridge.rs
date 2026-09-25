@@ -17,9 +17,9 @@ use std::sync::Arc;
 use futures::future::BoxFuture;
 use futures::io::{AsyncRead, AsyncWrite};
 
+use goose_roaming::{AcpStreamServer, EndpointId};
 use warmachine::acp::server::serve;
 use warmachine::acp::server_factory::AcpServer;
-use goose_roaming::{AcpStreamServer, EndpointId};
 
 /// An [`AcpStreamServer`] that serves warmachine's full ACP surface, a fresh agent
 /// per connection.

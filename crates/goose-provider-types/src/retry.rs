@@ -246,7 +246,9 @@ impl<P: Provider> ProviderRetry for P {
                             .unwrap_or(false);
 
                         if skip_backoff {
-                            tracing::info!("Skipping backoff due to WARMACHINE_PROVIDER_SKIP_BACKOFF");
+                            tracing::info!(
+                                "Skipping backoff due to WARMACHINE_PROVIDER_SKIP_BACKOFF"
+                            );
                         } else {
                             tracing::info!("Backing off for {:?} before retry", delay);
                             sleep(delay).await;

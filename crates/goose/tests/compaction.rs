@@ -1,6 +1,13 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use futures::StreamExt;
+use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
+use goose_providers::errors::ProviderError;
+use goose_providers::model::ModelConfig;
+use rmcp::model::Tool;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use tempfile::TempDir;
 use warmachine::agents::{Agent, AgentEvent, SessionConfig};
 use warmachine::config::GooseMode;
 use warmachine::conversation::message::{Message, MessageContent};
@@ -10,13 +17,6 @@ use warmachine::providers::base::{
 };
 use warmachine::session::session_manager::SessionType;
 use warmachine::session::Session;
-use goose_providers::conversation::token_usage::{ProviderUsage, Usage};
-use goose_providers::errors::ProviderError;
-use goose_providers::model::ModelConfig;
-use rmcp::model::Tool;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
-use tempfile::TempDir;
 
 struct MockCompactionProvider {
     /// Tracks whether compaction has occurred (for context limit recovery case)

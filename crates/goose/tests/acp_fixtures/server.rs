@@ -17,11 +17,11 @@ use agent_client_protocol::{Agent, Client, ConnectionTo};
 use async_trait::async_trait;
 use futures::io::BufReader;
 use futures::{AsyncBufReadExt, AsyncWriteExt, StreamExt};
-use warmachine::config::PermissionManager;
 use goose_test_support::{ExpectedSessionId, IgnoreSessionId};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::sync::Notify;
+use warmachine::config::PermissionManager;
 
 pub struct AcpServerConnection {
     cx: ConnectionTo<Agent>,

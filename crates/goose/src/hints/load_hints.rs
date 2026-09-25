@@ -327,9 +327,17 @@ mod tests {
     fn test_goosehints_when_present() {
         let dir = TempDir::new().unwrap();
 
-        fs::write(dir.path().join(WARMACHINE_HINTS_FILENAME), "Test hint content").unwrap();
+        fs::write(
+            dir.path().join(WARMACHINE_HINTS_FILENAME),
+            "Test hint content",
+        )
+        .unwrap();
         let gitignore = create_dummy_gitignore();
-        let hints = load_hint_files(dir.path(), &[WARMACHINE_HINTS_FILENAME.to_string()], &gitignore);
+        let hints = load_hint_files(
+            dir.path(),
+            &[WARMACHINE_HINTS_FILENAME.to_string()],
+            &gitignore,
+        );
 
         assert!(hints.contains("Test hint content"));
     }
@@ -431,7 +439,11 @@ mod tests {
         let dir = TempDir::new().unwrap();
 
         let gitignore = create_dummy_gitignore();
-        let hints = load_hint_files(dir.path(), &[WARMACHINE_HINTS_FILENAME.to_string()], &gitignore);
+        let hints = load_hint_files(
+            dir.path(),
+            &[WARMACHINE_HINTS_FILENAME.to_string()],
+            &gitignore,
+        );
 
         assert!(!hints.contains("Project Hints"));
     }
@@ -454,7 +466,10 @@ mod tests {
         let gitignore = create_dummy_gitignore();
         let hints = load_hint_files(
             dir.path(),
-            &["CLAUDE.md".to_string(), WARMACHINE_HINTS_FILENAME.to_string()],
+            &[
+                "CLAUDE.md".to_string(),
+                WARMACHINE_HINTS_FILENAME.to_string(),
+            ],
             &gitignore,
         );
 
@@ -488,7 +503,11 @@ mod tests {
 
         let subdir = project_root.join("subdir");
         fs::create_dir(&subdir).unwrap();
-        fs::write(subdir.join(WARMACHINE_HINTS_FILENAME), "Subdir hints content").unwrap();
+        fs::write(
+            subdir.join(WARMACHINE_HINTS_FILENAME),
+            "Subdir hints content",
+        )
+        .unwrap();
         let current_dir = subdir.join("current_dir");
         fs::create_dir(&current_dir).unwrap();
         fs::write(
@@ -514,11 +533,19 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let base_dir = temp_dir.path();
 
-        fs::write(base_dir.join(WARMACHINE_HINTS_FILENAME), "Base hints content").unwrap();
+        fs::write(
+            base_dir.join(WARMACHINE_HINTS_FILENAME),
+            "Base hints content",
+        )
+        .unwrap();
 
         let subdir = base_dir.join("subdir");
         fs::create_dir(&subdir).unwrap();
-        fs::write(subdir.join(WARMACHINE_HINTS_FILENAME), "Subdir hints content").unwrap();
+        fs::write(
+            subdir.join(WARMACHINE_HINTS_FILENAME),
+            "Subdir hints content",
+        )
+        .unwrap();
 
         let current_dir = subdir.join("current_dir");
         fs::create_dir(&current_dir).unwrap();
@@ -563,7 +590,10 @@ mod tests {
         let gitignore = create_dummy_gitignore();
         let hints = load_hint_files(
             &current_dir,
-            &["CLAUDE.md".to_string(), WARMACHINE_HINTS_FILENAME.to_string()],
+            &[
+                "CLAUDE.md".to_string(),
+                WARMACHINE_HINTS_FILENAME.to_string(),
+            ],
             &gitignore,
         );
 
@@ -642,7 +672,11 @@ Additional instructions here."#;
         let root_hints_content = r#"Project root hints
 @docs/api.md
 Root level instructions"#;
-        fs::write(project_root.join(WARMACHINE_HINTS_FILENAME), root_hints_content).unwrap();
+        fs::write(
+            project_root.join(WARMACHINE_HINTS_FILENAME),
+            root_hints_content,
+        )
+        .unwrap();
 
         let nested_hints_content = r#"Nested directory hints
 @local_file.md
@@ -741,7 +775,11 @@ End of hints"#;
         fs::write(subdir.join(WARMACHINE_HINTS_FILENAME), hints_content).unwrap();
         let gitignore = create_dummy_gitignore();
 
-        let hints = load_hint_files(&subdir, &[WARMACHINE_HINTS_FILENAME.to_string()], &gitignore);
+        let hints = load_hint_files(
+            &subdir,
+            &[WARMACHINE_HINTS_FILENAME.to_string()],
+            &gitignore,
+        );
 
         assert!(hints.contains("Local file content"));
         assert!(hints.contains("--- Content from local_file.md ---"));
@@ -999,7 +1037,11 @@ mod gitignore_tests {
         // Build gitignore from the subdirectory — should still pick up root .gitignore
         let gitignore = build_gitignore(&subdir);
 
-        let hints = load_hint_files(&subdir, &[WARMACHINE_HINTS_FILENAME.to_string()], &gitignore);
+        let hints = load_hint_files(
+            &subdir,
+            &[WARMACHINE_HINTS_FILENAME.to_string()],
+            &gitignore,
+        );
 
         assert!(hints.contains("Allowed content"));
         assert!(!hints.contains("SECRET_KEY=abc123"));
@@ -1028,7 +1070,11 @@ mod gitignore_tests {
         fs::write(subdir.join(WARMACHINE_HINTS_FILENAME), hints_content).unwrap();
 
         let gitignore = build_gitignore(&subdir);
-        let hints = load_hint_files(&subdir, &[WARMACHINE_HINTS_FILENAME.to_string()], &gitignore);
+        let hints = load_hint_files(
+            &subdir,
+            &[WARMACHINE_HINTS_FILENAME.to_string()],
+            &gitignore,
+        );
 
         assert!(hints.contains("Readme content"));
         assert!(!hints.contains("debug log"));

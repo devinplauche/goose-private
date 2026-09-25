@@ -5,16 +5,16 @@ mod common_tests;
 
 use common_tests::fixtures::server::AcpServerConnection;
 use common_tests::fixtures::{run_test, send_custom, Connection, TestConnectionConfig};
-use warmachine::config::paths::Paths;
-use warmachine::config::{Config, ConfigError};
-use warmachine::providers::base::{MessageStream, Provider};
-use warmachine::providers::inventory::ProviderInventoryService;
-use warmachine::session::session_manager::SessionStorage;
 use goose_providers::errors::ProviderError;
 use goose_providers::model::ModelConfig;
 use goose_test_support::EnforceSessionId;
 use serial_test::serial;
 use std::sync::Arc;
+use warmachine::config::paths::Paths;
+use warmachine::config::{Config, ConfigError};
+use warmachine::providers::base::{MessageStream, Provider};
+use warmachine::providers::inventory::ProviderInventoryService;
+use warmachine::session::session_manager::SessionStorage;
 
 struct MockProvider {
     name: String,

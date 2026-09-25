@@ -1,7 +1,7 @@
-use warmachine::subprocess::git_command;
 use std::fs;
 use std::path::Path;
 use std::process::{Command, Output};
+use warmachine::subprocess::git_command;
 
 fn run_git(cwd: &Path, args: &[&str]) -> Output {
     Command::new("git")

@@ -1,7 +1,7 @@
 use anyhow::Result;
 use console::style;
-use warmachine::recipe::validate_recipe::validate_recipe_template_from_file;
 use std::collections::HashMap;
+use warmachine::recipe::validate_recipe::validate_recipe_template_from_file;
 
 use crate::recipes::github_recipe::RecipeSource;
 use crate::recipes::search_recipe::{list_available_recipes, load_recipe_file};

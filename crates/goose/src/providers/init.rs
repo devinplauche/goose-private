@@ -2,41 +2,29 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::RwLock;
 
+use super::base::{Provider, ProviderMetadata};
 #[cfg(feature = "aws-providers")]
 use super::bedrock::BedrockProvider;
 #[cfg(feature = "local-inference")]
 use super::local_inference::LocalInferenceProvider;
+use super::provider_registry::ProviderRegistry;
 #[cfg(feature = "aws-providers")]
 use super::sagemaker_tgi::SageMakerTgiProvider;
-use super::base::{Provider, ProviderMetadata};
-use super::provider_registry::ProviderRegistry;
 #[cfg(not(feature = "onprem"))]
 use super::{
-    amp_acp::AmpAcpProvider,
-    avian::AvianProvider,
-    azure::AzureProvider,
-    chatgpt_codex::ChatGptCodexProvider,
-    claude_acp::ClaudeAcpProvider,
-    claude_code::ClaudeCodeProvider,
-    codex::CodexProvider,
-    codex_acp::CodexAcpProvider,
-    copilot_acp::CopilotAcpProvider,
-    cursor_agent::CursorAgentProvider,
-    gcpvertexai::GcpVertexAIProvider,
-    gemini_cli::GeminiCliProvider,
-    gemini_oauth::GeminiOAuthProvider,
-    githubcopilot::GithubCopilotProvider,
-    gondola::GondolaProvider,
-    huggingface::HuggingFaceProvider,
-    kimicode::KimiCodeProvider,
-    litellm::LiteLLMProvider,
-    nanogpt::NanoGptProvider,
-    pi_acp::PiAcpProvider,
-    snowflake_def::SnowflakeProviderDef,
-    tetrate::TetrateProvider,
-    xai::XaiProvider,
+    amp_acp::AmpAcpProvider, avian::AvianProvider, azure::AzureProvider,
+    chatgpt_codex::ChatGptCodexProvider, claude_acp::ClaudeAcpProvider,
+    claude_code::ClaudeCodeProvider, codex::CodexProvider, codex_acp::CodexAcpProvider,
+    copilot_acp::CopilotAcpProvider, cursor_agent::CursorAgentProvider,
+    gcpvertexai::GcpVertexAIProvider, gemini_cli::GeminiCliProvider,
+    gemini_oauth::GeminiOAuthProvider, githubcopilot::GithubCopilotProvider,
+    gondola::GondolaProvider, huggingface::HuggingFaceProvider, kimicode::KimiCodeProvider,
+    litellm::LiteLLMProvider, nanogpt::NanoGptProvider, pi_acp::PiAcpProvider,
+    snowflake_def::SnowflakeProviderDef, tetrate::TetrateProvider, xai::XaiProvider,
     xai_oauth::XaiOAuthProvider,
 };
+#[cfg(not(feature = "onprem"))]
+use crate::config::declarative_providers::register_declarative_providers;
 use crate::config::ExtensionConfig;
 #[cfg(not(feature = "onprem"))]
 use crate::providers::anthropic_def::AnthropicProviderDef;
@@ -54,8 +42,6 @@ use crate::providers::ollama_def::OllamaProviderDef;
 use crate::providers::openai_def::OpenAiProviderDef;
 #[cfg(not(feature = "onprem"))]
 use crate::providers::openrouter_def::OpenRouterProviderDef;
-#[cfg(not(feature = "onprem"))]
-use crate::config::declarative_providers::register_declarative_providers;
 use crate::providers::provider_registry::ProviderEntry;
 use anyhow::Result;
 use tokio::sync::OnceCell;
@@ -134,10 +120,8 @@ async fn init_registry() -> RwLock<ProviderRegistry> {
 fn register_standard_providers(registry: &mut ProviderRegistry) {
     use super::inventory::registrations;
 
-    registry.register_with_inventory::<AmpAcpProvider>(
-        false,
-        Some(registrations::amp_acp_inventory()),
-    );
+    registry
+        .register_with_inventory::<AmpAcpProvider>(false, Some(registrations::amp_acp_inventory()));
     registry.register_with_inventory::<AnthropicProviderDef>(
         true,
         Some(registrations::anthropic_inventory()),
@@ -170,10 +154,8 @@ fn register_standard_providers(registry: &mut ProviderRegistry) {
         Some(registrations::copilot_acp_inventory()),
     );
     registry.register::<CodexProvider>(true);
-    registry.register_with_inventory::<CursorAgentProvider>(
-        false,
-        Some(registrations::refresh_only()),
-    );
+    registry
+        .register_with_inventory::<CursorAgentProvider>(false, Some(registrations::refresh_only()));
     registry.register_with_inventory::<DatabricksProviderDef>(
         true,
         Some(registrations::refresh_only()),
@@ -182,10 +164,8 @@ fn register_standard_providers(registry: &mut ProviderRegistry) {
         false,
         Some(registrations::refresh_only()),
     );
-    registry.register_with_inventory::<GcpVertexAIProvider>(
-        false,
-        Some(registrations::refresh_only()),
-    );
+    registry
+        .register_with_inventory::<GcpVertexAIProvider>(false, Some(registrations::refresh_only()));
     registry.register::<GeminiCliProvider>(false);
     registry.register_with_inventory::<GeminiOAuthProvider>(
         false,
@@ -220,8 +200,7 @@ fn register_standard_providers(registry: &mut ProviderRegistry) {
                     .is_ok()
         })),
     );
-    registry
-        .register_with_inventory::<NanoGptProvider>(true, Some(registrations::refresh_only()));
+    registry.register_with_inventory::<NanoGptProvider>(true, Some(registrations::refresh_only()));
     registry.register_with_inventory::<OllamaProviderDef>(
         true,
         Some(registrations::ollama_inventory()),
@@ -239,15 +218,12 @@ fn register_standard_providers(registry: &mut ProviderRegistry) {
                 .is_ok()
         })),
     );
-    registry.register_with_inventory::<PiAcpProvider>(
-        false,
-        Some(registrations::pi_acp_inventory()),
-    );
+    registry
+        .register_with_inventory::<PiAcpProvider>(false, Some(registrations::pi_acp_inventory()));
     #[cfg(feature = "aws-providers")]
     registry.register::<SageMakerTgiProvider>(false);
     registry.register::<SnowflakeProviderDef>(false);
-    registry
-        .register_with_inventory::<TetrateProvider>(true, Some(registrations::refresh_only()));
+    registry.register_with_inventory::<TetrateProvider>(true, Some(registrations::refresh_only()));
     registry.register_with_inventory::<XaiProvider>(false, Some(registrations::refresh_only()));
     registry.register_with_inventory::<XaiOAuthProvider>(
         true,

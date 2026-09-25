@@ -1,7 +1,4 @@
 use anyhow::{Context, Result};
-use warmachine::config::Config;
-use warmachine::conversation::message::Message;
-use warmachine::conversation::Conversation;
 use std::fs;
 use std::io::Read;
 use std::io::Write;
@@ -9,6 +6,9 @@ use std::path::Path;
 use std::process::Command;
 use tempfile::Builder;
 use tempfile::NamedTempFile;
+use warmachine::config::Config;
+use warmachine::conversation::message::Message;
+use warmachine::conversation::Conversation;
 
 /// Resolve the editor command from config and environment variables.
 /// Checks WARMACHINE_PROMPT_EDITOR, then $VISUAL, then $EDITOR.

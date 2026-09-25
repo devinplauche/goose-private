@@ -2,9 +2,9 @@
 //! Usage: cargo run -p warmachine --bin analyze_cli -- <path> [--focus <symbol>] [--depth <n>] [--follow <n>] [--force]
 
 use clap::Parser;
-use warmachine::agents::platform_extensions::analyze::{format, graph, AnalyzeClient};
 use rayon::prelude::*;
 use std::path::PathBuf;
+use warmachine::agents::platform_extensions::analyze::{format, graph, AnalyzeClient};
 
 #[derive(Parser)]
 #[command(name = "analyze_cli", about = "Ad-hoc code analysis via tree-sitter")]

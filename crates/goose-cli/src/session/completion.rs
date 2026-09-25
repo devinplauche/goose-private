@@ -1,5 +1,3 @@
-use warmachine::agents::execute_commands::list_commands;
-use warmachine::config::{Config, GooseMode};
 use rustyline::completion::{Completer, FilenameCompleter, Pair};
 use rustyline::highlight::{CmdKind, Highlighter};
 use rustyline::hint::Hinter;
@@ -8,6 +6,8 @@ use rustyline::{Context, Helper, Result};
 use std::borrow::Cow;
 use std::sync::Arc;
 use strum::VariantNames;
+use warmachine::agents::execute_commands::list_commands;
+use warmachine::config::{Config, GooseMode};
 
 use super::{CompletionCache, HintStatus};
 

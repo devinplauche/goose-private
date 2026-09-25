@@ -8,12 +8,6 @@ use agent_client_protocol::schema::v1::{
 use agent_client_protocol::{Client, DynConnectTo};
 use async_trait::async_trait;
 use futures::StreamExt;
-use warmachine::acp::{AcpProvider, AcpProviderConfig};
-use warmachine::config::{GooseMode, PermissionManager};
-use warmachine::conversation::message::{ActionRequiredData, Message, MessageContent};
-use warmachine::permission::permission_confirmation::PrincipalType;
-use warmachine::permission::{Permission, PermissionConfirmation};
-use warmachine::providers::base::Provider;
 use goose_providers::model::ModelConfig;
 use goose_test_support::{ExpectedSessionId, IgnoreSessionId, TEST_MODEL};
 use std::collections::HashMap;
@@ -21,6 +15,12 @@ use std::str::FromStr;
 use std::sync::Arc;
 use strum::VariantNames;
 use tokio::sync::Mutex;
+use warmachine::acp::{AcpProvider, AcpProviderConfig};
+use warmachine::config::{GooseMode, PermissionManager};
+use warmachine::conversation::message::{ActionRequiredData, Message, MessageContent};
+use warmachine::permission::permission_confirmation::PrincipalType;
+use warmachine::permission::{Permission, PermissionConfirmation};
+use warmachine::providers::base::Provider;
 
 pub type NotificationSink = Arc<std::sync::Mutex<Vec<SessionUpdate>>>;
 type SessionModels = Arc<std::sync::Mutex<HashMap<String, ModelConfig>>>;

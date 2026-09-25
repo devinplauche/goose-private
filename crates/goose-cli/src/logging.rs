@@ -1,6 +1,6 @@
 use anyhow::Result;
-use warmachine::providers::utils::init_goose_request_log;
 use std::sync::OnceLock;
+use warmachine::providers::utils::init_goose_request_log;
 
 // Used to ensure we only set up tracing once
 static INIT: OnceLock<Result<()>> = OnceLock::new();
@@ -30,9 +30,9 @@ pub fn setup_logging(name: Option<&str>) -> &'static Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use warmachine::tracing::langfuse_layer;
     use std::env;
     use tempfile::TempDir;
+    use warmachine::tracing::langfuse_layer;
 
     fn setup_temp_home() -> TempDir {
         let temp_dir = TempDir::new().unwrap();
@@ -52,7 +52,9 @@ mod tests {
         assert!(log_dir.is_dir());
 
         let path_components: Vec<_> = log_dir.components().collect();
-        assert!(path_components.iter().any(|c| c.as_os_str() == "warmachine"));
+        assert!(path_components
+            .iter()
+            .any(|c| c.as_os_str() == "warmachine"));
         assert!(path_components.iter().any(|c| c.as_os_str() == "logs"));
         assert!(path_components.iter().any(|c| c.as_os_str() == "cli"));
     }

@@ -7,8 +7,12 @@ pub fn provider_tls_config_from_config(config: &Config) -> Result<Option<TlsConf
     let mut tls_config = TlsConfig::new();
     let mut has_tls_config = false;
 
-    let client_cert_path = config.get_param::<String>("WARMACHINE_CLIENT_CERT_PATH").ok();
-    let client_key_path = config.get_param::<String>("WARMACHINE_CLIENT_KEY_PATH").ok();
+    let client_cert_path = config
+        .get_param::<String>("WARMACHINE_CLIENT_CERT_PATH")
+        .ok();
+    let client_key_path = config
+        .get_param::<String>("WARMACHINE_CLIENT_KEY_PATH")
+        .ok();
 
     match (client_cert_path, client_key_path) {
         (Some(cert_path), Some(key_path)) => {

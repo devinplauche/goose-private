@@ -1299,9 +1299,9 @@ mod tests {
         )
         .unwrap();
 
-        assert!(!listed
-            .iter()
-            .any(|source| { matches!(source.name.as_str(), ".agents" | ".warmachine" | ".claude") }));
+        assert!(!listed.iter().any(|source| {
+            matches!(source.name.as_str(), ".agents" | ".warmachine" | ".claude")
+        }));
     }
 
     #[cfg(unix)]
@@ -1326,9 +1326,9 @@ mod tests {
         )
         .unwrap();
 
-        assert!(!listed
-            .iter()
-            .any(|source| { matches!(source.name.as_str(), ".agents" | ".warmachine" | ".claude") }));
+        assert!(!listed.iter().any(|source| {
+            matches!(source.name.as_str(), ".agents" | ".warmachine" | ".claude")
+        }));
     }
 
     #[cfg(unix)]

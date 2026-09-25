@@ -1,5 +1,5 @@
-use warmachine::config::permission::{PermissionConfig, PermissionLevel, PermissionManager};
 use std::collections::HashMap;
+use warmachine::config::permission::{PermissionConfig, PermissionLevel, PermissionManager};
 
 #[test]
 fn stale_manager_cannot_restore_revoked_permission() {

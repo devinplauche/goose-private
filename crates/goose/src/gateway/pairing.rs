@@ -380,7 +380,9 @@ mod tests {
 
         let error =
             PairingStore::store_pending_code_in(&config, new_code, "telegram", 101).unwrap_err();
-        assert!(error.to_string().contains("stop older WarMachine processes"));
+        assert!(error
+            .to_string()
+            .contains("stop older WarMachine processes"));
 
         let ordinary_config =
             std::fs::read_to_string(directory.path().join("config.yaml")).unwrap_or_default();

@@ -12,11 +12,11 @@ mod thinking;
 use crate::session::task_execution_display::{
     format_task_execution_notification, TASK_EXECUTION_NOTIFICATION_TYPE,
 };
-use warmachine::conversation::Conversation;
 use std::io::Write;
 use std::str::FromStr;
 use tokio::signal::ctrl_c;
 use tokio_util::task::AbortOnDropHandle;
+use warmachine::conversation::Conversation;
 
 pub use builder::{build_session, ExtensionFailure, SessionBuilderConfig};
 use console::Color;
@@ -32,6 +32,11 @@ use warmachine::utils::safe_truncate;
 
 use anyhow::Result;
 use completion::GooseCompleter;
+use input::InputResult;
+use rmcp::model::ServerNotification;
+use rmcp::model::{ElicitationAction, PromptMessage};
+use rmcp::model::{ErrorCode, ErrorData};
+use strum::VariantNames;
 use warmachine::agents::extension::{Envs, ExtensionConfig, PLATFORM_EXTENSIONS};
 use warmachine::agents::types::RetryConfig;
 use warmachine::agents::{
@@ -39,19 +44,7 @@ use warmachine::agents::{
 };
 use warmachine::config::extensions::name_to_key;
 use warmachine::config::{Config, GooseMode};
-use input::InputResult;
-use rmcp::model::ServerNotification;
-use rmcp::model::{ElicitationAction, PromptMessage};
-use rmcp::model::{ErrorCode, ErrorData};
-use strum::VariantNames;
 
-use warmachine::config::paths::Paths;
-use warmachine::config::providers;
-use warmachine::conversation::message::{
-    ActionRequiredData, Message, MessageContent, ToolConfirmationRequest,
-};
-use warmachine::providers::inventory::ProviderInventoryService;
-use warmachine::session::SessionManager;
 use rustyline::EditMode;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -63,6 +56,13 @@ use std::time::{Duration, Instant};
 use tokio;
 use tokio_util::sync::CancellationToken;
 use tracing::warn;
+use warmachine::config::paths::Paths;
+use warmachine::config::providers;
+use warmachine::conversation::message::{
+    ActionRequiredData, Message, MessageContent, ToolConfirmationRequest,
+};
+use warmachine::providers::inventory::ProviderInventoryService;
+use warmachine::session::SessionManager;
 
 const SHELL_STATUS_FALLBACK_WIDTH: usize = 120;
 const SHELL_STATUS_MAX_LINES: usize = 3;
@@ -909,16 +909,17 @@ impl CliSession {
             return Ok(());
         }
 
-        let target_entry = match warmachine::providers::get_from_registry(target_provider_name).await {
-            Ok(entry) => entry,
-            Err(_) => {
-                output::render_error(&format!(
-                    "Unknown provider '{}'. Use tab-completion to see available providers.",
-                    target_provider_name
-                ));
-                return Ok(());
-            }
-        };
+        let target_entry =
+            match warmachine::providers::get_from_registry(target_provider_name).await {
+                Ok(entry) => entry,
+                Err(_) => {
+                    output::render_error(&format!(
+                        "Unknown provider '{}'. Use tab-completion to see available providers.",
+                        target_provider_name
+                    ));
+                    return Ok(());
+                }
+            };
 
         if target_provider_name.ends_with("-acp") {
             output::render_error(
@@ -993,7 +994,9 @@ impl CliSession {
         .await?;
 
         let extensions = self.agent.get_extension_configs().await;
-        let new_provider = match warmachine::providers::create(target_provider_name, extensions).await {
+        let new_provider = match warmachine::providers::create(target_provider_name, extensions)
+            .await
+        {
             Ok(p) => p,
             Err(e) => {
                 output::render_error(&format!(
@@ -1895,9 +1898,11 @@ impl CliSession {
             .agent
             .model_config_for_session(&self.session_id)
             .await?;
-        let context_limit =
-            warmachine::context_limit::get_context_limit(provider.as_ref(), &model_config.model_name)
-                .await?;
+        let context_limit = warmachine::context_limit::get_context_limit(
+            provider.as_ref(),
+            &model_config.model_name,
+        )
+        .await?;
 
         let config = Config::global();
         let show_cost = config
@@ -2659,14 +2664,14 @@ fn build_switched_model_config(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use warmachine::agents::extension::Envs;
-    use warmachine::config::ExtensionConfig;
-    use warmachine::conversation::message::MessageErrorKind;
-    use warmachine::providers::base::Provider;
     use serde_json::json;
     use std::collections::HashMap;
     use std::time::Duration;
     use test_case::test_case;
+    use warmachine::agents::extension::Envs;
+    use warmachine::config::ExtensionConfig;
+    use warmachine::conversation::message::MessageErrorKind;
+    use warmachine::providers::base::Provider;
 
     #[test]
     fn only_headless_terminal_failures_are_propagated() {
@@ -2989,7 +2994,8 @@ mod tests {
             vec![r"C:\tools\mcp.exe", "--arg", "value"]
         );
         assert_eq!(
-            warmachine::utils::split_command_args(r#""C:\Program Files\server\mcp.exe" --arg"#).unwrap(),
+            warmachine::utils::split_command_args(r#""C:\Program Files\server\mcp.exe" --arg"#)
+                .unwrap(),
             vec![r"C:\Program Files\server\mcp.exe", "--arg"]
         );
     }

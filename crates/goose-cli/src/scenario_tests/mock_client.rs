@@ -1,7 +1,6 @@
 //! MockClient is a mock implementation of the McpClientTrait for testing purposes.
 //! add a tool you want to have around and then add the client to the extension router
 
-use warmachine::agents::mcp_client::{Error, McpClientTrait};
 use rmcp::{
     model::{
         CallToolResult, ContentBlock, ErrorData, GetPromptResult, ListPromptsResult,
@@ -13,6 +12,7 @@ use serde_json::Value;
 use std::collections::HashMap;
 use tokio::sync::mpsc::{self, Receiver};
 use tokio_util::sync::CancellationToken;
+use warmachine::agents::mcp_client::{Error, McpClientTrait};
 
 type Handler = Box<dyn Fn(&Value) -> Result<Vec<ContentBlock>, ErrorData> + Send + Sync>;
 

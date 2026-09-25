@@ -393,8 +393,10 @@ mod tests {
 
         let cfg_dir = tempfile::tempdir().unwrap();
         let found = {
-            let _guard =
-                env_lock::lock_env([("WARMACHINE_PATH_ROOT", Some(fake_home.path().to_str().unwrap()))]);
+            let _guard = env_lock::lock_env([(
+                "WARMACHINE_PATH_ROOT",
+                Some(fake_home.path().to_str().unwrap()),
+            )]);
             discover_enabled_plugins_with_config(Some(project), &test_config(cfg_dir.path()))
         };
 

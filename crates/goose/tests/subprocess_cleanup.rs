@@ -1,11 +1,11 @@
 #![cfg(target_os = "linux")]
 
-use warmachine::subprocess::{configure_subprocess, spawn_long_lived_mcp_subprocess};
 use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
+use warmachine::subprocess::{configure_subprocess, spawn_long_lived_mcp_subprocess};
 
 const HELPER_ENV: &str = "WARMACHINE_SUBPROCESS_PARENT_DEATH_HELPER";
 const THREAD_HELPER_ENV: &str = "WARMACHINE_SUBPROCESS_THREAD_DEATH_HELPER";

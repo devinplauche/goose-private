@@ -1,13 +1,13 @@
 use anyhow::{anyhow, Result};
 use console::style;
+use serde::{Deserialize, Serialize};
 use warmachine::recipe::template_recipe::parse_recipe_content;
 use warmachine::recipe::RECIPE_FILE_EXTENSIONS;
-use serde::{Deserialize, Serialize};
 
-use warmachine::recipe::read_recipe_file_content::RecipeFile;
-use warmachine::subprocess::{git_command, SubprocessExt};
 use std::env;
 use std::fs;
+use warmachine::recipe::read_recipe_file_content::RecipeFile;
+use warmachine::subprocess::{git_command, SubprocessExt};
 
 use std::path::{Component, Path, PathBuf};
 use std::process::Command;

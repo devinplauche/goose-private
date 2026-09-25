@@ -1,20 +1,20 @@
 use anyhow::{anyhow, Result};
 use console::style;
+use goose_providers::errors::ProviderError;
+use serde_yaml;
+use std::time::Duration;
 use warmachine::config::paths::Paths;
 use warmachine::config::Config;
 use warmachine::conversation::message::Message;
 use warmachine::session::session_manager::{DB_NAME, SESSIONS_FOLDER};
-use goose_providers::errors::ProviderError;
-use serde_yaml;
-use std::time::Duration;
 
 fn print_aligned(label: &str, value: &str, width: usize) {
     println!("  {:<width$} {}", label, value, width = width);
 }
 
-use warmachine::config::base::CONFIG_YAML_NAME;
 use std::fs;
 use std::path::Path;
+use warmachine::config::base::CONFIG_YAML_NAME;
 
 fn check_path_status(path: &Path) -> String {
     if path.exists() {

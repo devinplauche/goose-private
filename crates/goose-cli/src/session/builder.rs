@@ -3,6 +3,11 @@ use crate::cli::StreamableHttpOptions;
 use super::output;
 use super::{derive_extension_name_from_command, split_extension_name_prefix, CliSession};
 use console::style;
+use rustyline::EditMode;
+use std::collections::{HashMap, HashSet};
+use std::process;
+use std::sync::Arc;
+use tokio_util::task::AbortOnDropHandle;
 use warmachine::agents::{Agent, Container, ExtensionError};
 use warmachine::config::extensions::name_to_key;
 use warmachine::config::resolve_extensions_for_new_session;
@@ -12,11 +17,6 @@ use warmachine::providers::create;
 use warmachine::recipe::Recipe;
 use warmachine::session::session_manager::SessionType;
 use warmachine::session::EnabledExtensionsState;
-use rustyline::EditMode;
-use std::collections::{HashMap, HashSet};
-use std::process;
-use std::sync::Arc;
-use tokio_util::task::AbortOnDropHandle;
 
 const EXTENSION_HINT_MAX_LEN: usize = 5;
 
@@ -629,7 +629,8 @@ async fn configure_session_prompts(
             .await;
     }
 
-    let system_prompt_file: Option<String> = config.get_param("WARMACHINE_SYSTEM_PROMPT_FILE_PATH").ok();
+    let system_prompt_file: Option<String> =
+        config.get_param("WARMACHINE_SYSTEM_PROMPT_FILE_PATH").ok();
     if let Some(ref path) = system_prompt_file {
         let override_prompt = std::fs::read_to_string(path).unwrap_or_else(|e| {
             output::render_error(&format!(
@@ -716,7 +717,9 @@ pub async fn build_session(session_config: SessionBuilderConfig) -> CliSession {
                     && is_provider_unavailable_error(&e) =>
             {
                 let fallback_provider = config.get_goose_provider().unwrap_or_else(|_| {
-                    output::render_error("No provider configured. Run 'warmachine configure' first.");
+                    output::render_error(
+                        "No provider configured. Run 'warmachine configure' first.",
+                    );
                     process::exit(1);
                 });
                 let fallback_model = config.get_goose_model().unwrap_or_else(|_| {
@@ -889,9 +892,9 @@ fn is_provider_unavailable_error(e: &anyhow::Error) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tempfile::TempDir;
     use warmachine::config::{set_provider_entry, ProviderEntry};
     use warmachine::session::SessionManager;
-    use tempfile::TempDir;
 
     fn stdio_names(extensions: &[&str]) -> Vec<String> {
         let parsed = parse_cli_flag_extensions(
@@ -1184,7 +1187,9 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let config = test_config(&temp_dir);
         config.set_param("WARMACHINE_PROVIDER", "openai").unwrap();
-        config.set_param("WARMACHINE_MODEL", "my-custom-model").unwrap();
+        config
+            .set_param("WARMACHINE_MODEL", "my-custom-model")
+            .unwrap();
 
         let resolved = resolve_provider_and_model(
             &SessionBuilderConfig {
@@ -1278,7 +1283,9 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let config = test_config(&temp_dir);
         config.set_param("WARMACHINE_PROVIDER", "openai").unwrap();
-        config.set_param("WARMACHINE_MODEL", "configured-model").unwrap();
+        config
+            .set_param("WARMACHINE_MODEL", "configured-model")
+            .unwrap();
         let recipe = serde_json::from_value(serde_json::json!({
             "version": "1.0.0",
             "title": "test recipe",
@@ -1356,7 +1363,9 @@ mod tests {
         let _guard = clear_provider_env();
         let temp_dir = TempDir::new().unwrap();
         let config = test_config(&temp_dir);
-        config.set_param("WARMACHINE_PROVIDER", "anthropic").unwrap();
+        config
+            .set_param("WARMACHINE_PROVIDER", "anthropic")
+            .unwrap();
         config
             .set_param("WARMACHINE_MODEL", "claude-sonnet-4-6")
             .unwrap();

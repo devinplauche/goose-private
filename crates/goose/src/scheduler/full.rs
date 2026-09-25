@@ -1203,8 +1203,10 @@ mod tests {
     #[tokio::test]
     async fn validated_recipe_bytes_and_base_are_persisted_after_source_replacement() {
         let temp_dir = tempdir().unwrap();
-        let _guard =
-            env_lock::lock_env([("WARMACHINE_PATH_ROOT", Some(temp_dir.path().to_str().unwrap()))]);
+        let _guard = env_lock::lock_env([(
+            "WARMACHINE_PATH_ROOT",
+            Some(temp_dir.path().to_str().unwrap()),
+        )]);
         let trusted_dir = temp_dir.path().join("trusted");
         let replacement_dir = temp_dir.path().join("replacement");
         fs::create_dir_all(&trusted_dir).unwrap();

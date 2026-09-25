@@ -10,10 +10,10 @@ use common_tests::fixtures::server::{
 use common_tests::fixtures::{
     run_test, spawn_acp_server_in_process, Connection, OpenAiFixture, TestConnectionConfig,
 };
+use std::path::Path;
 use warmachine::config::GooseMode;
 use warmachine::conversation::message::{Message, MessageContent};
 use warmachine::session::{SessionManager, SessionType};
-use std::path::Path;
 
 async fn new_connection(data_root: &Path) -> AcpServerConnection {
     let openai = OpenAiFixture::new(

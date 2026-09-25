@@ -13,14 +13,14 @@ use fixtures::{
     Session, SessionData, TerminalCall, TerminalFixture, TestConnectionConfig,
 };
 use fs_err as fs;
-use warmachine::acp::server::AcpProviderFactory;
-use warmachine::config::base::CONFIG_YAML_NAME;
-use warmachine::config::GooseMode;
-use warmachine::session::{EnabledExtensionsState, SessionManager};
 use goose_test_support::{McpFixture, FAKE_CODE, TEST_IMAGE_B64, TEST_MODEL};
 use sqlx::sqlite::SqlitePoolOptions;
 use std::sync::Arc;
 use std::time::Duration;
+use warmachine::acp::server::AcpProviderFactory;
+use warmachine::config::base::CONFIG_YAML_NAME;
+use warmachine::config::GooseMode;
+use warmachine::session::{EnabledExtensionsState, SessionManager};
 
 const SHELL_TEST_CONTENT: &str = "test-shell-content-98765";
 pub const TURN_CONTEXT_OPEN: &str = r#"\n<turn-context>"#;
@@ -962,7 +962,9 @@ pub async fn run_new_session_returns_initial_config<C: Connection>() {
 
 pub async fn run_new_session_uses_current_config_mode<C: Connection>() {
     let temp_dir = tempfile::tempdir().unwrap();
-    let config_path = temp_dir.path().join(warmachine::config::base::CONFIG_YAML_NAME);
+    let config_path = temp_dir
+        .path()
+        .join(warmachine::config::base::CONFIG_YAML_NAME);
     fs::write(
         &config_path,
         format!("WARMACHINE_MODEL: {TEST_MODEL}\nWARMACHINE_PROVIDER: openai\nWARMACHINE_MODE: approve\n"),
@@ -979,11 +981,13 @@ pub async fn run_new_session_uses_current_config_mode<C: Connection>() {
 
     let mut conn = C::new(config, openai).await;
 
-    let global_config_path =
-        warmachine::config::paths::Paths::config_dir().join(warmachine::config::base::CONFIG_YAML_NAME);
+    let global_config_path = warmachine::config::paths::Paths::config_dir()
+        .join(warmachine::config::base::CONFIG_YAML_NAME);
     fs::write(
         &global_config_path,
-        format!("WARMACHINE_MODEL: {TEST_MODEL}\nWARMACHINE_PROVIDER: openai\nWARMACHINE_MODE: auto\n"),
+        format!(
+            "WARMACHINE_MODEL: {TEST_MODEL}\nWARMACHINE_PROVIDER: openai\nWARMACHINE_MODE: auto\n"
+        ),
     )
     .unwrap();
 

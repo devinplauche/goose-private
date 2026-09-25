@@ -97,7 +97,11 @@ pub fn set_active_provider(config: &Config, name: &str, model: &str) -> Result<(
 }
 
 pub fn clear_active_provider(config: &Config) -> Result<(), ConfigError> {
-    for key in [ACTIVE_PROVIDER_KEY, "WARMACHINE_PROVIDER", "WARMACHINE_MODEL"] {
+    for key in [
+        ACTIVE_PROVIDER_KEY,
+        "WARMACHINE_PROVIDER",
+        "WARMACHINE_MODEL",
+    ] {
         match config.delete(key) {
             Ok(()) | Err(ConfigError::NotFound(_)) => {}
             Err(e) => return Err(e),
@@ -163,7 +167,9 @@ mod tests {
     #[test]
     fn test_clear_active_provider_removes_legacy_keys() {
         let config = new_test_config();
-        config.set_param("WARMACHINE_PROVIDER", "anthropic").unwrap();
+        config
+            .set_param("WARMACHINE_PROVIDER", "anthropic")
+            .unwrap();
         config.set_param("WARMACHINE_MODEL", "claude").unwrap();
 
         clear_active_provider(&config).unwrap();

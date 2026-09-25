@@ -19,15 +19,15 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use clap::Subcommand;
+use goose_roaming::{
+    default_key_path, parse_endpoint_id, ConnectionCard, Directory, EndpointId, RelayEntry,
+    RelaySettings, RoamingConfig, RoamingIdentity, RoamingNode, TrustBook,
+};
 use warmachine::acp::server::AcpBuiltinSelection;
 use warmachine::acp::server_factory::{AcpServer, AcpServerFactoryConfig};
 use warmachine::agents::GoosePlatform;
 use warmachine::config::paths::Paths;
 use warmachine::config::{Config, ConfigError};
-use goose_roaming::{
-    default_key_path, parse_endpoint_id, ConnectionCard, Directory, EndpointId, RelayEntry,
-    RelaySettings, RoamingConfig, RoamingIdentity, RoamingNode, TrustBook,
-};
 
 use crate::commands::roam_full_bridge::FullAcpBridge;
 
@@ -520,7 +520,9 @@ async fn handle_peers(command: PeersCommand) -> Result<()> {
                 trust.allowed_keys().into_iter().collect();
             let peers = book.list();
             if peers.is_empty() && accepted.is_empty() {
-                eprintln!("no saved peers; add one with `warmachine roam peers add '<card>' <name>`");
+                eprintln!(
+                    "no saved peers; add one with `warmachine roam peers add '<card>' <name>`"
+                );
                 return Ok(());
             }
             println!("{:<16} {:<8} ENDPOINT ID", "NAME", "ACCEPT");

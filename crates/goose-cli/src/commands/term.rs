@@ -1,9 +1,9 @@
 use anyhow::{anyhow, Result};
 use chrono;
+use rmcp::model::Role;
 use warmachine::config::Config;
 use warmachine::conversation::message::{Message, MessageContent, MessageMetadata};
 use warmachine::session::{SessionManager, SessionType};
-use rmcp::model::Role;
 
 use crate::session::{build_session, SessionBuilderConfig};
 
@@ -362,7 +362,8 @@ pub async fn handle_term_info() -> Result<()> {
         .and_then(|session| {
             let provider_name = session.provider_name.as_deref()?;
             let model = session.model_config.as_ref()?;
-            warmachine::context_limit::get_local_context_limit(provider_name, &model.model_name).ok()
+            warmachine::context_limit::get_local_context_limit(provider_name, &model.model_name)
+                .ok()
         })
         .unwrap_or(goose_providers::model::DEFAULT_CONTEXT_LIMIT);
 
@@ -403,8 +404,9 @@ mod tests {
         let script = render_term_init_script(Shell::Nu, "session-123", "/tmp/warmachine", true);
 
         assert!(script.contains("$env.config.hooks.command_not_found = {|command_name|"));
-        assert!(script
-            .contains("run-external \"/tmp/warmachine\" \"term\" \"run\" $prompt | complete | ignore"));
+        assert!(script.contains(
+            "run-external \"/tmp/warmachine\" \"term\" \"run\" $prompt | complete | ignore"
+        ));
     }
 
     #[test]

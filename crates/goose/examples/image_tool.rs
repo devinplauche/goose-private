@@ -1,15 +1,15 @@
 use anyhow::Result;
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use dotenvy::dotenv;
-use warmachine::conversation::message::Message;
-use warmachine::providers::anthropic::ANTHROPIC_DEFAULT_MODEL;
-use warmachine::providers::create_with_named_model;
-use warmachine::providers::openai::OPEN_AI_DEFAULT_MODEL;
 use goose_providers::databricks::DATABRICKS_DEFAULT_MODEL;
 use rmcp::model::{CallToolRequestParams, ContentBlock, Tool};
 use rmcp::object;
 use std::fs;
 use std::sync::Arc;
+use warmachine::conversation::message::Message;
+use warmachine::providers::anthropic::ANTHROPIC_DEFAULT_MODEL;
+use warmachine::providers::create_with_named_model;
+use warmachine::providers::openai::OPEN_AI_DEFAULT_MODEL;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -30,7 +30,10 @@ async fn main() -> Result<()> {
         ),
         (
             create_with_named_model("openai", Vec::new()).await?,
-            warmachine::model_config::model_config_from_user_config("openai", OPEN_AI_DEFAULT_MODEL)?,
+            warmachine::model_config::model_config_from_user_config(
+                "openai",
+                OPEN_AI_DEFAULT_MODEL,
+            )?,
         ),
         (
             create_with_named_model("anthropic", Vec::new()).await?,

@@ -2,6 +2,10 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use async_trait::async_trait;
+use goose_providers::conversation::token_usage::Usage;
+use goose_providers::model::ModelConfig;
+use tokio::sync::mpsc;
+use tokio_util::sync::CancellationToken;
 use warmachine::agents::state_machine::{
     yielded_with, Emitter, GooseEffect, Inference, InferenceInput, Operation, OperationResult,
     StateMachine, Step,
@@ -13,10 +17,6 @@ use warmachine::conversation::Conversation;
 use warmachine::providers::base::ProviderUsage;
 use warmachine::session::session_manager::token_state_from_session_and_totals;
 use warmachine::session::{Session, SessionManager, SessionType};
-use goose_providers::conversation::token_usage::Usage;
-use goose_providers::model::ModelConfig;
-use tokio::sync::mpsc;
-use tokio_util::sync::CancellationToken;
 
 struct PromptPart;
 

@@ -1018,7 +1018,8 @@ mod tests {
             assert!(ModelConfig::new("gemini-3-pro").is_reasoning_model());
             assert!(ModelConfig::new("glm-5.3").is_reasoning_model());
             assert!(
-                ModelConfig::new("data_workflow_tools.warmachine.warmachine-glm-5-3").is_reasoning_model()
+                ModelConfig::new("data_workflow_tools.warmachine.warmachine-glm-5-3")
+                    .is_reasoning_model()
             );
             assert!(!ModelConfig::new("glm-5.30").is_reasoning_model());
             assert!(!ModelConfig::new("glm_5_3_models.prod.llama-3").is_reasoning_model());

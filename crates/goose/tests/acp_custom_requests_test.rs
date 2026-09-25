@@ -11,8 +11,6 @@ use common_tests::fixtures::{
     run_test, send_custom, Connection, PermissionDecision, Session, SessionData,
     TestConnectionConfig,
 };
-use warmachine::acp::server::AcpProviderFactory;
-use warmachine::providers::base::{MessageStream, Provider};
 use goose_providers::errors::ProviderError;
 use goose_providers::model::ModelConfig;
 use goose_test_support::{EnforceSessionId, IgnoreSessionId, McpFixture, FAKE_CODE};
@@ -20,6 +18,8 @@ use serial_test::serial;
 use std::path::PathBuf;
 use std::sync::{Arc, LazyLock, Mutex};
 use std::time::Duration;
+use warmachine::acp::server::AcpProviderFactory;
+use warmachine::providers::base::{MessageStream, Provider};
 
 use common_tests::fixtures::OpenAiFixture;
 
@@ -119,7 +119,10 @@ fn steer_chunk_message_ids(updates: &[SessionUpdate]) -> Vec<String> {
             };
             let warmachine = chunk.meta.as_ref()?.get("warmachine")?;
             warmachine.get("steer")?.as_bool().filter(|b| *b)?;
-            warmachine.get("messageId")?.as_str().map(ToString::to_string)
+            warmachine
+                .get("messageId")?
+                .as_str()
+                .map(ToString::to_string)
         })
         .collect()
 }

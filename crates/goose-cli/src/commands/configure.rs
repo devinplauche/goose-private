@@ -1,6 +1,10 @@
 use crate::recipes::github_recipe::WARMACHINE_RECIPE_GITHUB_REPO_CONFIG_KEY;
 use cliclack::spinner;
 use console::style;
+use goose_providers::thinking::ThinkingEffort;
+use serde_json::Value;
+use std::collections::HashMap;
+use std::io::{IsTerminal, Write};
 use warmachine::agents::extension::{ToolInfo, PLATFORM_EXTENSIONS};
 use warmachine::agents::extension_manager::get_parameter_names;
 use warmachine::agents::Agent;
@@ -25,10 +29,6 @@ use warmachine::providers::base::ConfigKey;
 use warmachine::providers::provider_test::test_provider_configuration;
 use warmachine::providers::{create, providers, retry_operation, RetryConfig};
 use warmachine::session::SessionType;
-use goose_providers::thinking::ThinkingEffort;
-use serde_json::Value;
-use std::collections::HashMap;
-use std::io::{IsTerminal, Write};
 
 // useful for light themes where there is no discernible colour contrast between
 // cursor-selected and cursor-unselected items.
@@ -173,8 +173,10 @@ pub fn configure_telemetry_consent_dialog() -> anyhow::Result<bool> {
     );
     println!(
         "{}",
-        style("This helps us understand how warmachine is used and identify areas for improvement.")
-            .dim()
+        style(
+            "This helps us understand how warmachine is used and identify areas for improvement."
+        )
+        .dim()
     );
     println!();
     println!("{}", style("What we collect:").dim());
@@ -182,7 +184,10 @@ pub fn configure_telemetry_consent_dialog() -> anyhow::Result<bool> {
         "{}",
         style("  • Operating system, version, and architecture").dim()
     );
-    println!("{}", style("  • warmachine version and install method").dim());
+    println!(
+        "{}",
+        style("  • warmachine version and install method").dim()
+    );
     println!("{}", style("  • Provider and model used").dim());
     println!(
         "{}",
@@ -203,7 +208,8 @@ pub fn configure_telemetry_consent_dialog() -> anyhow::Result<bool> {
     );
     println!(
         "{}",
-        style("or any personal data. You can change this anytime with 'warmachine configure'.").dim()
+        style("or any personal data. You can change this anytime with 'warmachine configure'.")
+            .dim()
     );
     println!();
 
@@ -224,7 +230,10 @@ pub fn configure_telemetry_consent_dialog() -> anyhow::Result<bool> {
 
 async fn handle_first_time_setup(config: &Config) -> anyhow::Result<()> {
     println!();
-    println!("{}", style("Welcome to warmachine! Let's get you set up.").dim());
+    println!(
+        "{}",
+        style("Welcome to warmachine! Let's get you set up.").dim()
+    );
     println!(
         "{}",
         style("  you can rerun this command later to update your configuration").dim()
@@ -1631,7 +1640,9 @@ pub fn configure_keyring_dialog() -> anyhow::Result<()> {
         );
     }
 
-    let currently_disabled = config.get_param::<String>("WARMACHINE_DISABLE_KEYRING").is_ok();
+    let currently_disabled = config
+        .get_param::<String>("WARMACHINE_DISABLE_KEYRING")
+        .is_ok();
 
     let current_status = if currently_disabled {
         "Disabled (using file-based storage)"
@@ -1664,18 +1675,23 @@ pub fn configure_keyring_dialog() -> anyhow::Result<()> {
             // Set to empty string to enable keyring (absence or empty = enabled)
             config.set_param("WARMACHINE_DISABLE_KEYRING", Value::String("".to_string()))?;
             cliclack::outro("Secret storage set to system keyring (secure)")?;
-            let _ =
-                cliclack::log::info("You may need to restart warmachine for this change to take effect");
+            let _ = cliclack::log::info(
+                "You may need to restart warmachine for this change to take effect",
+            );
         }
         "file" => {
             // Set the disable flag to use file storage
-            config.set_param("WARMACHINE_DISABLE_KEYRING", Value::String("true".to_string()))?;
+            config.set_param(
+                "WARMACHINE_DISABLE_KEYRING",
+                Value::String("true".to_string()),
+            )?;
             cliclack::outro(format!(
                 "Secret storage set to file ({}). Keep this file secure!",
                 secrets_path.display(),
             ))?;
-            let _ =
-                cliclack::log::info("You may need to restart warmachine for this change to take effect");
+            let _ = cliclack::log::info(
+                "You may need to restart warmachine for this change to take effect",
+            );
         }
         _ => unreachable!(),
     };
@@ -1751,7 +1767,8 @@ pub async fn configure_tool_permissions_dialog() -> anyhow::Result<()> {
     let model: String = config
         .get_goose_model()
         .expect("No model configured. Please set model first");
-    let model_config = warmachine::model_config::model_config_from_user_config(&provider_name, &model)?;
+    let model_config =
+        warmachine::model_config::model_config_from_user_config(&provider_name, &model)?;
 
     let agent = Agent::new();
 
@@ -1973,15 +1990,17 @@ pub async fn handle_openrouter_auth() -> anyhow::Result<()> {
     // Test configuration - get the model that was configured
     println!("\nTesting configuration...");
     let configured_model: String = config.get_goose_model()?;
-    let model_config =
-        match warmachine::model_config::model_config_from_user_config("openrouter", &configured_model) {
-            Ok(config) => config,
-            Err(e) => {
-                eprintln!("⚠️  Invalid model configuration: {}", e);
-                eprintln!("Your settings have been saved. Please check your model configuration.");
-                return Ok(());
-            }
-        };
+    let model_config = match warmachine::model_config::model_config_from_user_config(
+        "openrouter",
+        &configured_model,
+    ) {
+        Ok(config) => config,
+        Err(e) => {
+            eprintln!("⚠️  Invalid model configuration: {}", e);
+            eprintln!("Your settings have been saved. Please check your model configuration.");
+            return Ok(());
+        }
+    };
 
     match create("openrouter", Vec::new()).await {
         Ok(provider) => {
@@ -2010,7 +2029,9 @@ pub async fn handle_openrouter_auth() -> anyhow::Result<()> {
                             config: ExtensionConfig::Platform {
                                 name: "developer".to_string(),
                                 description: "Developer extension".to_string(),
-                                display_name: Some(warmachine::config::DEFAULT_DISPLAY_NAME.to_string()),
+                                display_name: Some(
+                                    warmachine::config::DEFAULT_DISPLAY_NAME.to_string(),
+                                ),
                                 bundled: Some(true),
                                 available_tools: Vec::new(),
                             },
@@ -2053,7 +2074,8 @@ pub async fn handle_tetrate_auth() -> anyhow::Result<()> {
     // Test configuration
     println!("\nTesting configuration...");
     let configured_model: String = config.get_goose_model()?;
-    if let Err(e) = warmachine::model_config::model_config_from_user_config("tetrate", &configured_model)
+    if let Err(e) =
+        warmachine::model_config::model_config_from_user_config("tetrate", &configured_model)
     {
         eprintln!("⚠️  Invalid model configuration: {}", e);
         eprintln!("Your settings have been saved. Please check your model configuration.");
@@ -2079,7 +2101,9 @@ pub async fn handle_tetrate_auth() -> anyhow::Result<()> {
                             config: ExtensionConfig::Platform {
                                 name: "developer".to_string(),
                                 description: "Developer extension".to_string(),
-                                display_name: Some(warmachine::config::DEFAULT_DISPLAY_NAME.to_string()),
+                                display_name: Some(
+                                    warmachine::config::DEFAULT_DISPLAY_NAME.to_string(),
+                                ),
                                 bundled: Some(true),
                                 available_tools: Vec::new(),
                             },
@@ -2202,14 +2226,15 @@ fn add_provider() -> anyhow::Result<()> {
     let mut auth: Option<AuthConfig> = None;
 
     if requires_auth {
-        let auth_mode = cliclack::select("How should warmachine obtain credentials for this provider?")
-            .item("static", "Static API key", "Enter a fixed API key now")
-            .item(
-                "command",
-                "Command (refreshable)",
-                "Run a command to fetch/refresh a short-lived credential",
-            )
-            .interact()?;
+        let auth_mode =
+            cliclack::select("How should warmachine obtain credentials for this provider?")
+                .item("static", "Static API key", "Enter a fixed API key now")
+                .item(
+                    "command",
+                    "Command (refreshable)",
+                    "Run a command to fetch/refresh a short-lived credential",
+                )
+                .interact()?;
 
         if auth_mode == "command" {
             let command: String = cliclack::input("Command to run for the credential:")

@@ -1,11 +1,11 @@
-use warmachine::acp::custom_notifications::custom_notification_schemas;
-use warmachine::acp::server::{agent_request_schemas, GooseAcpAgent};
 use schemars::SchemaGenerator;
 use serde_json::{json, Map, Value};
 use std::collections::{BTreeSet, HashMap};
 use std::env;
 use std::fs;
 use std::path::PathBuf;
+use warmachine::acp::custom_notifications::custom_notification_schemas;
+use warmachine::acp::server::{agent_request_schemas, GooseAcpAgent};
 
 const STABLE_SCHEMA_TYPE_NAMES: &[&str] = &["EmptyResponse"];
 

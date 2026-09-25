@@ -1,8 +1,8 @@
 use super::*;
+use serde_json::json;
 use warmachine::agents::subagent_execution_tool::notification_events::{
     FailedTaskInfo, TaskCompletionStats, TaskExecutionStats,
 };
-use serde_json::json;
 
 #[test]
 fn test_process_output_for_display() {

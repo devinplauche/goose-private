@@ -1,8 +1,19 @@
 use anyhow::Result;
 use dotenvy::dotenv;
 use futures::StreamExt;
+use goose_providers::databricks::DATABRICKS_DEFAULT_MODEL;
+use goose_providers::errors::ProviderError;
+use goose_providers::thinking::ThinkingEffortSupport;
+use goose_test_support::{
+    EnforceSessionId, ExpectedSessionId, IgnoreSessionId, McpFixture, FAKE_CODE,
+};
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
+use tokio_util::sync::CancellationToken;
 use warmachine::acp::ACP_CURRENT_MODEL;
-use warmachine::agents::{Agent, AgentConfig, AgentEvent, GoosePlatform, PromptManager, SessionConfig};
+use warmachine::agents::{
+    Agent, AgentConfig, AgentEvent, GoosePlatform, PromptManager, SessionConfig,
+};
 use warmachine::config::{ExtensionConfig, GooseMode, PermissionManager};
 use warmachine::conversation::message::{ActionRequiredData, Message, MessageContent};
 use warmachine::permission::Permission;
@@ -22,15 +33,6 @@ use warmachine::providers::sagemaker_tgi::SAGEMAKER_TGI_DEFAULT_MODEL;
 use warmachine::providers::snowflake::SNOWFLAKE_DEFAULT_MODEL;
 use warmachine::providers::xai::XAI_DEFAULT_MODEL;
 use warmachine::session::{SessionManager, SessionType};
-use goose_providers::databricks::DATABRICKS_DEFAULT_MODEL;
-use goose_providers::errors::ProviderError;
-use goose_providers::thinking::ThinkingEffortSupport;
-use goose_test_support::{
-    EnforceSessionId, ExpectedSessionId, IgnoreSessionId, McpFixture, FAKE_CODE,
-};
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-use tokio_util::sync::CancellationToken;
 
 #[derive(Debug, Clone, Copy)]
 enum TestStatus {

@@ -372,7 +372,10 @@ fn agent_capabilities_meta() -> Option<Meta> {
     }
 
     let mut meta = serde_json::Map::new();
-    meta.insert("warmachine".to_string(), serde_json::Value::Object(warmachine));
+    meta.insert(
+        "warmachine".to_string(),
+        serde_json::Value::Object(warmachine),
+    );
     Some(meta)
 }
 
@@ -1841,8 +1844,9 @@ impl GooseAcpAgent {
             .agent_info(Implementation::new("warmachine", env!("CARGO_PKG_VERSION")))
             .agent_capabilities(capabilities)
             .auth_methods(vec![AuthMethod::Agent(
-                AuthMethodAgent::new("goose-provider", "Configure Provider")
-                    .description("Run `warmachine configure` to set up your AI provider and API key"),
+                AuthMethodAgent::new("goose-provider", "Configure Provider").description(
+                    "Run `warmachine configure` to set up your AI provider and API key",
+                ),
             )]))
     }
 
@@ -1982,7 +1986,10 @@ impl GooseAcpAgent {
         );
 
         let mut meta = serde_json::Map::new();
-        meta.insert("warmachine".to_string(), serde_json::Value::Object(warmachine));
+        meta.insert(
+            "warmachine".to_string(),
+            serde_json::Value::Object(warmachine),
+        );
         meta
     }
 
@@ -2014,7 +2021,10 @@ impl GooseAcpAgent {
             }),
         );
         let mut meta = serde_json::Map::new();
-        meta.insert("warmachine".to_string(), serde_json::Value::Object(warmachine));
+        meta.insert(
+            "warmachine".to_string(),
+            serde_json::Value::Object(warmachine),
+        );
 
         cx.send_notification(SessionNotification::new(
             session_id.clone(),
@@ -3534,7 +3544,10 @@ print(\"hello, world\")
             serde_json::Value::Bool(true),
         );
         let mut meta = serde_json::Map::new();
-        meta.insert("warmachine".to_string(), serde_json::Value::Object(goose_meta));
+        meta.insert(
+            "warmachine".to_string(),
+            serde_json::Value::Object(goose_meta),
+        );
 
         let request = InitializeRequest::new(agent_client_protocol::schema::ProtocolVersion::V1)
             .client_capabilities(
@@ -3563,7 +3576,10 @@ print(\"hello, world\")
             serde_json::Value::Bool(true),
         );
         let mut meta = serde_json::Map::new();
-        meta.insert("warmachine".to_string(), serde_json::Value::Object(goose_meta));
+        meta.insert(
+            "warmachine".to_string(),
+            serde_json::Value::Object(goose_meta),
+        );
         let request = InitializeRequest::new(agent_client_protocol::schema::ProtocolVersion::V1)
             .client_capabilities(
                 agent_client_protocol::schema::v1::ClientCapabilities::new().meta(meta),

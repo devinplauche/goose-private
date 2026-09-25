@@ -3,14 +3,14 @@
 //! instead of a static `api_key_env`, and the credential is refreshed
 //! reactively when the upstream API returns a 401.
 
-use warmachine::conversation::message::Message;
-use warmachine::providers::base::Provider;
-use warmachine::providers::openai_def;
 use goose_providers::declarative::{AuthConfig, DeclarativeProviderConfig, ProviderEngine};
 use goose_providers::model::ModelConfig;
 use serde_json::json;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
+use warmachine::conversation::message::Message;
+use warmachine::providers::base::Provider;
+use warmachine::providers::openai_def;
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, Request, ResponseTemplate};
 

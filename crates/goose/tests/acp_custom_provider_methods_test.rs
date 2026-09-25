@@ -5,13 +5,13 @@ mod common_tests;
 
 use common_tests::fixtures::server::AcpServerConnection;
 use common_tests::fixtures::{run_test, send_custom, Connection, TestConnectionConfig};
+use goose_test_support::EnforceSessionId;
+use serial_test::serial;
+use std::sync::Arc;
 use warmachine::config::base::CONFIG_YAML_NAME;
 use warmachine::config::declarative_providers::load_provider;
 use warmachine::config::paths::Paths;
 use warmachine::config::{Config, ConfigError, DeclarativeProviderConfig};
-use goose_test_support::EnforceSessionId;
-use serial_test::serial;
-use std::sync::Arc;
 
 fn write_config(config_dir: &std::path::Path, contents: &str) {
     std::fs::create_dir_all(config_dir).unwrap();

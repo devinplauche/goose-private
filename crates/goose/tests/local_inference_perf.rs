@@ -10,10 +10,10 @@
 //! Run with a specific model:
 //!   TEST_MODEL="bartowski/Qwen_Qwen3-32B-GGUF:Q4_K_M" cargo test -p warmachine --test local_inference_perf -- --ignored --nocapture
 
-use warmachine::conversation::message::Message;
-use warmachine::providers::create;
 use goose_providers::model::ModelConfig;
 use std::time::Instant;
+use warmachine::conversation::message::Message;
+use warmachine::providers::create;
 
 const DEFAULT_TEST_MODEL: &str = "bartowski/Llama-3.2-1B-Instruct-GGUF:Q4_K_M";
 

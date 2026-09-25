@@ -172,7 +172,11 @@ fn import_failure_warning(
 fn goose_config_candidate_paths(config_dir: &Path) -> Vec<PathBuf> {
     let mut paths = vec![config_dir.join(CONFIG_YAML_NAME)];
     if let Some(home) = dirs::home_dir() {
-        paths.push(home.join(".config").join("warmachine").join(CONFIG_YAML_NAME));
+        paths.push(
+            home.join(".config")
+                .join("warmachine")
+                .join(CONFIG_YAML_NAME),
+        );
     }
     dedupe_paths(paths)
 }
@@ -356,9 +360,9 @@ fn apply_goose_config_candidate(
         result.skipped.skills += skills_result.skipped;
     }
 
-    result
-        .warnings
-        .push("Session history already lives in the WarMachine data store when available.".to_string());
+    result.warnings.push(
+        "Session history already lives in the WarMachine data store when available.".to_string(),
+    );
     Ok(result)
 }
 

@@ -11,6 +11,13 @@ use agent_client_protocol::schema::v1::{
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use fs_err as fs;
+use goose_test_support::{ExpectedSessionId, TEST_MODEL};
+use std::collections::VecDeque;
+use std::future::Future;
+use std::path::{Path, PathBuf};
+use std::sync::{Arc, LazyLock, Mutex};
+use tokio::task::JoinHandle;
+use tokio_util::compat::{TokioAsyncReadCompatExt, TokioAsyncWriteCompatExt};
 use warmachine::acp::server::{serve, AcpProviderFactory, GooseAcpAgent, GooseAcpAgentOptions};
 pub use warmachine::acp::{map_permission_response, PermissionDecision};
 use warmachine::agents::GoosePlatform;
@@ -24,13 +31,6 @@ use warmachine::scheduler::{ScheduledJob, SchedulerError, ValidatedScheduleRecip
 use warmachine::scheduler_trait::SchedulerTrait;
 use warmachine::session::Session as GooseSession;
 use warmachine::session_context::SESSION_ID_HEADER;
-use goose_test_support::{ExpectedSessionId, TEST_MODEL};
-use std::collections::VecDeque;
-use std::future::Future;
-use std::path::{Path, PathBuf};
-use std::sync::{Arc, LazyLock, Mutex};
-use tokio::task::JoinHandle;
-use tokio_util::compat::{TokioAsyncReadCompatExt, TokioAsyncWriteCompatExt};
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 

@@ -4,12 +4,12 @@ use super::paste::{
 };
 use super::{CompletionCache, HintStatus};
 use anyhow::Result;
-use warmachine::config::{Config, GooseMode};
 use rustyline::Editor;
 use shlex;
 use std::collections::HashMap;
 use std::sync::Arc;
 use strum::VariantNames;
+use warmachine::config::{Config, GooseMode};
 
 #[derive(Debug)]
 pub enum InputResult {

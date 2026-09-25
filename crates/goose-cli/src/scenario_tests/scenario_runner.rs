@@ -6,17 +6,17 @@ use crate::scenario_tests::mock_client::weather_client;
 use crate::scenario_tests::provider_configs::{get_provider_configs, ProviderConfig};
 use crate::session::CliSession;
 use anyhow::Result;
+use std::collections::{HashMap, HashSet};
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
+use tempfile::TempDir;
+use tokio_util::sync::CancellationToken;
 use warmachine::agents::{Agent, AgentConfig, GoosePlatform};
 use warmachine::config::permission::PermissionManager;
 use warmachine::config::GooseMode;
 use warmachine::providers::{create, testprovider::TestProvider};
 use warmachine::session::session_manager::SessionType;
 use warmachine::session::SessionManager;
-use std::collections::{HashMap, HashSet};
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
-use tempfile::TempDir;
-use tokio_util::sync::CancellationToken;
 
 pub const SCENARIO_TESTS_DIR: &str = "src/scenario_tests";
 

@@ -573,7 +573,8 @@ export const WARMACHINE_EXT_NOTIFICATIONS = [
   },
 ] as const;
 
-export type GooseExtNotification = (typeof WARMACHINE_EXT_NOTIFICATIONS)[number];
+export type GooseExtNotification =
+  (typeof WARMACHINE_EXT_NOTIFICATIONS)[number];
 
 export const WARMACHINE_EXT_AGENT_REQUESTS = [
   {
@@ -583,4 +584,5 @@ export const WARMACHINE_EXT_AGENT_REQUESTS = [
   },
 ] as const;
 
-export type GooseExtAgentRequest = (typeof WARMACHINE_EXT_AGENT_REQUESTS)[number];
+export type GooseExtAgentRequest =
+  (typeof WARMACHINE_EXT_AGENT_REQUESTS)[number];

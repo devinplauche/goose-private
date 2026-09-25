@@ -193,7 +193,7 @@ jobs:
           cat > "$RUNNER_TEMP/LoadNativeLibrary.java" <<'JAVA'
           public class LoadNativeLibrary {
               public static void main(String[] args) {
-                  System.out.println(io.github.aaif_goose.GooseKt.openaiDefaultModel());
+                  System.out.println(io.github.aaif_goose.WarmachineKt.openaiDefaultModel());
               }
           }
           JAVA

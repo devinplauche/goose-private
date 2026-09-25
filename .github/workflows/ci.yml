@@ -312,12 +312,14 @@ jobs:
       - name: Generate CycloneDX SBOM for the on-prem build
         # Same feature set as the on-prem check job, so the SBOM reflects the
         # exact dependency tree of the DoD build variant.
+        # Note: cargo-cyclonedx takes --manifest-path, not -p.
         run: |
           export CARGO_INCREMENTAL=0
           cargo cyclonedx --format json \
-            -p warmachine --no-default-features \
-            --features onprem,rustls-tls,code-mode,tree-sitter,live-voice,scheduler,platform-apps,chat-recall,acp-http,nostr,otel
-          cargo cyclonedx --format json -p goose-cli --features onprem
+            --manifest-path crates/goose/Cargo.toml --no-default-features \
+            -F onprem,rustls-tls,code-mode,tree-sitter,live-voice,scheduler,platform-apps,chat-recall,acp-http,nostr,otel
+          cargo cyclonedx --format json \
+            --manifest-path crates/goose-cli/Cargo.toml -F onprem
         env:
           WARMACHINE_ONPREM_BASE_URL: "https://llm.internal.example/v1"
 

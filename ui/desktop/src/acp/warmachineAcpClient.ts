@@ -21,7 +21,7 @@ import {
 const [gooseSessionUpdate, providerDeviceCode] = WARMACHINE_EXT_NOTIFICATIONS;
 const [gooseRecipeParamsRequest] = WARMACHINE_EXT_AGENT_REQUESTS;
 
-export type GooseAcpCallbacks = Required<
+export type WarMachineAcpCallbacks = Required<
   Pick<Client, 'requestPermission' | 'sessionUpdate' | 'createElicitation'>
 > & {
   unstable_sessionRecipeRequestParams: (
@@ -33,15 +33,15 @@ export type GooseAcpCallbacks = Required<
   ) => Promise<void>;
 };
 
-export type GooseAcpClient = {
+export type WarMachineAcpClient = {
   connection: ClientConnection;
   warmachine: GooseExtClient;
 };
 
-export function connectGooseAcpClient(
+export function connectWarMachineAcpClient(
   stream: Stream,
-  callbacks: GooseAcpCallbacks
-): GooseAcpClient {
+  callbacks: WarMachineAcpCallbacks
+): WarMachineAcpClient {
   const app = client({ name: 'warmachine' })
     .onRequest(methods.client.session.requestPermission, (context) =>
       callbacks.requestPermission(context.params)

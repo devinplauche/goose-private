@@ -1,7 +1,7 @@
 import type { GooseSessionNotification_unstable } from '@aaif/goose-acp-client';
 import { describe, expect, it } from 'vitest';
 import type { Message, MessageUsage } from '../../types/message';
-import { applyGooseSessionNotification } from '../adapter/gooseSessionNotifications';
+import { applyGooseSessionNotification } from '../adapter/warmachineSessionNotifications';
 import type { AcpChatStateChange, AdapterState } from '../adapter/shared';
 
 const SESSION_ID = 'session-1';

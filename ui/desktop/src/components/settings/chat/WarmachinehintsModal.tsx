@@ -14,74 +14,74 @@ import { defineMessages, useIntl } from '../../../i18n';
 
 const i18n = defineMessages({
   dialogTitle: {
-    id: 'goosehintsModal.dialogTitle',
+    id: 'warmachinehintsModal.dialogTitle',
     defaultMessage: 'Configure Project Hints (.warmachinehints)',
   },
   dialogDescription: {
-    id: 'goosehintsModal.dialogDescription',
+    id: 'warmachinehintsModal.dialogDescription',
     defaultMessage:
       'Provide additional context about your project to improve communication with WarMachine',
   },
   helpText1: {
-    id: 'goosehintsModal.helpText1',
+    id: 'warmachinehintsModal.helpText1',
     defaultMessage:
       '.warmachinehints is a text file used to provide additional context about your project and improve the communication with WarMachine.',
   },
   helpText2: {
-    id: 'goosehintsModal.helpText2',
+    id: 'warmachinehintsModal.helpText2',
     defaultMessage:
       "Please make sure {bold} extension is enabled in the extensions page. This extension is required to use .warmachinehints. You'll need to restart your session for .warmachinehints updates to take effect.",
   },
   helpText3: {
-    id: 'goosehintsModal.helpText3',
+    id: 'warmachinehintsModal.helpText3',
     defaultMessage: 'See {link} for more information.',
   },
   helpTextLink: {
-    id: 'goosehintsModal.helpTextLink',
+    id: 'warmachinehintsModal.helpTextLink',
     defaultMessage: 'using .warmachinehints',
   },
   errorReading: {
-    id: 'goosehintsModal.errorReading',
+    id: 'warmachinehintsModal.errorReading',
     defaultMessage: 'Error reading .warmachinehints file: {error}',
   },
   fileFound: {
-    id: 'goosehintsModal.fileFound',
+    id: 'warmachinehintsModal.fileFound',
     defaultMessage: '.warmachinehints file found at: {filePath}',
   },
   fileCreating: {
-    id: 'goosehintsModal.fileCreating',
+    id: 'warmachinehintsModal.fileCreating',
     defaultMessage: 'Creating new .warmachinehints file at: {filePath}',
   },
   placeholder: {
-    id: 'goosehintsModal.placeholder',
+    id: 'warmachinehintsModal.placeholder',
     defaultMessage: 'Enter project hints here...',
   },
   savedSuccessfully: {
-    id: 'goosehintsModal.savedSuccessfully',
+    id: 'warmachinehintsModal.savedSuccessfully',
     defaultMessage: 'Saved successfully',
   },
   close: {
-    id: 'goosehintsModal.close',
+    id: 'warmachinehintsModal.close',
     defaultMessage: 'Close',
   },
   saving: {
-    id: 'goosehintsModal.saving',
+    id: 'warmachinehintsModal.saving',
     defaultMessage: 'Saving...',
   },
   save: {
-    id: 'goosehintsModal.save',
+    id: 'warmachinehintsModal.save',
     defaultMessage: 'Save',
   },
   failedToAccess: {
-    id: 'goosehintsModal.failedToAccess',
+    id: 'warmachinehintsModal.failedToAccess',
     defaultMessage: 'Failed to access .warmachinehints file',
   },
   failedToSave: {
-    id: 'goosehintsModal.failedToSave',
+    id: 'warmachinehintsModal.failedToSave',
     defaultMessage: 'Failed to save .warmachinehints file',
   },
   developer: {
-    id: 'goosehintsModal.developer',
+    id: 'warmachinehintsModal.developer',
     defaultMessage: 'Developer',
   },
 });
@@ -105,7 +105,7 @@ const HelpText = () => {
               className="text-blue-500 hover:text-blue-600 p-0 h-auto"
               onClick={() =>
                 window.open(
-                  'https://goose-docs.ai/docs/guides/using-goosehints/',
+                  'https://goose-docs.ai/docs/guides/using-warmachinehints/',
                   '_blank'
                 )
               }
@@ -148,56 +148,56 @@ const FileInfo = ({ filePath, found }: { filePath: string; found: boolean }) => 
   );
 };
 
-interface GoosehintsModalProps {
+interface WarmachinehintsModalProps {
   directory: string;
-  setIsGoosehintsModalOpen: (isOpen: boolean) => void;
+  setIsWarmachinehintsModalOpen: (isOpen: boolean) => void;
 }
 
-export const GoosehintsModal = ({ directory, setIsGoosehintsModalOpen }: GoosehintsModalProps) => {
+export const WarmachinehintsModal = ({ directory, setIsWarmachinehintsModalOpen }: WarmachinehintsModalProps) => {
   const intl = useIntl();
-  const goosehintsFilePath = `${directory}/.warmachinehints`;
-  const [goosehintsFile, setGoosehintsFile] = useState<string>('');
-  const [goosehintsFileFound, setGoosehintsFileFound] = useState<boolean>(false);
-  const [goosehintsFileReadError, setGoosehintsFileReadError] = useState<string>('');
+  const warmachinehintsFilePath = `${directory}/.warmachinehints`;
+  const [warmachinehintsFile, setWarmachinehintsFile] = useState<string>('');
+  const [warmachinehintsFileFound, setWarmachinehintsFileFound] = useState<boolean>(false);
+  const [warmachinehintsFileReadError, setWarmachinehintsFileReadError] = useState<string>('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   useEffect(() => {
-    const fetchGoosehintsFile = async () => {
+    const fetchWarmachinehintsFile = async () => {
       try {
-        const { file, error, found } = await window.electron.readGoosehints();
-        setGoosehintsFile(file);
-        setGoosehintsFileFound(found);
-        setGoosehintsFileReadError(error ?? '');
+        const { file, error, found } = await window.electron.readWarmachinehints();
+        setWarmachinehintsFile(file);
+        setWarmachinehintsFileFound(found);
+        setWarmachinehintsFileReadError(error ?? '');
       } catch (error) {
         console.error('Error fetching .warmachinehints file:', error);
-        setGoosehintsFileReadError(intl.formatMessage(i18n.failedToAccess));
+        setWarmachinehintsFileReadError(intl.formatMessage(i18n.failedToAccess));
       }
     };
-    if (directory) fetchGoosehintsFile();
+    if (directory) fetchWarmachinehintsFile();
   }, [directory, intl]);
 
   const writeFile = async () => {
     setIsSaving(true);
     setSaveSuccess(false);
     try {
-      const saved = await window.electron.writeGoosehints(goosehintsFile);
+      const saved = await window.electron.writeWarmachinehints(warmachinehintsFile);
       if (!saved) {
         throw new Error('Unable to save .warmachinehints');
       }
       setSaveSuccess(true);
-      setGoosehintsFileFound(true);
+      setWarmachinehintsFileFound(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
       console.error('Error writing .warmachinehints file:', error);
-      setGoosehintsFileReadError(intl.formatMessage(i18n.failedToSave));
+      setWarmachinehintsFileReadError(intl.formatMessage(i18n.failedToSave));
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <Dialog open={true} onOpenChange={(open) => setIsGoosehintsModalOpen(open)}>
+    <Dialog open={true} onOpenChange={(open) => setIsWarmachinehintsModalOpen(open)}>
       <DialogContent className="w-[80vw] max-w-[80vw] sm:max-w-[80vw] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>{intl.formatMessage(i18n.dialogTitle)}</DialogTitle>
@@ -208,15 +208,15 @@ export const GoosehintsModal = ({ directory, setIsGoosehintsModalOpen }: Goosehi
           <HelpText />
 
           <div>
-            {goosehintsFileReadError ? (
-              <ErrorDisplay error={new Error(goosehintsFileReadError)} />
+            {warmachinehintsFileReadError ? (
+              <ErrorDisplay error={new Error(warmachinehintsFileReadError)} />
             ) : (
               <div className="space-y-2">
-                <FileInfo filePath={goosehintsFilePath} found={goosehintsFileFound} />
+                <FileInfo filePath={warmachinehintsFilePath} found={warmachinehintsFileFound} />
                 <textarea
-                  value={goosehintsFile}
+                  value={warmachinehintsFile}
                   className="w-full h-80 border rounded-md p-2 text-sm resize-none bg-background-primary text-text-primary border-border-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  onChange={(event) => setGoosehintsFile(event.target.value)}
+                  onChange={(event) => setWarmachinehintsFile(event.target.value)}
                   placeholder={intl.formatMessage(i18n.placeholder)}
                 />
               </div>
@@ -231,7 +231,7 @@ export const GoosehintsModal = ({ directory, setIsGoosehintsModalOpen }: Goosehi
               {intl.formatMessage(i18n.savedSuccessfully)}
             </span>
           )}
-          <Button variant="outline" onClick={() => setIsGoosehintsModalOpen(false)}>
+          <Button variant="outline" onClick={() => setIsWarmachinehintsModalOpen(false)}>
             {intl.formatMessage(i18n.close)}
           </Button>
           <Button onClick={writeFile} disabled={isSaving}>

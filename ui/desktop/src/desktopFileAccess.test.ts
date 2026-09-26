@@ -34,7 +34,7 @@ describe('DesktopFileAccess', () => {
     await access.bindWindow(7, workingDirectory);
     const canonicalWorkingDirectory = fs.realpathSync(workingDirectory);
 
-    await expect(access.readGoosehints(7)).resolves.toEqual({
+    await expect(access.readWarmachinehints(7)).resolves.toEqual({
       file: 'project guidance',
       filePath: path.join(canonicalWorkingDirectory, '.warmachinehints'),
       error: null,
@@ -48,7 +48,7 @@ describe('DesktopFileAccess', () => {
     await access.bindWindow(7, workingDirectory);
     const canonicalWorkingDirectory = fs.realpathSync(workingDirectory);
 
-    await expect(access.readGoosehints(7)).resolves.toEqual({
+    await expect(access.readWarmachinehints(7)).resolves.toEqual({
       file: '',
       filePath: path.join(canonicalWorkingDirectory, '.warmachinehints'),
       error: null,
@@ -62,10 +62,10 @@ describe('DesktopFileAccess', () => {
     await access.bindWindow(7, workingDirectory);
     const filePath = path.join(fs.realpathSync(workingDirectory), '.warmachinehints');
 
-    await expect(access.writeGoosehints(7, 'first guidance')).resolves.toBe(true);
+    await expect(access.writeWarmachinehints(7, 'first guidance')).resolves.toBe(true);
     expect(fs.readFileSync(filePath, 'utf8')).toBe('first guidance');
 
-    await expect(access.writeGoosehints(7, 'updated guidance')).resolves.toBe(true);
+    await expect(access.writeWarmachinehints(7, 'updated guidance')).resolves.toBe(true);
     expect(fs.readFileSync(filePath, 'utf8')).toBe('updated guidance');
   });
 
@@ -86,8 +86,8 @@ describe('DesktopFileAccess', () => {
       fs.renameSync(workingDirectory, originalDirectory);
       fs.symlinkSync(replacementDirectory, workingDirectory);
 
-      const result = await access.readGoosehints(7);
-      await expect(access.writeGoosehints(7, 'new guidance')).resolves.toBe(false);
+      const result = await access.readWarmachinehints(7);
+      await expect(access.writeWarmachinehints(7, 'new guidance')).resolves.toBe(false);
       expect(result.found).toBe(false);
       expect(result.error).toContain('working directory changed');
       expect(fs.readFileSync(path.join(originalDirectory, '.warmachinehints'), 'utf8')).toBe(
@@ -112,8 +112,8 @@ describe('DesktopFileAccess', () => {
     fs.mkdirSync(workingDirectory);
     fs.writeFileSync(path.join(workingDirectory, '.warmachinehints'), 'replacement guidance');
 
-    const result = await access.readGoosehints(7);
-    await expect(access.writeGoosehints(7, 'new guidance')).resolves.toBe(false);
+    const result = await access.readWarmachinehints(7);
+    await expect(access.writeWarmachinehints(7, 'new guidance')).resolves.toBe(false);
     expect(result.found).toBe(false);
     expect(result.error).toContain('working directory changed');
     expect(fs.readFileSync(path.join(originalDirectory, '.warmachinehints'), 'utf8')).toBe(
@@ -135,8 +135,8 @@ describe('DesktopFileAccess', () => {
 
     fs.renameSync(workingDirectory, renamedDirectory);
 
-    const result = await access.readGoosehints(7);
-    await expect(access.writeGoosehints(7, 'new guidance')).resolves.toBe(false);
+    const result = await access.readWarmachinehints(7);
+    await expect(access.writeWarmachinehints(7, 'new guidance')).resolves.toBe(false);
     expect(result.found).toBe(false);
     expect(result.error).toContain('working directory changed');
     expect(fs.readFileSync(path.join(renamedDirectory, '.warmachinehints'), 'utf8')).toBe(
@@ -166,7 +166,7 @@ describe('DesktopFileAccess', () => {
         return open(...args);
       });
 
-      await expect(access.writeGoosehints(7, 'new guidance')).resolves.toBe(false);
+      await expect(access.writeWarmachinehints(7, 'new guidance')).resolves.toBe(false);
       expect(fs.readFileSync(path.join(renamedDirectory, '.warmachinehints'), 'utf8')).toBe(
         'original guidance'
       );
@@ -195,7 +195,7 @@ describe('DesktopFileAccess', () => {
         return open(...args);
       });
 
-      const result = await access.readGoosehints(7);
+      const result = await access.readWarmachinehints(7);
 
       expect(result.found).toBe(false);
       expect(result.file).toBe('');
@@ -224,7 +224,7 @@ describe('DesktopFileAccess', () => {
     });
     const open = vi.spyOn(fsPromises, 'open');
 
-    await expect(access.writeGoosehints(7, 'new guidance')).resolves.toBe(false);
+    await expect(access.writeWarmachinehints(7, 'new guidance')).resolves.toBe(false);
     expect(open).not.toHaveBeenCalled();
     expect(fs.existsSync(path.join(workingDirectory, '.warmachinehints'))).toBe(false);
   });
@@ -232,8 +232,8 @@ describe('DesktopFileAccess', () => {
   it('rejects a renderer without a bound working directory', async () => {
     const access = new DesktopFileAccess();
 
-    await expect(access.readGoosehints(99)).rejects.toThrow('not authorized');
-    await expect(access.writeGoosehints(99, 'project guidance')).rejects.toThrow('not authorized');
+    await expect(access.readWarmachinehints(99)).rejects.toThrow('not authorized');
+    await expect(access.writeWarmachinehints(99, 'project guidance')).rejects.toThrow('not authorized');
   });
 
   it.skipIf(process.platform === 'win32')(
@@ -248,8 +248,8 @@ describe('DesktopFileAccess', () => {
       const access = new DesktopFileAccess();
       await access.bindWindow(7, workingDirectory);
 
-      const result = await access.readGoosehints(7);
-      const saved = await access.writeGoosehints(7, 'replacement');
+      const result = await access.readWarmachinehints(7);
+      const saved = await access.writeWarmachinehints(7, 'replacement');
 
       expect(result.found).toBe(false);
       expect(result.file).toBe('');
@@ -273,7 +273,7 @@ describe('DesktopFileAccess', () => {
       return open(...args);
     });
 
-    await expect(access.writeGoosehints(7, 'new guidance')).resolves.toBe(false);
+    await expect(access.writeWarmachinehints(7, 'new guidance')).resolves.toBe(false);
     expect(fs.readFileSync(filePath, 'utf8')).toBe('replacement guidance');
     expect(fs.readFileSync(originalPath, 'utf8')).toBe('original guidance');
   });
@@ -297,13 +297,13 @@ describe('DesktopFileAccess', () => {
       fs.unlinkSync(workingDirectory);
       fs.symlinkSync(secondProject, workingDirectory);
 
-      await expect(access.readGoosehints(7)).resolves.toEqual({
+      await expect(access.readWarmachinehints(7)).resolves.toEqual({
         file: 'first guidance',
         filePath: path.join(canonicalFirstProject, '.warmachinehints'),
         error: null,
         found: true,
       });
-      await expect(access.writeGoosehints(7, 'updated first guidance')).resolves.toBe(true);
+      await expect(access.writeWarmachinehints(7, 'updated first guidance')).resolves.toBe(true);
       expect(fs.readFileSync(path.join(firstProject, '.warmachinehints'), 'utf8')).toBe(
         'updated first guidance'
       );
@@ -321,7 +321,7 @@ describe('DesktopFileAccess', () => {
       const access = new DesktopFileAccess();
       await access.bindWindow(7, workingDirectory);
 
-      await expect(access.writeGoosehints(7, 'project guidance')).resolves.toBe(false);
+      await expect(access.writeWarmachinehints(7, 'project guidance')).resolves.toBe(false);
     }
   );
 });

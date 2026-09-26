@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { buildLocalServeUrls, findGooseBinaryPath, startGooseServe } from './gooseServe';
+import { buildLocalServeUrls, findGooseBinaryPath, startWarMachineServe } from './warmachineServe';
 
 const binaryName = process.platform === 'win32' ? 'warmachine.exe' : 'warmachine';
 const tempDirs: string[] = [];
@@ -117,7 +117,7 @@ describe('buildLocalServeUrls', () => {
   });
 });
 
-describe('startGooseServe', () => {
+describe('startWarMachineServe', () => {
   afterEach(() => {
     vi.unstubAllEnvs();
     process.chdir(originalCwd);
@@ -144,7 +144,7 @@ describe('startGooseServe', () => {
       return new Response(null, { status: 200 });
     });
 
-    const result = await startGooseServe({
+    const result = await startWarMachineServe({
       serverSecret: 'test-secret',
       dir: tempDir,
       readinessFetch,
@@ -188,7 +188,7 @@ describe('startGooseServe', () => {
       return new Response(null, { status: 200 });
     });
 
-    const result = await startGooseServe({
+    const result = await startWarMachineServe({
       serverSecret: 'test-secret',
       dir: tempDir,
       logger,
@@ -227,7 +227,7 @@ describe('startGooseServe', () => {
       return new Response(null, { status: 200 });
     });
 
-    const result = await startGooseServe({
+    const result = await startWarMachineServe({
       serverSecret: 'test-secret',
       dir: tempDir,
       tls: true,
@@ -266,7 +266,7 @@ describe('startGooseServe', () => {
 
     const readinessFetch = vi.fn(async () => new Response(null, { status: 200 }));
 
-    const result = await startGooseServe({
+    const result = await startWarMachineServe({
       serverSecret: 'test-secret',
       dir: tempDir,
       tls: true,

@@ -10,7 +10,7 @@ export const getInitialWorkingDir = (): string => {
  * the user switches to an external backend (or changes the configured remote
  * directory) afterwards. The configured remote directory is only applied when
  * the window is actually bound to an external backend (fixed at window creation
- * via the gooseServeLeases) and that backend still matches the current
+ * via the warmachineServeLeases) and that backend still matches the current
  * settings; otherwise the remote path would be sent to the local (or a
  * different remote) server, where it fails the cwd existence validation.
  * Editing the remote working directory in settings still takes effect for new

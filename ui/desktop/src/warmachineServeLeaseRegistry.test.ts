@@ -1,10 +1,10 @@
 import { EventEmitter } from 'node:events';
 import { describe, expect, it, vi } from 'vitest';
-import type { GooseServeResult, Logger } from './gooseServe';
+import type { WarMachineServeResult, Logger } from './warmachineServe';
 import {
   WARMACHINE_SERVE_EXITED_USER_MESSAGE,
-  GooseServeLeaseRegistry,
-} from './gooseServeLeaseRegistry';
+  WarMachineServeLeaseRegistry,
+} from './warmachineServeLeaseRegistry';
 
 function createLogger(): Logger {
   return {
@@ -13,13 +13,13 @@ function createLogger(): Logger {
   };
 }
 
-function createGooseServeResult(
-  overrides: Partial<Pick<GooseServeResult, 'cleanup' | 'hasExited' | 'getExitDetails'>> = {}
-): GooseServeResult {
+function createWarMachineServeResult(
+  overrides: Partial<Pick<WarMachineServeResult, 'cleanup' | 'hasExited' | 'getExitDetails'>> = {}
+): WarMachineServeResult {
   return {
     acpUrl: 'ws://127.0.0.1:1234/acp?token=test',
     workingDir: '/tmp',
-    process: new EventEmitter() as GooseServeResult['process'],
+    process: new EventEmitter() as WarMachineServeResult['process'],
     errorLog: [],
     certFingerprint: null,
     cleanup: vi.fn(async () => undefined),
@@ -32,10 +32,10 @@ function createGooseServeResult(
   };
 }
 
-describe('GooseServeLeaseRegistry', () => {
+describe('WarMachineServeLeaseRegistry', () => {
   it('returns the ACP URL for an attached live lease', () => {
-    const store = new GooseServeLeaseRegistry(createLogger());
-    const lease = store.create(createGooseServeResult(), 'local-secret');
+    const store = new WarMachineServeLeaseRegistry(createLogger());
+    const lease = store.create(createWarMachineServeResult(), 'local-secret');
 
     store.attachWindow(1, lease);
 
@@ -45,8 +45,8 @@ describe('GooseServeLeaseRegistry', () => {
 
   it('throws a recovery message after the process exits', () => {
     const logger = createLogger();
-    const store = new GooseServeLeaseRegistry(logger);
-    const result = createGooseServeResult();
+    const store = new WarMachineServeLeaseRegistry(logger);
+    const result = createWarMachineServeResult();
     const lease = store.create(result, 'local-secret');
     store.attachWindow(1, lease);
 
@@ -61,9 +61,9 @@ describe('GooseServeLeaseRegistry', () => {
   });
 
   it('uses the current child exit state when creating the lease', () => {
-    const store = new GooseServeLeaseRegistry(createLogger());
+    const store = new WarMachineServeLeaseRegistry(createLogger());
     const lease = store.create(
-      createGooseServeResult({
+      createWarMachineServeResult({
         hasExited: () => true,
         getExitDetails: () => ({ code: null, signal: 'SIGTERM' }),
       }),
@@ -77,8 +77,8 @@ describe('GooseServeLeaseRegistry', () => {
 
   it('cleans up once after the last attached window is released', async () => {
     const cleanup = vi.fn(async () => undefined);
-    const store = new GooseServeLeaseRegistry(createLogger());
-    const lease = store.create(createGooseServeResult({ cleanup }), 'local-secret');
+    const store = new WarMachineServeLeaseRegistry(createLogger());
+    const lease = store.create(createWarMachineServeResult({ cleanup }), 'local-secret');
     store.attachWindow(1, lease);
     store.attachWindow(2, lease);
 
@@ -94,7 +94,7 @@ describe('GooseServeLeaseRegistry', () => {
   });
 
   it('creates an external ACP lease without process cleanup', async () => {
-    const store = new GooseServeLeaseRegistry(createLogger());
+    const store = new WarMachineServeLeaseRegistry(createLogger());
     const lease = store.createExternal('wss://example.com/warmachine/acp?token=test', 'external-secret');
 
     store.attachWindow(1, lease);
@@ -109,7 +109,7 @@ describe('GooseServeLeaseRegistry', () => {
 
   it('cleans up external leases after the last attached window is released', async () => {
     const cleanup = vi.fn(async () => undefined);
-    const store = new GooseServeLeaseRegistry(createLogger());
+    const store = new WarMachineServeLeaseRegistry(createLogger());
     const lease = store.createExternal(
       'wss://example.com/warmachine/acp?token=test',
       'external-secret',

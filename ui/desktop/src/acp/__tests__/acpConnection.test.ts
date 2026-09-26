@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { WARMACHINE_SERVE_EXITED_USER_MESSAGE } from '../../gooseServeLeaseRegistry';
+import { WARMACHINE_SERVE_EXITED_USER_MESSAGE } from '../../warmachineServeLeaseRegistry';
 
 const mockClientFactory = vi.hoisted(() => {
   const initialize = vi.fn();
@@ -13,7 +13,7 @@ const mockClientFactory = vi.hoisted(() => {
     warmachine: Record<string, never>;
   };
   const instances: Array<{ client: MockClient; resolveClosed: () => void }> = [];
-  const connectGooseAcpClient = vi.fn((_stream: MockStream): MockClient => {
+  const connectWarMachineAcpClient = vi.fn((_stream: MockStream): MockClient => {
     let resolveClosed: () => void = () => undefined;
     const closed = new Promise<void>((resolve) => {
       resolveClosed = resolve;
@@ -30,7 +30,7 @@ const mockClientFactory = vi.hoisted(() => {
     return client;
   });
 
-  return { connectGooseAcpClient, initialize, instances };
+  return { connectWarMachineAcpClient, initialize, instances };
 });
 
 const transport = vi.hoisted(() => ({
@@ -41,8 +41,8 @@ vi.mock('@aaif/goose-acp-client', () => ({
   DEFAULT_WARMACHINE_MCP_HOST_CAPABILITIES: {},
 }));
 
-vi.mock('../gooseAcpClient', () => ({
-  connectGooseAcpClient: mockClientFactory.connectGooseAcpClient,
+vi.mock('../warmachineAcpClient', () => ({
+  connectWarMachineAcpClient: mockClientFactory.connectWarMachineAcpClient,
 }));
 
 vi.mock('@agentclientprotocol/sdk/experimental/ws-client', () => ({

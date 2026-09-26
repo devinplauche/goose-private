@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createGooseServeStartupDiagnostics } from './startupDiagnostics';
+import { createWarMachineServeStartupDiagnostics } from './startupDiagnostics';
 
 const tempDirs: string[] = [];
 
@@ -24,7 +24,7 @@ describe('startup diagnostics', () => {
 
   it('writes serve startup diagnostics with serve-specific fields', () => {
     const diagnosticsDir = makeTempDir();
-    const trace = createGooseServeStartupDiagnostics(diagnosticsDir, '/tmp/project');
+    const trace = createWarMachineServeStartupDiagnostics(diagnosticsDir, '/tmp/project');
 
     expect(trace).not.toBeNull();
     trace!.diagnostics.binaryPath = '/bin/warmachine';

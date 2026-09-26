@@ -29,9 +29,9 @@ import 'dotenv/config';
 import { connectRemoteBackend } from './remoteBackends';
 import { installBackendCertificateVerifiers } from './backendCertificateVerifier';
 import { configureProxy } from './proxy';
-import { startGooseServe } from './gooseServe';
+import { startWarMachineServe } from './warmachineServe';
 import { getLoginShellPath } from './loginShellPath';
-import { GooseServeLeaseRegistry, type GooseServeLease } from './gooseServeLeaseRegistry';
+import { WarMachineServeLeaseRegistry, type WarMachineServeLease } from './warmachineServeLeaseRegistry';
 import { normalizeAcpHttpBaseUrl } from './acp/url';
 import { expandTilde, sanitizeGoosePathRoot } from './utils/pathUtils';
 import log from './utils/logger';
@@ -973,7 +973,7 @@ let appConfig = {
   WARMACHINE_PATH_ROOT: sanitizeGoosePathRoot(process.env),
   WARMACHINE_WORKING_DIR: '',
   // Whether the window is bound to an external backend (fixed at window
-  // creation via gooseServeLeases) and which URL it is bound to.
+  // creation via warmachineServeLeases) and which URL it is bound to.
   WARMACHINE_EXTERNAL_BACKEND: false,
   WARMACHINE_EXTERNAL_BACKEND_URL: '',
   WARMACHINE_EXTERNAL_BACKEND_SOURCE: '',
@@ -1013,7 +1013,7 @@ function getRegularWindows(): BrowserWindow[] {
   return [...windowMap.values()].filter((w) => !w.isDestroyed());
 }
 
-const gooseServeLeases = new GooseServeLeaseRegistry(log);
+const warmachineServeLeases = new WarMachineServeLeaseRegistry(log);
 
 const windowPowerSaveBlockers = new Map<number, number>(); // windowId -> blockerId
 // Track pending initial messages per window
@@ -1101,7 +1101,7 @@ const createChat = async (
 
   const serverSecret = externalBackend ? externalBackend.secret : GENERATED_SECRET;
   let workingDir = resolveWorkingDir(externalBackend?.workingDir, dir, os.homedir());
-  let gooseServeLease: GooseServeLease | null = null;
+  let warmachineServeLease: WarMachineServeLease | null = null;
 
   if (externalBackend) {
     let externalCertificateTrust: BackendCertificateTrustRegistration | null = null;
@@ -1158,7 +1158,7 @@ const createChat = async (
       const originLease = leaseBackendOrigin(resolvedAcpUrl);
       const leaseCertificateTrust = externalCertificateTrust;
       externalCertificateTrust = null;
-      gooseServeLease = gooseServeLeases.createExternal(resolvedAcpUrl, serverSecret, async () => {
+      warmachineServeLease = warmachineServeLeases.createExternal(resolvedAcpUrl, serverSecret, async () => {
         originLease.release();
         leaseCertificateTrust?.release();
       });
@@ -1195,9 +1195,9 @@ const createChat = async (
 
     const loginShellPath = await getLoginShellPath(log);
 
-    let gooseServeResult: Awaited<ReturnType<typeof startGooseServe>>;
+    let warmachineServeResult: Awaited<ReturnType<typeof startWarMachineServe>>;
     try {
-      gooseServeResult = await startGooseServe({
+      warmachineServeResult = await startWarMachineServe({
         serverSecret,
         dir: workingDir,
         tls: true,
@@ -1211,19 +1211,19 @@ const createChat = async (
         diagnosticsDir: STARTUP_LOGS_DIR,
         readinessFetch: net.fetch as unknown as typeof globalThis.fetch,
       });
-      if (!gooseServeResult.certFingerprint) {
-        await gooseServeResult.cleanup();
+      if (!warmachineServeResult.certFingerprint) {
+        await warmachineServeResult.cleanup();
         throw new Error(
           'warmachine serve started with TLS but did not return a certificate fingerprint'
         );
       }
 
-      const localCertFingerprint = normalizeFingerprint(gooseServeResult.certFingerprint);
+      const localCertFingerprint = normalizeFingerprint(warmachineServeResult.certFingerprint);
       if (
         localCertificateTrust.trust.fingerprint &&
         localCertificateTrust.trust.fingerprint !== localCertFingerprint
       ) {
-        await gooseServeResult.cleanup();
+        await warmachineServeResult.cleanup();
         throw new Error('warmachine serve TLS certificate fingerprint did not match readiness probe');
       }
       localCertificateTrust.trust.fingerprint = localCertFingerprint;
@@ -1245,26 +1245,26 @@ const createChat = async (
       return;
     }
 
-    workingDir = gooseServeResult.workingDir;
-    const cleanupGooseServe = gooseServeResult.cleanup;
-    gooseServeResult.cleanup = async () => {
+    workingDir = warmachineServeResult.workingDir;
+    const cleanupWarMachineServe = warmachineServeResult.cleanup;
+    warmachineServeResult.cleanup = async () => {
       try {
-        await cleanupGooseServe();
+        await cleanupWarMachineServe();
       } finally {
         localCertificateTrust.release();
       }
     };
-    gooseServeLease = gooseServeLeases.create(gooseServeResult, serverSecret);
+    warmachineServeLease = warmachineServeLeases.create(warmachineServeResult, serverSecret);
   }
 
-  const cleanupUnregisteredGooseServeLease = async () => {
-    if (!gooseServeLease) {
+  const cleanupUnregisteredWarMachineServeLease = async () => {
+    if (!warmachineServeLease) {
       return;
     }
 
-    const lease = gooseServeLease;
-    gooseServeLease = null;
-    await gooseServeLeases.cleanupLease(lease);
+    const lease = warmachineServeLease;
+    warmachineServeLease = null;
+    await warmachineServeLeases.cleanupLease(lease);
   };
 
   let mainWindowState: ReturnType<typeof windowStateKeeper>;
@@ -1323,17 +1323,17 @@ const createChat = async (
       },
     });
   } catch (error) {
-    await cleanupUnregisteredGooseServeLease();
+    await cleanupUnregisteredWarMachineServeLease();
     throw error;
   }
 
-  if (gooseServeLease) {
-    const lease = gooseServeLease;
+  if (warmachineServeLease) {
+    const lease = warmachineServeLease;
     mainWindow.once('closed', () => {
-      void gooseServeLeases.releaseWindow(mainWindow.id);
+      void warmachineServeLeases.releaseWindow(mainWindow.id);
     });
-    gooseServeLeases.attachWindow(mainWindow.id, lease);
-    gooseServeLease = null;
+    warmachineServeLeases.attachWindow(mainWindow.id, lease);
+    warmachineServeLease = null;
   }
 
   if (!app.isPackaged) {
@@ -2015,7 +2015,7 @@ ipcMain.handle('get-secret-key', (event) => {
   if (!windowId) {
     return null;
   }
-  return gooseServeLeases.getSecretKey(windowId) ?? null;
+  return warmachineServeLeases.getSecretKey(windowId) ?? null;
 });
 
 ipcMain.handle('get-acp-url', async (event) => {
@@ -2023,7 +2023,7 @@ ipcMain.handle('get-acp-url', async (event) => {
   if (!windowId) {
     return null;
   }
-  return gooseServeLeases.getAcpUrl(windowId) ?? null;
+  return warmachineServeLeases.getAcpUrl(windowId) ?? null;
 });
 
 // Handle menu bar icon visibility
@@ -2264,12 +2264,12 @@ ipcMain.handle('select-recipe-file', async (event) => {
 
 ipcMain.handle('read-goosehints', async (event) => {
   const senderWindow = requireRegularRendererWindow(event);
-  return desktopFileAccess.readGoosehints(senderWindow.id);
+  return desktopFileAccess.readWarmachinehints(senderWindow.id);
 });
 
 ipcMain.handle('write-goosehints', async (event, content) => {
   const senderWindow = requireRegularRendererWindow(event);
-  return desktopFileAccess.writeGoosehints(senderWindow.id, content);
+  return desktopFileAccess.writeWarmachinehints(senderWindow.id, content);
 });
 
 // Native picker tailored for session imports: shows hidden files (so users can
@@ -3027,8 +3027,8 @@ async function appMain() {
       }
 
       const launchingWindowId = launchingWindow.id;
-      const launchingGooseServeLease = gooseServeLeases.get(launchingWindowId);
-      if (!launchingGooseServeLease) {
+      const launchingWarMachineServeLease = warmachineServeLeases.get(launchingWindowId);
+      if (!launchingWarMachineServeLease) {
         throw new Error('No backend lease found for launching window');
       }
 
@@ -3066,12 +3066,12 @@ async function appMain() {
         },
       });
 
-      gooseServeLeases.attachWindow(appWindow.id, launchingGooseServeLease);
+      warmachineServeLeases.attachWindow(appWindow.id, launchingWarMachineServeLease);
 
       appWindows.set(gooseApp.name, appWindow);
 
       appWindow.on('closed', () => {
-        void gooseServeLeases.releaseWindow(appWindow.id);
+        void warmachineServeLeases.releaseWindow(appWindow.id);
         appWindows.delete(gooseApp.name);
       });
 
@@ -3173,10 +3173,10 @@ async function getAllowList(): Promise<string[]> {
 }
 
 app.on('will-quit', async () => {
-  const gooseServeLeaseCount = gooseServeLeases.activeLeaseCount();
-  if (gooseServeLeaseCount > 0) {
-    log.info(`App quitting, cleaning up ${gooseServeLeaseCount} backend lease(s)`);
-    await gooseServeLeases.cleanupAll();
+  const warmachineServeLeaseCount = warmachineServeLeases.activeLeaseCount();
+  if (warmachineServeLeaseCount > 0) {
+    log.info(`App quitting, cleaning up ${warmachineServeLeaseCount} backend lease(s)`);
+    await warmachineServeLeases.cleanupAll();
   }
 
   for (const [windowId, blockerId] of windowPowerSaveBlockers.entries()) {

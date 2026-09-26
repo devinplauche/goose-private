@@ -1,9 +1,9 @@
-import type { GooseServeExitSignal, GooseServeResult, Logger } from './gooseServe';
+import type { WarMachineServeExitSignal, WarMachineServeResult, Logger } from './warmachineServe';
 
 export const WARMACHINE_SERVE_EXITED_USER_MESSAGE =
   "This window's WarMachine backend stopped. Close this window and open a new chat to start a new backend. If this keeps happening, restart WarMachine Desktop.";
 
-export interface GooseServeLease {
+export interface WarMachineServeLease {
   acpUrl: string;
   secretKey: string;
   cleanup: () => Promise<void>;
@@ -11,16 +11,16 @@ export interface GooseServeLease {
   cleanedUp: boolean;
   exited: boolean;
   exitCode: number | null;
-  exitSignal: GooseServeExitSignal;
+  exitSignal: WarMachineServeExitSignal;
 }
 
-export class GooseServeLeaseRegistry {
-  private leasesByWindowId = new Map<number, GooseServeLease>();
+export class WarMachineServeLeaseRegistry {
+  private leasesByWindowId = new Map<number, WarMachineServeLease>();
 
   constructor(private readonly logger: Logger) {}
 
-  create(result: GooseServeResult, secretKey: string): GooseServeLease {
-    const lease: GooseServeLease = {
+  create(result: WarMachineServeResult, secretKey: string): WarMachineServeLease {
+    const lease: WarMachineServeLease = {
       acpUrl: result.acpUrl,
       secretKey,
       cleanup: result.cleanup,
@@ -37,7 +37,7 @@ export class GooseServeLeaseRegistry {
       logUnexpected,
     }: {
       code?: number | null;
-      signal?: GooseServeExitSignal;
+      signal?: WarMachineServeExitSignal;
       logUnexpected: boolean;
     }) => {
       const firstExit = !lease.exited;
@@ -74,7 +74,7 @@ export class GooseServeLeaseRegistry {
     acpUrl: string,
     secretKey: string,
     cleanup: () => Promise<void> = async () => undefined
-  ): GooseServeLease {
+  ): WarMachineServeLease {
     return {
       acpUrl,
       secretKey,
@@ -87,7 +87,7 @@ export class GooseServeLeaseRegistry {
     };
   }
 
-  get(windowId: number): GooseServeLease | null {
+  get(windowId: number): WarMachineServeLease | null {
     return this.leasesByWindowId.get(windowId) ?? null;
   }
 
@@ -113,7 +113,7 @@ export class GooseServeLeaseRegistry {
     return lease.secretKey;
   }
 
-  attachWindow(windowId: number, lease: GooseServeLease) {
+  attachWindow(windowId: number, lease: WarMachineServeLease) {
     lease.windowIds.add(windowId);
     this.leasesByWindowId.set(windowId, lease);
   }
@@ -132,7 +132,7 @@ export class GooseServeLeaseRegistry {
     }
   }
 
-  async cleanupLease(lease: GooseServeLease) {
+  async cleanupLease(lease: WarMachineServeLease) {
     if (lease.cleanedUp) {
       return;
     }
@@ -158,7 +158,7 @@ export class GooseServeLeaseRegistry {
     await Promise.all(this.uniqueLeases().map((lease) => this.cleanupLease(lease)));
   }
 
-  private uniqueLeases(): GooseServeLease[] {
+  private uniqueLeases(): WarMachineServeLease[] {
     return [...new Set(this.leasesByWindowId.values())];
   }
 }

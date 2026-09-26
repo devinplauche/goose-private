@@ -132,8 +132,8 @@ vi.mock('react-toastify', () => ({
   },
 }));
 
-vi.mock('./components/GoosehintsModal', () => ({
-  GoosehintsModal: () => null,
+vi.mock('./components/WarmachinehintsModal', () => ({
+  WarmachinehintsModal: () => null,
 }));
 
 vi.mock('./components/AnnouncementModal', () => ({

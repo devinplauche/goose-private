@@ -119,7 +119,7 @@ export class DesktopFileAccess {
     this.workingDirectories.delete(windowId);
   }
 
-  async readGoosehints(windowId: number): Promise<FileReadResult> {
+  async readWarmachinehints(windowId: number): Promise<FileReadResult> {
     const binding = this.bindingForWindow(windowId);
     const filePath = path.join(binding.path, '.warmachinehints');
     if (binding.status === 'missing') {
@@ -176,7 +176,7 @@ export class DesktopFileAccess {
     }
   }
 
-  async writeGoosehints(windowId: number, content: string): Promise<boolean> {
+  async writeWarmachinehints(windowId: number, content: string): Promise<boolean> {
     const binding = this.bindingForWindow(windowId);
     if (binding.status !== 'ready' || typeof content !== 'string') {
       return false;

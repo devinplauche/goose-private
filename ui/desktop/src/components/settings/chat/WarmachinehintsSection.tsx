@@ -1,26 +1,26 @@
 import { useState } from 'react';
 import { Button } from '../../ui/button';
 import { FolderKey } from 'lucide-react';
-import { GoosehintsModal } from './GoosehintsModal';
+import { WarmachinehintsModal } from './WarmachinehintsModal';
 import { defineMessages, useIntl } from '../../../i18n';
 
 const i18n = defineMessages({
   title: {
-    id: 'goosehintsSection.title',
+    id: 'warmachinehintsSection.title',
     defaultMessage: 'Project Hints (.warmachinehints)',
   },
   description: {
-    id: 'goosehintsSection.description',
+    id: 'warmachinehintsSection.description',
     defaultMessage:
       "Configure your project's .warmachinehints file to provide additional context to WarMachine",
   },
   configure: {
-    id: 'goosehintsSection.configure',
+    id: 'warmachinehintsSection.configure',
     defaultMessage: 'Configure',
   },
 });
 
-export const GoosehintsSection = () => {
+export const WarmachinehintsSection = () => {
   const intl = useIntl();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const directory = window.appConfig?.get('WARMACHINE_WORKING_DIR') as string;
@@ -45,7 +45,7 @@ export const GoosehintsSection = () => {
         </Button>
       </div>
       {isModalOpen && (
-        <GoosehintsModal directory={directory} setIsGoosehintsModalOpen={setIsModalOpen} />
+        <WarmachinehintsModal directory={directory} setIsWarmachinehintsModalOpen={setIsModalOpen} />
       )}
     </>
   );

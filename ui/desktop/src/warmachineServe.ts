@@ -5,8 +5,8 @@ import os from 'node:os';
 import path from 'node:path';
 import {
   appendTail as appendStartupTail,
-  createGooseServeStartupDiagnostics,
-  type GooseServeStartupDiagnostics,
+  createWarMachineServeStartupDiagnostics,
+  type WarMachineServeStartupDiagnostics,
 } from './startupDiagnostics';
 
 export interface Logger {
@@ -25,10 +25,10 @@ export interface FindGooseBinaryOptions {
 }
 
 type ReadinessFetchInit = Parameters<typeof globalThis.fetch>[1];
-export type GooseServeExitSignal = ChildProcess['signalCode'];
+export type WarMachineServeExitSignal = ChildProcess['signalCode'];
 type ReadinessFetch = (input: string, init?: ReadinessFetchInit) => Promise<Response>;
 
-export interface StartGooseServeOptions extends FindGooseBinaryOptions {
+export interface StartWarMachineServeOptions extends FindGooseBinaryOptions {
   dir?: string;
   serverSecret: string;
   tls?: boolean;
@@ -40,7 +40,7 @@ export interface StartGooseServeOptions extends FindGooseBinaryOptions {
   readinessFetch?: ReadinessFetch;
 }
 
-export interface GooseServeResult {
+export interface WarMachineServeResult {
   acpUrl: string;
   workingDir: string;
   process: ChildProcess;
@@ -48,9 +48,9 @@ export interface GooseServeResult {
   certFingerprint: string | null;
   cleanup: () => Promise<void>;
   hasExited: () => boolean;
-  getExitDetails: () => { code: number | null; signal: GooseServeExitSignal };
+  getExitDetails: () => { code: number | null; signal: WarMachineServeExitSignal };
   startupDiagnosticsPath: string | null;
-  getStartupDiagnostics: () => GooseServeStartupDiagnostics | null;
+  getStartupDiagnostics: () => WarMachineServeStartupDiagnostics | null;
   recordStartupEvent: (name: string, details?: Record<string, unknown>) => void;
 }
 
@@ -172,7 +172,7 @@ const waitForFingerprint = async (
   }
 };
 
-const waitForGooseServeReady = async (
+const waitForWarMachineServeReady = async (
   statusUrl: string,
   errorLog: string[],
   shouldStopWaiting: () => boolean,
@@ -287,7 +287,7 @@ const withStartupDiagnosticsPath = (
   return `${message} Startup diagnostics: ${startupDiagnosticsPath}`;
 };
 
-const buildGooseServeEnv = (
+const buildWarMachineServeEnv = (
   serverSecret: string,
   binaryPath: string,
   additionalEnv: Record<string, string | undefined>,
@@ -322,7 +322,7 @@ const buildGooseServeEnv = (
   return env;
 };
 
-export const startGooseServe = async ({
+export const startWarMachineServe = async ({
   dir,
   serverSecret,
   tls = false,
@@ -333,9 +333,9 @@ export const startGooseServe = async ({
   logger = defaultLogger,
   diagnosticsDir,
   readinessFetch = fetch,
-}: StartGooseServeOptions): Promise<GooseServeResult> => {
+}: StartWarMachineServeOptions): Promise<WarMachineServeResult> => {
   const workingDir = dir || process.cwd();
-  const startupTrace = createGooseServeStartupDiagnostics(diagnosticsDir, workingDir);
+  const startupTrace = createWarMachineServeStartupDiagnostics(diagnosticsDir, workingDir);
   const startupDiagnosticsPath = startupTrace?.diagnosticsPath ?? null;
   const secretKey = serverSecret.trim();
   if (!secretKey) {
@@ -391,7 +391,7 @@ export const startGooseServe = async ({
   }
 
   const spawnOptions = {
-    env: buildGooseServeEnv(secretKey, goosePath, additionalEnv, loginShellPath),
+    env: buildWarMachineServeEnv(secretKey, goosePath, additionalEnv, loginShellPath),
     cwd: workingDir,
     windowsHide: true,
     shell: false as const,
@@ -407,7 +407,7 @@ export const startGooseServe = async ({
   let exited = false;
   let spawnFailed = false;
   let exitCode: number | null = null;
-  let exitSignal: GooseServeExitSignal = null;
+  let exitSignal: WarMachineServeExitSignal = null;
   let certFingerprint: string | null = null;
   let stdoutBuffer = '';
   let stdoutCollectionStopped = false;
@@ -536,7 +536,7 @@ export const startGooseServe = async ({
     });
   };
 
-  const ready = await waitForGooseServeReady(statusUrl, errorLog, () => exited || spawnFailed, {
+  const ready = await waitForWarMachineServeReady(statusUrl, errorLog, () => exited || spawnFailed, {
     healthUrl,
     readinessFetch,
     onEvent: startupTrace?.record,

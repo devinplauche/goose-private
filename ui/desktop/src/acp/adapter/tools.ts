@@ -11,8 +11,8 @@ import {
   type AcpChatStateChange,
   type AdapterState,
   DEFAULT_VISIBLE_MESSAGE_METADATA,
-  type GooseMessageMeta,
-  getGooseMessageMeta,
+  type WarMachineMessageMeta,
+  getWarMachineMessageMeta,
   isRecord,
   messagesChange,
   rawInputToArguments,
@@ -24,7 +24,7 @@ import {
 export function applyToolCall(state: AdapterState, update: ToolCall): AcpChatStateChange[] {
   updateToolCallState(state, update);
 
-  const gooseMeta = getGooseMessageMeta(update);
+  const gooseMeta = getWarMachineMessageMeta(update);
   const message = getOrCreateAssistantMessageForUpdate(state, gooseMeta);
 
   if (
@@ -72,7 +72,7 @@ export function applyToolCallUpdate(
     return messagesChange(state);
   }
 
-  const gooseMeta = getGooseMessageMeta(update);
+  const gooseMeta = getWarMachineMessageMeta(update);
   const message = getOrCreateToolResponseMessageForUpdate(state, gooseMeta);
   const identity = toolIdentity(update);
   const metadata = toolResponseMetadata(toolCallState, identity);
@@ -114,7 +114,7 @@ function mergeToolCallState(
 
 function getOrCreateAssistantMessageForUpdate(
   state: AdapterState,
-  gooseMeta: GooseMessageMeta
+  gooseMeta: WarMachineMessageMeta
 ): Message {
   const existing = findMessageForChunk(state, 'assistant', gooseMeta.messageId, gooseMeta.created);
   if (existing) {
@@ -134,7 +134,7 @@ function getOrCreateAssistantMessageForUpdate(
 
 function getOrCreateToolResponseMessageForUpdate(
   state: AdapterState,
-  gooseMeta: GooseMessageMeta
+  gooseMeta: WarMachineMessageMeta
 ): Message {
   if (gooseMeta.messageId) {
     const existing = state.messages.find(

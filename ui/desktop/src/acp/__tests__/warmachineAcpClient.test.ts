@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { AnyMessage, Stream } from '@agentclientprotocol/sdk';
-import { connectGooseAcpClient, type GooseAcpCallbacks } from '../gooseAcpClient';
+import { connectWarMachineAcpClient, type WarMachineAcpCallbacks } from '../warmachineAcpClient';
 
 function createTestStream(): Stream & {
   push(message: AnyMessage): void;
@@ -27,7 +27,7 @@ function createTestStream(): Stream & {
   };
 }
 
-function callbacks(): GooseAcpCallbacks {
+function callbacks(): WarMachineAcpCallbacks {
   return {
     requestPermission: vi.fn().mockResolvedValue({
       outcome: { outcome: 'selected', optionId: 'allow' },
@@ -53,7 +53,7 @@ describe('WarMachine ACP client composition', () => {
   it('registers standard and Goose-specific handlers on a live ACP connection', async () => {
     const stream = createTestStream();
     const handlers = callbacks();
-    const client = connectGooseAcpClient(stream, handlers);
+    const client = connectWarMachineAcpClient(stream, handlers);
 
     stream.push({
       jsonrpc: '2.0',

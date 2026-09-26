@@ -29,7 +29,7 @@ import {
 const MAX_STREAMING_MARKDOWN_LENGTH = 16_000;
 const LARGE_STREAMING_RENDER_COOLDOWN_MS = 250;
 
-interface GooseMessageProps {
+interface WarMachineMessageProps {
   sessionId: string;
   message: Message;
   hideTimestamp: boolean;
@@ -44,7 +44,7 @@ interface GooseMessageProps {
   ) => Promise<boolean>;
 }
 
-function GooseMessage({
+function WarMachineMessage({
   sessionId,
   message,
   hideTimestamp,
@@ -54,7 +54,7 @@ function GooseMessage({
   append,
   isStreaming,
   submitElicitationResponse,
-}: GooseMessageProps) {
+}: WarMachineMessageProps) {
   const contentRef = useRef<HTMLDivElement | null>(null);
 
   const outputTokenLimitReached = message.metadata.outputTokenLimitReached === true;
@@ -223,4 +223,4 @@ function GooseMessage({
   );
 }
 
-export default memo(GooseMessage);
+export default memo(WarMachineMessage);

@@ -42,7 +42,7 @@ vi.mock('./ChatInput', () => ({
   },
 }));
 
-vi.mock('./LoadingGoose', () => ({ default: () => <div /> }));
+vi.mock('./LoadingWarMachine', () => ({ default: () => <div /> }));
 
 vi.mock('./ConfigContext', () => ({
   useConfig: () => ({ extensionsList: [] }),

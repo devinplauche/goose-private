@@ -1,10 +1,10 @@
-import GooseLogo from './GooseLogo';
+import WarMachineLogo from './WarMachineLogo';
 import AnimatedIcons from './AnimatedIcons';
 import { WarMachine } from './icons/WarMachine';
 import { ChatState } from '../types/chatState';
 import { defineMessages, useIntl } from '../i18n';
 
-interface LoadingGooseProps {
+interface LoadingWarMachineProps {
   message?: string;
   chatState?: ChatState;
 }
@@ -48,7 +48,7 @@ const STATE_ICONS: Record<ChatState, React.ReactNode> = {
     <AnimatedIcons className="flex-shrink-0" cycleInterval={600} variant="waiting" />
   ),
   [ChatState.Compacting]: <AnimatedIcons className="flex-shrink-0" cycleInterval={600} />,
-  [ChatState.Idle]: <GooseLogo size="small" hover={false} />,
+  [ChatState.Idle]: <WarMachineLogo size="small" hover={false} />,
   [ChatState.RestartingAgent]: <AnimatedIcons className="flex-shrink-0" cycleInterval={600} />,
 };
 
@@ -62,7 +62,7 @@ const STATE_MESSAGE_KEYS: Record<ChatState, keyof typeof i18n> = {
   [ChatState.RestartingAgent]: 'restartingAgent',
 };
 
-const LoadingGoose = ({ message, chatState = ChatState.Idle }: LoadingGooseProps) => {
+const LoadingWarMachine = ({ message, chatState = ChatState.Idle }: LoadingWarMachineProps) => {
   const intl = useIntl();
   const displayMessage = message || intl.formatMessage(i18n[STATE_MESSAGE_KEYS[chatState]]);
   const icon = STATE_ICONS[chatState];
@@ -80,4 +80,4 @@ const LoadingGoose = ({ message, chatState = ChatState.Idle }: LoadingGooseProps
   );
 };
 
-export default LoadingGoose;
+export default LoadingWarMachine;

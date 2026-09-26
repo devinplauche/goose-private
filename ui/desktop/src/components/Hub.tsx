@@ -18,7 +18,7 @@ import { View, ViewOptions } from '../utils/navigationUtils';
 import { useConfig } from './ConfigContext';
 import { getEffectiveWorkingDir, getInitialWorkingDir } from '../utils/workingDir';
 import { createSession } from '../sessions';
-import LoadingGoose from './LoadingGoose';
+import LoadingWarMachine from './LoadingWarMachine';
 import { UserInput } from '../types/message';
 import {
   createNextChatExtensionDraft,
@@ -267,7 +267,7 @@ export default function Hub({
 
       {isCreatingSession && (
         <div className="absolute bottom-4 left-4 z-20 pointer-events-none">
-          <LoadingGoose chatState={ChatState.LoadingConversation} />
+          <LoadingWarMachine chatState={ChatState.LoadingConversation} />
         </div>
       )}
     </div>

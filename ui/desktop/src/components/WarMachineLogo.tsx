@@ -1,17 +1,17 @@
 import { WarMachine, Rain } from './icons/WarMachine';
 import { cn } from '../utils';
 
-interface GooseLogoProps {
+interface WarMachineLogoProps {
   className?: string;
   size?: 'default' | 'small';
   hover?: boolean;
 }
 
-export default function GooseLogo({
+export default function WarMachineLogo({
   className = '',
   size = 'default',
   hover = true,
-}: GooseLogoProps) {
+}: WarMachineLogoProps) {
   const sizes = {
     default: {
       frame: 'w-16 h-16',

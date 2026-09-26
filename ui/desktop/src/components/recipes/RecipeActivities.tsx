@@ -1,5 +1,5 @@
 import { Card } from '../ui/card';
-import GooseLogo from '../GooseLogo';
+import WarMachineLogo from '../WarMachineLogo';
 import MarkdownContent from '../MarkdownContent';
 import { substituteParameters } from '../../utils/parameterSubstitution';
 
@@ -33,7 +33,7 @@ export default function RecipeActivities({
       <div className="flex flex-col px-6">
         {/* Animated warmachine icon */}
         <div className="flex justify-start mb-6">
-          <GooseLogo size="default" hover={true} />
+          <WarMachineLogo size="default" hover={true} />
         </div>
 
         {messagePill && (

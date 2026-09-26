@@ -14,8 +14,10 @@
 //!   entry's hash, so tampering with or deleting entries is detectable. This
 //!   is the tamper-evident trail behind NIST 800-171 3.3.1 audit logging:
 //!   the session database holds the content, this log proves the sequence.
-//!   `verify_audit_log` re-checks the whole chain; point a log shipper at the
-//!   JSONL file to forward entries to a SIEM.
+//!   `verify_audit_log` re-checks the whole chain. If
+//!   `WARMACHINE_ONPREM_AUDIT_SINK_URL` is baked in at compile time, a
+//!   background forwarder ships new entries to that HTTPS SIEM endpoint
+//!   (best-effort; the local log remains the source of truth).
 
 pub use goose_providers::onprem::{allowed_origins, check_url_allowed, primary_base_url};
 
@@ -357,6 +359,189 @@ pub fn verify_audit_log() -> Result<usize> {
         count += 1;
     }
     Ok(count)
+}
+
+// ---------------------------------------------------------------------------
+// Audit log forwarding
+// ---------------------------------------------------------------------------
+
+/// Build-time audit sink: the HTTPS endpoint new audit entries are shipped
+/// to (e.g. a SIEM ingestion API). Baked in at compile time via
+/// `WARMACHINE_ONPREM_AUDIT_SINK_URL`; when unset, forwarding is disabled
+/// and the local log is the only copy. Like the LLM base URL, this cannot
+/// be changed at runtime — the sink is part of the build's compliance
+/// posture, not a user preference.
+fn audit_sink_url() -> Option<&'static str> {
+    option_env!("WARMACHINE_ONPREM_AUDIT_SINK_URL")
+}
+
+/// Optional bearer token for the sink, baked in at compile time via
+/// `WARMACHINE_ONPREM_AUDIT_SINK_TOKEN`. Sent as an `Authorization: Bearer`
+/// header. Prefer mutual TLS or network-level auth where the SIEM supports
+/// it; the token is the portable fallback.
+fn audit_sink_token() -> Option<&'static str> {
+    option_env!("WARMACHINE_ONPREM_AUDIT_SINK_TOKEN")
+}
+
+const FORWARD_CURSOR_NAME: &str = "audit.forward.cursor";
+const FORWARD_INTERVAL_SECS: u64 = 60;
+const FORWARD_BATCH_LINES: usize = 500;
+const FORWARD_TIMEOUT_SECS: u64 = 30;
+
+fn forward_cursor_path() -> Result<PathBuf> {
+    Ok(crate::config::paths::Paths::config_dir().join(FORWARD_CURSOR_NAME))
+}
+
+/// The `entry_hash` of the last entry successfully forwarded, if any.
+fn read_forward_cursor() -> Option<String> {
+    std::fs::read_to_string(forward_cursor_path().ok()?)
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+}
+
+fn write_forward_cursor(entry_hash: &str) -> Result<()> {
+    let path = forward_cursor_path()?;
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)
+            .with_context(|| format!("cannot create audit cursor dir {}", parent.display()))?;
+    }
+    std::fs::write(&path, entry_hash)
+        .with_context(|| format!("cannot write audit cursor {}", path.display()))?;
+    Ok(())
+}
+
+/// Collect `(entry_hash, line)` pairs for entries appended after the cursor.
+///
+/// On first run (no cursor), all entries are collected: the sink receives the
+/// full history. When the cursor's hash is no longer in the log
+/// (truncation/rotation/manual cursor deletion), forwarding anchors at the
+/// current end of the log — the local file remains the complete record, and
+/// backfilling history after an anomaly is a manual operator task
+/// (`verify_audit_log` + any NDJSON shipper).
+fn unforwarded_entries() -> Result<Vec<(String, String)>> {
+    let path = audit_log_path()?;
+    let file = match std::fs::File::open(&path) {
+        Ok(f) => f,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+        Err(e) => {
+            return Err(e).with_context(|| format!("cannot open audit log {}", path.display()))?
+        }
+    };
+
+    let cursor = read_forward_cursor();
+    let mut entries = Vec::new();
+    let mut found_cursor = cursor.is_none();
+    let mut last_hash: Option<String> = None;
+    for line in BufReader::new(file).lines().map_while(Result::ok) {
+        if line.trim().is_empty() {
+            continue;
+        }
+        let entry_hash = serde_json::from_str::<serde_json::Value>(&line)
+            .ok()
+            .and_then(|v| {
+                v.get("entry_hash")
+                    .and_then(|h| h.as_str())
+                    .map(str::to_string)
+            });
+        let Some(entry_hash) = entry_hash else {
+            continue;
+        };
+        last_hash = Some(entry_hash.clone());
+        if !found_cursor {
+            if Some(entry_hash.as_str()) == cursor.as_deref() {
+                found_cursor = true;
+            }
+            continue;
+        }
+        entries.push((entry_hash, line));
+    }
+    if !found_cursor {
+        // Stale cursor (log truncated/rotated, or first run after the cursor
+        // file was deleted): anchor at the current end of the log so the next
+        // run picks up new entries. History stays in the local file.
+        if let Some(last) = last_hash {
+            write_forward_cursor(&last)?;
+        }
+    }
+    Ok(entries)
+}
+
+/// POST one batch of NDJSON audit entries to the sink.
+///
+/// The sink must accept `application/x-ndjson`. Any 2xx is success; anything
+/// else is an error and the cursor is not advanced, so entries are retried on
+/// the next pass. The request runs over the process-default TLS stack, which
+/// in on-prem builds is the FIPS-validated provider (installed at startup
+/// before this task is spawned).
+async fn post_audit_batch(client: &reqwest::Client, sink: &str, lines: &[String]) -> Result<()> {
+    let body = lines.join("\n");
+    let mut req = client
+        .post(sink)
+        .header("Content-Type", "application/x-ndjson")
+        .body(body);
+    if let Some(token) = audit_sink_token() {
+        req = req.bearer_auth(token);
+    }
+    let resp = req
+        .send()
+        .await
+        .with_context(|| format!("audit forward to {sink} failed"))?;
+    let status = resp.status();
+    if !status.is_success() {
+        anyhow::bail!("audit sink returned {status}");
+    }
+    Ok(())
+}
+
+/// Forward all unforwarded audit entries to the sink, in batches.
+///
+/// Returns the number of entries forwarded. Best-effort: failures are
+/// returned as errors for the caller to log, but the local audit log is
+/// unaffected — it remains the source of truth and entries are retried on
+/// the next call. Does nothing when no sink URL was baked in at compile time.
+pub async fn forward_audit_log() -> Result<usize> {
+    let Some(sink) = audit_sink_url() else {
+        return Ok(0);
+    };
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(FORWARD_TIMEOUT_SECS))
+        .build()
+        .context("cannot build audit forward HTTP client")?;
+
+    let entries = unforwarded_entries()?;
+    let mut forwarded = 0usize;
+    for chunk in entries.chunks(FORWARD_BATCH_LINES) {
+        let lines: Vec<String> = chunk.iter().map(|(_, line)| line.clone()).collect();
+        post_audit_batch(&client, sink, &lines).await?;
+        let last_hash = &chunk[chunk.len() - 1].0;
+        write_forward_cursor(last_hash)?;
+        forwarded += chunk.len();
+    }
+    Ok(forwarded)
+}
+
+/// Spawn the background audit forwarder.
+///
+/// Does an immediate forward attempt, then re-checks every
+/// `FORWARD_INTERVAL_SECS`. Failures are logged and retried; they never
+/// affect the running session. No-op when no sink URL was baked in. Must be
+/// called from within a Tokio runtime, after `init_fips_crypto()` so the
+/// forwarding TLS uses the FIPS provider.
+pub fn spawn_audit_forwarder() {
+    if audit_sink_url().is_none() {
+        return;
+    }
+    tokio::spawn(async {
+        loop {
+            match forward_audit_log().await {
+                Ok(0) => {}
+                Ok(n) => tracing::info!("forwarded {n} audit log entries to SIEM sink"),
+                Err(e) => tracing::warn!("audit log forwarding failed (will retry): {e:#}"),
+            }
+            tokio::time::sleep(std::time::Duration::from_secs(FORWARD_INTERVAL_SECS)).await;
+        }
+    });
 }
 
 // ---------------------------------------------------------------------------

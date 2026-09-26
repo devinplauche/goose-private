@@ -183,12 +183,19 @@ mode: the TLS crypto backend switches from stock aws-lc-rs to the
 FIPS-validated AWS-LC module (FIPS 140-3 certificate #4816).
 
 - At startup, the binary installs the FIPS provider as the process default
-  (`goose::onprem::init_fips_crypto`) before any TLS config is created.
+  (`warmachine::onprem::init_fips_crypto`) before any TLS config is created.
   reqwest — used by every provider HTTP client — picks up the process-default
   provider, so all LLM traffic uses FIPS-approved algorithms.
 - The binary **refuses to start** if the FIPS provider is not active
   (`is_fips_provider_active`), failing closed instead of silently running
   with non-validated cryptography.
+- **Version pin.** FIPS 140-3 validation is version-specific: cert #4816
+  covers specific AWS-LC builds. `aws-lc-fips-sys` is pinned (currently
+  0.14.2) and CI fails if `Cargo.lock` drifts from the pin — a dependency
+  bump must be a deliberate, reviewed decision, not a silent `cargo update`
+  side effect. The `onprem_fips` integration test proves the provider
+  actually activates at runtime (exercising the module's power-on
+  self-tests), not just that the feature compiles.
 - Scope note: FIPS validation covers the cryptographic module, not the whole
   binary. The certificate (#4816) covers specific AWS-LC versions and
   platforms — consult the
@@ -241,3 +248,40 @@ WARMACHINE_ONPREM_BASE_URL="https://llm.internal.example/v1" \
   cargo cyclonedx --format json -p warmachine --no-default-features \
   --features onprem,rustls-tls,code-mode,tree-sitter,live-voice,scheduler,platform-apps,chat-recall,acp-http,nostr,otel
 ```
+
+## Vulnerability scanning (cargo-deny)
+
+NIST 800-171 3.14.1 (flaw remediation) needs a real process for finding
+vulnerable dependencies. CI runs `cargo deny check` on every push
+(`cargo-deny` job in `ci.yml`), configured by `deny.toml`:
+
+- **Advisories**: denies known vulnerabilities (RUSTSEC) and yanked crates.
+- One ignore is documented in `deny.toml` (`RUSTSEC-2023-0071`, no safe
+  upgrade available); every ignore carries a justification comment.
+
+A failing advisory blocks the build — vulnerable dependencies cannot ship
+silently.
+
+## Audit log forwarding
+
+The local hash-chained audit log is the source of truth, but a log that only
+exists on the laptop dies with the laptop. On-prem builds can ship entries
+to a SIEM:
+
+- Bake the sink in at compile time:
+  `WARMACHINE_ONPREM_AUDIT_SINK_URL="https://siem.internal.example/api/audit"`
+  (plus optional `WARMACHINE_ONPREM_AUDIT_SINK_TOKEN` for a bearer token).
+  Like the LLM base URL, the sink cannot be changed at runtime.
+- At startup, a background task forwards new entries as NDJSON batches
+  (`Content-Type: application/x-ndjson`, 500 entries/batch, 60s interval)
+  over TLS — using the FIPS-validated provider, since forwarding starts
+  after `init_fips_crypto()`.
+- A cursor file (`audit.forward.cursor` next to `audit.log`) records the
+  last forwarded `entry_hash`, so restarts resume without duplicates.
+- Forwarding is **best-effort**: sink failures are logged and retried; the
+  local log is unaffected and entries are never lost. If no sink URL was
+  baked in, the forwarder is a complete no-op.
+- First-run behavior: with no cursor, the forwarder ships the full history
+  (batched). If the cursor goes stale (log truncated/rotated), it anchors at
+  the current end; backfilling after an anomaly is a manual operator task
+  (`verify_audit_log` + any NDJSON shipper).

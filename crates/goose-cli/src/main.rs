@@ -21,6 +21,12 @@ async fn run() -> Result<()> {
         eprintln!("Warning: Failed to initialize logging: {}", e);
     }
 
+    // On-prem builds ship audit entries to the configured SIEM sink in the
+    // background (best-effort; the local hash-chained log is the source of
+    // truth). No-op unless WARMACHINE_ONPREM_AUDIT_SINK_URL was baked in.
+    #[cfg(feature = "onprem")]
+    warmachine::onprem::spawn_audit_forwarder();
+
     let result = cli().await;
 
     #[cfg(feature = "otel")]
